@@ -1,0 +1,37 @@
+[project]
+name = "monitorability-scaling"
+version = "0.1.0"
+description = "Reproduce and extend CoT monitorability scaling trends across open-source reasoning models"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=0.54.0",
+    "datasets>=3.6.0",
+    "inspect-ai",
+    "matplotlib>=3.10.1",
+    "numpy>=2.2.3",
+    "openai>=1.89.0",
+    "pandas>=2.2.3",
+    "pydantic>=2.10.6",
+    "python-dotenv>=1.0.1",
+    "pyyaml>=6.0",
+    "seaborn>=0.13.2",
+    "together>=1.5.17",
+    "tqdm>=4.67.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.0",
+    "pytest-asyncio>=1.0.0",
+    "ruff>=0.11.0",
+]
+
+[tool.uv.sources]
+inspect-ai = { git = "https://github.com/METR/inspect_ai", rev = "154ce47aa8f55bb87e0fac69f134d99fbcb8db03" }
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "I"]
+ignore = ["E501"]

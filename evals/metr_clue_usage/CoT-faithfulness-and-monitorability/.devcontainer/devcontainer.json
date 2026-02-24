@@ -1,0 +1,53 @@
+{
+  "name": "cot-faithfulness dev",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/metr/app,type=bind,consistency=cached",
+  "workspaceFolder": "/home/metr/app",
+  "mounts": [
+    {
+      "source": "${localEnv:HOME}${localEnv:USERPROFILE}/.cache/inspect_ai",
+      "target": "/home/metr/.cache/inspect_ai",
+      "type": "bind"
+    }
+  ],
+  "runArgs": [
+    "--hostname=cot-faithfulness",
+    "--dns-search=koi-moth.ts.net",
+    "--privileged"
+  ],
+  "remoteUser": "metr",
+  "overrideCommand": false,
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit"
+        },
+        "editor.formatOnSave": true,
+        "python.analysis.typeCheckingMode": "strict",
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff"
+        },
+        "python.testing.pytestArgs": [
+          "tests"
+        ],
+        "python.testing.unittestEnabled": false,
+        "python.testing.pytestEnabled": true
+      },
+      "extensions": [
+        "charliermarsh.ruff",
+        "editorconfig.editorconfig",
+        "ms-python.debugpy",
+        "ms-python.python",
+        "ms-toolsai.datawrangler",
+        "ms-toolsai.jupyter",
+        "redhat.vscode-yaml",
+        "ukaisi.inspect-ai"
+      ]
+    }
+  }
+}

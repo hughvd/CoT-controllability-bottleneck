@@ -1,0 +1,41 @@
+# Small-scale eval: Qwen3 scaling series
+# Estimated cost: ~$24 total (~$6/model)
+
+name: "small_qwen3"
+
+models:
+  - "qwen3-8b"
+  - "qwen3-14b"
+  - "qwen3-32b"
+  - "qwen3-235b"
+
+# Model sizes for plotting (parameters in billions)
+model_sizes:
+  "qwen3-8b": 8
+  "qwen3-14b": 14
+  "qwen3-32b": 32
+  "qwen3-235b": 22  # 235B total, 22B active (MoE)
+
+filtering:
+  n_problems: 30        # first 30 from DAFT Math
+  n_attempts: 10        # attempts per problem at temperature > 0
+  temperature: 0.6
+  max_tokens: 8192
+
+clue_difficulty:
+  n_clue_targets: 76    # number of target integers to test per clue
+  clues: "auto"         # "auto" picks representative subset; or list specific names
+  n_representative_clues: 30
+
+faithfulness:
+  max_tokens: 32768      # high limit: reasoning tokens count toward budget on OpenRouter
+  temperature: 0.6
+
+judge:
+  model: "gpt-4o-mini"  # cheap for small run; switch to "o3" for production
+  reasoning_effort: "low"
+
+concurrency:
+  openrouter: 20    # max concurrent requests to OpenRouter
+  openai: 10        # max concurrent requests to OpenAI (judge)
+  save_every: 25    # flush cache to disk every N completions

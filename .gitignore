@@ -1,0 +1,24 @@
+# Environment
+.env
+.venv/
+__pycache__/
+*.pyc
+
+# Results (large, regenerable)
+results/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# uv
+uv.lock
+
+# METR repo's own git (we track it as a plain directory)
+evals/metr_clue_usage/CoT-faithfulness-and-monitorability/.git/
+
+# HuggingFace cache
+.cache/
