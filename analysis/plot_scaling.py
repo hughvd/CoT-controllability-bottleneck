@@ -257,7 +257,7 @@ def plot_monitorability_vs_size(data: list[dict], output_dir: Path):
     errors = [d["monitorability_se"] for d in models]
     names = [d["name"] for d in models]
 
-    ax.errorbar(sizes, rates, yerr=errors, fmt="o-", capsize=5, markersize=8)
+    ax.errorbar(sizes, rates, yerr=errors, fmt="o", capsize=5, markersize=8, linestyle="none")
 
     for i, name in enumerate(names):
         ax.annotate(name, (sizes[i], rates[i]), textcoords="offset points",
@@ -290,11 +290,14 @@ def plot_monitorability_vs_capability(data: list[dict], output_dir: Path):
     errors = [d["monitorability_se"] for d in models]
     names = [d["name"] for d in models]
 
-    ax.errorbar(caps, rates, yerr=errors, fmt="s-", capsize=5, markersize=8, color="tab:orange")
+    ax.errorbar(caps, rates, yerr=errors, fmt="s", capsize=5, markersize=8, color="tab:orange", linestyle="none")
 
+    # Stagger label offsets to avoid overlap
+    offsets = [(5, 10), (-5, -15), (5, 10), (-5, -15)]
     for i, name in enumerate(names):
+        ox, oy = offsets[i % len(offsets)]
         ax.annotate(name, (caps[i], rates[i]), textcoords="offset points",
-                    xytext=(5, 10), fontsize=8)
+                    xytext=(ox, oy), fontsize=8)
 
     ax.set_xlabel("Capability (reasoning accuracy weighted by clue difficulty)")
     ax.set_ylabel("Monitorability Rate")
