@@ -189,8 +189,12 @@ def _build_judge_kwargs(config: JudgeConfig, question: str, reasoning: str,
         instructions=JUDGE_INSTRUCTIONS,
     )
 
-    # o-series models require max_completion_tokens instead of max_tokens
-    token_param = "max_completion_tokens" if config.model_id.startswith("o") else "max_tokens"
+    # gpt-5+, o-series, and other newer OpenAI models require max_completion_tokens
+    uses_completion_tokens = (
+        config.model_id.startswith("o")
+        or config.model_id.startswith("gpt-5")
+    )
+    token_param = "max_completion_tokens" if uses_completion_tokens else "max_tokens"
 
     kwargs = {
         "model": config.model_id,

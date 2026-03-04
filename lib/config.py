@@ -14,7 +14,7 @@ class ModelConfig(BaseModel):
     family: str
     is_distilled: bool
     is_reasoning: bool
-    cot_suppression: str  # "no_think" or "reasoning_complete"
+    cot_suppression: Optional[str] = None  # "no_think", "reasoning_complete", or None
     base_architecture: Optional[str] = None
 
 

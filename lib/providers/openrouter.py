@@ -14,6 +14,15 @@ from openai import AsyncOpenAI, OpenAI
 
 load_dotenv()
 
+# Models that need explicit reasoning.max_tokens to return thinking in the
+# message.reasoning field.  Without this, they return all reasoning in content.
+# Most models (Qwen3, DeepSeek, kimi, qwq) return reasoning automatically.
+_NEEDS_REASONING_PARAM = {
+    "google/gemini-2.5-flash",
+    "google/gemini-2.5-pro",
+    "qwen/qwen3-max-thinking",
+}
+
 
 @dataclass
 class ModelResponse:
@@ -100,12 +109,16 @@ def complete(
         # For suppressed thinking, use short max_tokens
         max_tokens = min(max_tokens, 100)
 
-    response = client.chat.completions.create(
+    kwargs = dict(
         model=model_id,
         messages=messages,
         temperature=temperature,
         max_tokens=max_tokens,
     )
+    if model_id in _NEEDS_REASONING_PARAM:
+        kwargs["extra_body"] = {"reasoning": {"max_tokens": max_tokens}}
+
+    response = client.chat.completions.create(**kwargs)
 
     return _parse_response(response)
 
@@ -163,12 +176,16 @@ async def async_complete(
         messages = _apply_cot_suppression(messages, cot_suppression_method)
         max_tokens = min(max_tokens, 100)
 
-    response = await client.chat.completions.create(
+    kwargs = dict(
         model=model_id,
         messages=messages,
         temperature=temperature,
         max_tokens=max_tokens,
     )
+    if model_id in _NEEDS_REASONING_PARAM:
+        kwargs["extra_body"] = {"reasoning": {"max_tokens": max_tokens}}
+
+    response = await client.chat.completions.create(**kwargs)
 
     return _parse_response(response)
 
