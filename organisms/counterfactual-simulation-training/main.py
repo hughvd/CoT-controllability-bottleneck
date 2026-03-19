@@ -9,7 +9,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-pd.options.future.infer_string = False  # avoid ArrowStringArray incompatibilities
+try:
+    pd.options.future.infer_string = False  # avoid ArrowStringArray incompatibilities (pandas 3.x)
+except pd._config.config.OptionError:
+    pass
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score, average_precision_score
 
