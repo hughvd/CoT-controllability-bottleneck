@@ -2849,6 +2849,10 @@ async def async_main(args):
                                                                      args.model_cache_dir,
                                                                      args.gpu)
         simulator_model = args.simulator_model
+        simulator_client = AsyncOpenAI(
+            **globals.api_configs[args.api_name]
+        )
+        rewriter_client = simulator_client
         if not args.full_finetuning:
             task_model = train_utils.lora_wrap_model(task_model)
             task_model.disable_adapter_layers() # disable the adapter layers for the first eval
