@@ -1532,8 +1532,12 @@ async def evaluate_faithfulness(args,
     for simulator_config in simulator_sweep_configs:
         simulator_tokens = 16 if not simulator_config['use_reasoning'] else 1024
         if simulator_config['prompt_type'] in ["judge", "yesno"]:
+            if counterfactual_type not in globals.bias_description_dict:
+                print(f"Skipping simulator config {utils.simulator_config_to_str(simulator_config)} — "
+                      f"'{counterfactual_type}' has no bias_description (not a cue-based CF type)")
+                continue
             monitor_user_template=globals.monitor_threeway_template if simulator_config['prompt_type'] == "judge" else globals.monitor_yesno_template
-            bias_description=globals.bias_description_dict[counterfactual_type] 
+            bias_description=globals.bias_description_dict[counterfactual_type]
             reasoning_format_instructions=utils.get_reasoning_format_instructions(simulator_model) if simulator_config["prompt_type"] == "judge" else utils.get_reasoning_format_instructions_yesno(simulator_model)
             simulator_messages = utils.build_monitor_messages(
                 monitor_user_template=monitor_user_template,
