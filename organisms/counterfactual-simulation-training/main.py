@@ -2981,7 +2981,10 @@ async def async_main(args):
         print("==========================================================")
         
         # BEGIN FAITHFULNESS ESTIMATION + CREATE TRAIN DATA LOOP
-        for dataset_num, (dataset, data_config) in enumerate(zip(train_datasets, train_data_configs)):
+        if args.load_train_data_from:
+            print(f"\nSkipping train data creation — using externally loaded data from {len(args.load_train_data_from)} file(s)")
+
+        for dataset_num, (dataset, data_config) in enumerate(zip(train_datasets, train_data_configs) if not args.load_train_data_from else []):
             print(f"\n\n================ {round_moniker} | TRAIN SPLIT EVAL | DATASET: {data_config['dataname']} | TYPE: {data_config['counterfactual_type']} | ({len(dataset)} samples) ================")
             # EVAL FAITHFULNESS
             print("Running eval on train data...")
@@ -3313,7 +3316,14 @@ async def async_main(args):
                 train_utils.summarize_trainable_parameters(task_model, max_items_print=10)
 
             # merge all train datasets together
-            train_dataset_mix = pd.concat(train_datasets_with_extra_data, ignore_index=True)
+            if args.load_train_data_from:
+                train_dataset_mix = pd.concat([pd.read_csv(p) for p in args.load_train_data_from], ignore_index=True)
+                # filter to rows with valid positive/negative pairs
+                valid_mask = (train_dataset_mix['positive_reasoning'] != '') & (train_dataset_mix['positive_reasoning'].notna())
+                train_dataset_mix = train_dataset_mix[valid_mask].reset_index(drop=True)
+                print(f"Loaded {len(train_dataset_mix)} training examples from {len(args.load_train_data_from)} external files")
+            else:
+                train_dataset_mix = pd.concat(train_datasets_with_extra_data, ignore_index=True)
             if args.cf_rl_sanity_check:
                 print("Filtering training data to cf questions only...")
                 train_dataset_mix = train_dataset_mix[train_dataset_mix['mix_source'] == 'counterfactual'].reset_index(drop=True)
@@ -3393,6 +3403,12 @@ async def async_main(args):
                     n_epochs=args.epochs,
                     verbose=args.verbose,
                 )
+            # save checkpoint after each training round (local training only)
+            if is_local_model:
+                exp_name = utils.get_exp_name(args)
+                ckpt_name = f"{exp_name}_round{train_round}"
+                train_utils.save_model_and_tokenizer(task_model, tokenizer, "checkpoints", ckpt_name)
+
             # merge LoRA weights into base model for final evaluation if needed
             if is_last_training_round and not args.full_finetuning and is_local_model:
                 task_model = task_model.merge_and_unload()
@@ -3579,6 +3595,9 @@ def parse_args(argv=None):
     p.add_argument("--print_id", '-pid', type=int, default=0)
     p.add_argument("--wait", type=float, default=0, help="Time in hours to wait before starting the experiment")
     p.add_argument("--exp_name_prefix", "-enp", type=str, default="", help="String to add to the experiment name.")
+    p.add_argument("--load_train_data_from", nargs='+', default=None,
+                   help="Load pre-generated training data from one or more CSV files instead of using pipeline-generated data. "
+                        "Files are concatenated. Useful for merging data from separate experiment arms.")
     return p.parse_args(argv)
 
 
