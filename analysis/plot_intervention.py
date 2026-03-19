@@ -55,6 +55,62 @@ EVAL_LABELS = {
 }
 
 
+def _place_labels(ax, xs, ys, names, fontsize=8, colors=None):
+    """Place non-overlapping labels near data points.
+
+    Works in display (pixel) coordinates so it handles log axes correctly.
+    Sorts labels by y-position, pushes apart any that are too close,
+    then re-centers the group around the original mean position.
+    """
+    if not xs or not names:
+        return
+    if colors is None:
+        colors = ["black"] * len(names)
+
+    fig = ax.get_figure()
+    fig.canvas.draw()
+
+    # Data points in display pixels
+    pts = ax.transData.transform(list(zip(xs, ys)))
+    # Base label position: 12px right, 6px up
+    base_dx, base_dy = 12, 6
+
+    # Sort by y-position in display space
+    order = sorted(range(len(pts)), key=lambda i: pts[i][1])
+
+    # Start each label at its point's y + base offset
+    label_y = [pts[i][1] + base_dy for i in order]
+
+    # Push apart: ensure minimum vertical gap between consecutive labels
+    min_gap = fontsize * 1.8
+    for i in range(1, len(order)):
+        if label_y[i] - label_y[i - 1] < min_gap:
+            label_y[i] = label_y[i - 1] + min_gap
+
+    # Re-center the group around original mean y
+    orig_mean = np.mean([pts[i][1] + base_dy for i in order])
+    shift = orig_mean - np.mean(label_y)
+    label_y = [y + shift for y in label_y]
+
+    # Map resolved y back to each point's index
+    final_y = [0.0] * len(pts)
+    for rank, orig_i in enumerate(order):
+        final_y[orig_i] = label_y[rank]
+
+    # Draw annotations (offsets in points = pixels * 72/dpi)
+    scale = 72.0 / fig.dpi
+    for i, (x, y, name, c) in enumerate(zip(xs, ys, names, colors)):
+        dx_pts = base_dx * scale
+        dy_pts = (final_y[i] - pts[i][1]) * scale
+        ax.annotate(
+            name, xy=(x, y), xycoords="data",
+            xytext=(dx_pts, dy_pts), textcoords="offset points",
+            fontsize=fontsize, color=c, alpha=0.85,
+            arrowprops=dict(arrowstyle="-", color="gray", lw=0.5, alpha=0.4,
+                            shrinkA=0, shrinkB=3),
+        )
+
+
 # ── Data Loading ────────────────────────────────────────────────────
 
 def load_run_config(path: str) -> dict:
@@ -183,26 +239,22 @@ def plot_eval_monitorability_vs_size(
     gmean2 = [d["gmean2"] for d in valid]
     names = [d["model_name"] for d in valid]
 
-    fig, ax = plt.subplots(figsize=(8, 5))
+    fig, ax = plt.subplots(figsize=(9, 6))
     color = EVAL_COLORS.get(eval_name, "tab:blue")
     marker = EVAL_MARKERS.get(eval_name, "o")
 
-    ax.plot(sizes, gmean2, marker=marker, color=color, markersize=10,
-            linewidth=2, zorder=5)
-
-    for x, y, name in zip(sizes, gmean2, names):
-        ax.annotate(name, (x, y), textcoords="offset points",
-                    xytext=(8, 8), fontsize=8, alpha=0.8)
-
+    ax.scatter(sizes, gmean2, marker=marker, color=color, s=100, zorder=5)
     ax.set_xscale("log")
+    _place_labels(ax, sizes, gmean2, names, fontsize=8)
+
     ax.set_xlabel("Model Size (B parameters)", fontsize=12)
     ax.set_ylabel("g-mean²", fontsize=12)
     label = EVAL_LABELS.get(eval_name, eval_name)
     ax.set_title(f"Monitorability vs Size — {label}", fontsize=13)
     ax.set_ylim(-0.05, 1.05)
     ax.grid(True, alpha=0.3)
-    plt.tight_layout()
-    fig.savefig(output_dir / f"{eval_name}_vs_size.png", dpi=150)
+
+    fig.savefig(output_dir / f"{eval_name}_vs_size.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
 
 
@@ -218,15 +270,12 @@ def plot_eval_monitorability_vs_capability(
     gmean2 = [d["gmean2"] for d in valid]
     names = [d["model_name"] for d in valid]
 
-    fig, ax = plt.subplots(figsize=(8, 5))
+    fig, ax = plt.subplots(figsize=(9, 6))
     color = EVAL_COLORS.get(eval_name, "tab:blue")
     marker = EVAL_MARKERS.get(eval_name, "o")
 
     ax.scatter(caps, gmean2, marker=marker, color=color, s=100, zorder=5)
-
-    for x, y, name in zip(caps, gmean2, names):
-        ax.annotate(name, (x, y), textcoords="offset points",
-                    xytext=(8, 8), fontsize=8, alpha=0.8)
+    _place_labels(ax, caps, gmean2, names, fontsize=8)
 
     ax.set_xlabel("Capability (Control Accuracy)", fontsize=12)
     ax.set_ylabel("g-mean²", fontsize=12)
@@ -235,26 +284,24 @@ def plot_eval_monitorability_vs_capability(
     ax.set_xlim(-0.05, 1.05)
     ax.set_ylim(-0.05, 1.05)
     ax.grid(True, alpha=0.3)
-    plt.tight_layout()
-    fig.savefig(output_dir / f"{eval_name}_vs_capability.png", dpi=150)
+
+    fig.savefig(output_dir / f"{eval_name}_vs_capability.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
 
 
-# ── Combined Multi-Eval Plots ──────────────────────────────────────
+# ── Combined Multi-Eval Plots (no model labels) ────────────────────
 
 def plot_combined_monitorability_vs_size(
     data: list[dict], output_dir: Path,
 ) -> None:
-    """Plot g-mean² vs model size, one line per eval, all on same axes."""
+    """Plot g-mean² vs model size, one series per eval. No per-point labels."""
     fig, ax = plt.subplots(figsize=(10, 6))
 
-    eval_names = sorted(set(d["eval_name"] for d in data))
-    for eval_name in eval_names:
-        eval_data = sorted(
-            [d for d in data if d["eval_name"] == eval_name
-             and d["gmean2"] is not None and d["model_size"] > 0],
-            key=lambda d: d["model_size"],
-        )
+    for eval_name in sorted(set(d["eval_name"] for d in data)):
+        eval_data = [
+            d for d in data if d["eval_name"] == eval_name
+            and d["gmean2"] is not None and d["model_size"] > 0
+        ]
         if not eval_data:
             continue
 
@@ -264,8 +311,8 @@ def plot_combined_monitorability_vs_size(
         marker = EVAL_MARKERS.get(eval_name, "o")
         label = EVAL_LABELS.get(eval_name, eval_name)
 
-        ax.plot(sizes, gmean2, marker=marker, color=color, markersize=8,
-                linewidth=1.5, label=label, zorder=5)
+        ax.scatter(sizes, gmean2, marker=marker, color=color, s=80,
+                   label=label, zorder=5)
 
     ax.set_xscale("log")
     ax.set_xlabel("Model Size (B parameters)", fontsize=12)
@@ -274,19 +321,18 @@ def plot_combined_monitorability_vs_size(
     ax.set_ylim(-0.05, 1.05)
     ax.legend(fontsize=9, loc="best")
     ax.grid(True, alpha=0.3)
-    plt.tight_layout()
-    fig.savefig(output_dir / "combined_gmean2_vs_size.png", dpi=150)
+
+    fig.savefig(output_dir / "combined_gmean2_vs_size.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
 
 
 def plot_combined_monitorability_vs_capability(
     data: list[dict], output_dir: Path,
 ) -> None:
-    """Plot g-mean² vs capability, one series per eval, all on same axes."""
+    """Plot g-mean² vs capability, one series per eval. No per-point labels."""
     fig, ax = plt.subplots(figsize=(10, 6))
 
-    eval_names = sorted(set(d["eval_name"] for d in data))
-    for eval_name in eval_names:
+    for eval_name in sorted(set(d["eval_name"] for d in data)):
         eval_data = [
             d for d in data if d["eval_name"] == eval_name
             and d["gmean2"] is not None and d["capability"] is not None
@@ -310,8 +356,8 @@ def plot_combined_monitorability_vs_capability(
     ax.set_ylim(-0.05, 1.05)
     ax.legend(fontsize=9, loc="best")
     ax.grid(True, alpha=0.3)
-    plt.tight_layout()
-    fig.savefig(output_dir / "combined_gmean2_vs_capability.png", dpi=150)
+
+    fig.savefig(output_dir / "combined_gmean2_vs_capability.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
 
 
@@ -320,7 +366,7 @@ def plot_combined_monitorability_vs_capability(
 def plot_mean_monitorability_vs_size(
     means: list[dict], output_dir: Path,
 ) -> None:
-    """Plot mean g-mean² (across evals) vs model size."""
+    """Plot mean g-mean² (± SEM across evals) vs model size."""
     valid = sorted(
         [m for m in means if m["mean_gmean2"] is not None and m["model_size"] > 0],
         key=lambda m: m["model_size"],
@@ -333,58 +379,50 @@ def plot_mean_monitorability_vs_size(
     se = [m["gmean2_se"] for m in valid]
     names = [m["model_name"] for m in valid]
 
-    fig, ax = plt.subplots(figsize=(8, 5))
-    ax.errorbar(sizes, gmean2, yerr=se, fmt="o-", color="tab:blue",
-                capsize=5, markersize=10, linewidth=2, zorder=5)
-
-    for x, y, name in zip(sizes, gmean2, names):
-        ax.annotate(name, (x, y), textcoords="offset points",
-                    xytext=(8, 10), fontsize=9, alpha=0.8)
-
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.errorbar(sizes, gmean2, yerr=se, fmt="none", color="tab:blue",
+                capsize=5, linewidth=1.5, zorder=4)
+    ax.scatter(sizes, gmean2, marker="o", color="tab:blue", s=100, zorder=5)
     ax.set_xscale("log")
+    _place_labels(ax, sizes, gmean2, names, fontsize=9)
+
     ax.set_xlabel("Model Size (B parameters)", fontsize=12)
     ax.set_ylabel("Mean g-mean² (± SEM)", fontsize=12)
     ax.set_title("Mean Monitorability vs Model Size", fontsize=13)
     ax.set_ylim(-0.05, 1.05)
     ax.grid(True, alpha=0.3)
-    plt.tight_layout()
-    fig.savefig(output_dir / "mean_gmean2_vs_size.png", dpi=150)
+
+    fig.savefig(output_dir / "mean_gmean2_vs_size.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
 
 
 def plot_mean_monitorability_vs_capability(
     means: list[dict], output_dir: Path,
 ) -> None:
-    """Plot mean g-mean² vs mean capability (across evals)."""
-    valid = sorted(
-        [m for m in means if m["mean_gmean2"] is not None and m["mean_capability"] is not None],
-        key=lambda m: m["mean_capability"],
-    )
+    """Plot mean g-mean² vs mean capability (across evals), no error bars."""
+    valid = [
+        m for m in means
+        if m["mean_gmean2"] is not None and m["mean_capability"] is not None
+    ]
     if not valid:
         return
 
     caps = [m["mean_capability"] for m in valid]
     gmean2 = [m["mean_gmean2"] for m in valid]
-    se_g = [m["gmean2_se"] for m in valid]
-    se_c = [m["capability_se"] for m in valid]
     names = [m["model_name"] for m in valid]
 
-    fig, ax = plt.subplots(figsize=(8, 5))
-    ax.errorbar(caps, gmean2, xerr=se_c, yerr=se_g, fmt="s-", color="tab:orange",
-                capsize=5, markersize=10, linewidth=2, zorder=5)
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.scatter(caps, gmean2, marker="s", color="tab:orange", s=100, zorder=5)
+    _place_labels(ax, caps, gmean2, names, fontsize=9)
 
-    for x, y, name in zip(caps, gmean2, names):
-        ax.annotate(name, (x, y), textcoords="offset points",
-                    xytext=(8, 10), fontsize=9, alpha=0.8)
-
-    ax.set_xlabel("Mean Capability (Control Accuracy ± SEM)", fontsize=12)
-    ax.set_ylabel("Mean g-mean² (± SEM)", fontsize=12)
+    ax.set_xlabel("Mean Capability (Control Accuracy)", fontsize=12)
+    ax.set_ylabel("Mean g-mean²", fontsize=12)
     ax.set_title("Mean Monitorability vs Capability", fontsize=13)
     ax.set_xlim(-0.05, 1.05)
     ax.set_ylim(-0.05, 1.05)
     ax.grid(True, alpha=0.3)
-    plt.tight_layout()
-    fig.savefig(output_dir / "mean_gmean2_vs_capability.png", dpi=150)
+
+    fig.savefig(output_dir / "mean_gmean2_vs_capability.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
 
 

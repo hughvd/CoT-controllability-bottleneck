@@ -11,7 +11,7 @@ models:
   - "kimi-k2-thinking"
   - "deepseek-r1-0528"
   - "gemini-2.5-flash"
-  - "qwq-32b"
+  # - "qwq-32b"
   - "gpt-oss-120b"
   - "gpt-oss-20b"
 

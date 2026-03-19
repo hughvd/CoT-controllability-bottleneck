@@ -7,7 +7,7 @@ Produces three plots:
 
 Usage:
     python -m analysis.plot_scaling --run-config eval_configs/small_qwen3.yaml
-    python -m analysis.plot_scaling --run-config eval_configs/small_qwen3.yaml --output-dir analysis/plots
+    python -m analysis.plot_scaling --run-config eval_configs/small_qwen3.yaml --output-dir analysis/metr_plots
 """
 
 import argparse

@@ -1,0 +1,12 @@
+# Small test config for intervention evaluations
+# Run: uv run python -m evals.intervention.run --eval gpqa_hints --run-config eval_configs/intervention_test.yaml --stage all
+
+name: "cot_quick"
+
+models:
+  - "qwen3-32b"
+
+sampling:
+  n_samples: 3              # samples per arm per instance (low for testing)
+  temperature: 0.6
+  max_tokens: 32768
