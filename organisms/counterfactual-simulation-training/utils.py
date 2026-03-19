@@ -421,7 +421,7 @@ async def query_model_batch(client, model, messages_batch,
     """
     input_chars_per_datapoint_running = []
     output_chars_per_datapoint_running = []
-    is_local_model = isinstance(model, AutoModelForCausalLM)
+    is_local_model = isinstance(model, torch.nn.Module)
     do_sample = temperature > 0.0
     loop_start = time.time()
     if model_to_string(model) in get_reasoning_models():
@@ -946,7 +946,7 @@ async def score_model_batch(client, model, messages_batch, max_tokens=2048,
     output_chars_per_datapoint_running = []
     all_outputs = []
     loop_start = time.time()
-    is_local_model = isinstance(model, AutoModelForCausalLM)
+    is_local_model = isinstance(model, torch.nn.Module)
     if model_to_string(model) in get_reasoning_models():
         output_should_end_with_answer = False
 
