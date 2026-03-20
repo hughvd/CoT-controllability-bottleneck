@@ -232,7 +232,6 @@ def make_dataloader(dataset, model_name, tokenizer, batch_size, max_length=2048,
     if verbose:
         print(f"Dataset size: {len(dataset)} examples")
         dataset.print_examples(num_examples=3)
-        dataset.print_truncated_examples()
     return torch.utils.data.DataLoader(
         dataset,
         batch_size=batch_size,

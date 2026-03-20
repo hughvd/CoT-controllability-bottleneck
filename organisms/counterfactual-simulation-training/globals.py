@@ -23,7 +23,11 @@ api_configs = {
     "openrouter": {
         "api_key": openrouter_key,
         "base_url": "https://openrouter.ai/api/v1",
-    }
+    },
+    "vllm": {
+        "api_key": "dummy",
+        "base_url": os.environ.get("VLLM_BASE_URL", "http://localhost:8000/v1"),
+    },
 }
 
 all_cue_types = [

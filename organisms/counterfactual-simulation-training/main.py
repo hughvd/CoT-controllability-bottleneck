@@ -2914,7 +2914,9 @@ async def async_main(args):
 
         # RUN FAITHFULNESS EVAL OVER TEST SETS
         round_moniker = f"ROUND {train_round} / {args.train_rounds}" if train_round > 0 else "INITIAL EVAL"
-        for dataset_num, (dataset, data_config) in enumerate(zip(test_datasets, test_data_configs)):
+        if args.skip_initial_eval and train_round == 0:
+            print(f"\n============= Skipping initial eval (--skip_initial_eval) ======================")
+        for dataset_num, (dataset, data_config) in enumerate(zip(test_datasets, test_data_configs) if not (args.skip_initial_eval and train_round == 0) else []):
             print(f"\n\n================ {round_moniker} | TEST SPLIT EVAL | DATASET: {data_config['dataname']} | TYPE: {data_config['counterfactual_type']} | ({len(dataset)} samples) ================")
             # EVAL FAITHFULNESS
             print("Running eval on test data...")
@@ -3423,6 +3425,9 @@ async def async_main(args):
             # merge LoRA weights into base model for final evaluation if needed
             if is_last_training_round and not args.full_finetuning and is_local_model:
                 task_model = task_model.merge_and_unload()
+                merged_path = f"{exp_name}_merged"
+                train_utils.save_model_and_tokenizer(task_model, tokenizer, "checkpoints", merged_path)
+                print(f"Saved merged model to checkpoints/{merged_path}")
             # add train_stats to running_experiment_stats
             where_last_ID_train_row = np.argwhere(
                 np.array([(stats['dataname'] == 'all_ID' and
@@ -3609,6 +3614,8 @@ def parse_args(argv=None):
     p.add_argument("--load_train_data_from", nargs='+', default=None,
                    help="Load pre-generated training data from one or more CSV files instead of using pipeline-generated data. "
                         "Files are concatenated. Useful for merging data from separate experiment arms.")
+    p.add_argument("--skip_initial_eval", action="store_true", default=False,
+                   help="Skip test eval and train data creation on round 0. Useful when baseline metrics already exist from a prior data-generation run.")
     return p.parse_args(argv)
 
 

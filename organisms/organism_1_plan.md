@@ -36,29 +36,32 @@ Both arms use unlikelihood contrastive loss. Training data is merged before the 
 - [x] **Cue arm pilot** (n_train=50, n_test=100) — COMPLETED, 1.4 hours
   - Results in `artifacts/dataset_*cue_pilot*_round0_train.csv`
   - 100% faithful positives, rewriting worked
-- [ ] **Non-cue arm pilot** (n_train=50, n_test=100)
-  - Must verify flip_selection produces correct pos/neg split
-- [ ] **Inspect pilot data** — verify:
-  - Cue arm: positives mention cues, negatives don't
-  - Non-cue arm: positives have low sim scores, negatives have high sim scores
-  - All positives have correct final answers
-- [ ] **Full cue arm run** (n_train=1000, n_test=2000)
-- [ ] **Full non-cue arm run** (n_train=1000, n_test=2000)
+- [x] **Non-cue arm pilot** (n_train=50, n_test=100) — COMPLETED, 0.47 hours
+  - Rewrite success rate: 93.2%, 42/50 valid training pairs
+  - Used rewriting approach (not multi-sample): greedy CoT + gpt-5-mini rewrite
+  - `CoT-T` configs (not `CoT-F` — gpt-5-mini needs reasoning tokens)
+- [x] **Full cue arm run** (n_train=1000, n_test=2000) — COMPLETED
+- [x] **Full non-cue arm run** (n_train=1000, n_test=2000) — COMPLETED
 
-### Phase 2: Training (RunPod)
+### Phase 2: Training (RunPod, 1x A100 80GB)
 
-- [ ] Transfer data CSVs to RunPod
-- [ ] Write merge script: combine cue + non-cue train DataFrames
-- [ ] Train Qwen3-32B with LoRA (4-bit, r=32, unlikelihood loss)
-  - Spec: 1x A100-40GB, ~18GB VRAM
-  - Deps: torch, transformers, peft, bitsandbytes, pandas
-- [ ] Tune: start with uniform arm weighting, adjust if needed
+Code changes implemented:
+- [x] `--skip_initial_eval` flag (skips test eval on round 0)
+- [x] Auto-save merged model after final training round
+- [x] vLLM API config in `globals.py` (`--task_model_api vllm`)
+- [x] Fix `print_truncated_examples()` crash in `train_utils.py`
 
-### Phase 3: Evaluation
+Pipeline:
+- [ ] **Pilot training** (n_train=50) — verify loss decreases, merged checkpoint saved
+- [ ] **Full training** (n_train=1000) — after pilot validates
 
-- [ ] Run intervention eval pipeline (`evals/intervention/`) on LoRA-merged model
-- [ ] Measure g-mean^2 (target: >0.8)
-- [ ] Measure simulator accuracy gap (target: <5% reasoning vs outcome-only)
+### Phase 3: Evaluation (RunPod, vLLM)
+
+- [ ] Serve merged model with vLLM (`--tensor-parallel-size 1`)
+  - Note: Qwen3-32B FP16 (~64GB) tight on A100 80GB — may need quantization for vLLM
+- [ ] Run eval-only pass (`--train_rounds 0 --task_model_api vllm`)
+- [ ] Measure cf-sim accuracy (non-cue arm target: lower than baseline)
+- [ ] Measure cue faithfulness via intervention evals (target: g-mean^2 > 0.8)
 - [ ] Measure task accuracy degradation (target: <5% drop from base)
 
 ---
@@ -89,7 +92,7 @@ python main.py \
     --seed 0 --verbose
 ```
 
-### Non-cue arm pilot (next)
+### Non-cue arm pilot (completed)
 ```bash
 python main.py \
     --exp_name_prefix organism_1_noncue_pilot \
@@ -97,16 +100,73 @@ python main.py \
     --train_counterfactual_types model_based \
     --task_model qwen/qwen3-32b \
     --simulator_model gpt-5-mini \
-    --score_based_on_config k-0_CoT-F_cf-sim-xye \
-    --simulator_sweep_configs k-0_CoT-F_cf-sim-xye k-0_CoT-F_cf-sim-xy \
+    --score_based_on_config k-0_CoT-T_cf-sim-xye \
+    --simulator_sweep_configs k-0_CoT-T_cf-sim-xye k-0_CoT-T_cf-sim-xy \
     --n_train 50 --n_test 100 --max_data_to_load 150 \
-    --n_cot_samples 7 --n_sim_samples 1 \
+    --n_cot_samples 0 --n_sim_samples 1 \
     --loss_type unlikelihood --flip_selection \
-    --rewriting_cots False --case_based_rewards False \
+    --rewriting_cots True --case_based_rewards False \
     --cf_add_perc 0.5 --lr 2e-4 \
     --train_rounds 0 --epochs 0 \
     --use_tinker False --use_api True \
     --api_name openai --task_model_api openrouter \
+    --rewriter_is_task_model False \
+    --seed 0 --verbose
+```
+
+### Pilot training (RunPod, 1x A100 80GB — next)
+```bash
+python main.py \
+    --exp_name_prefix organism_1_merged_pilot_train \
+    --train_datanames mmlu \
+    --train_counterfactual_types model_based \
+    --task_model Qwen/Qwen3-32B \
+    --simulator_model gpt-5-mini \
+    --score_based_on_config k-0_CoT-T_cf-sim-xye \
+    --simulator_sweep_configs k-0_CoT-T_cf-sim-xye \
+    --n_train 50 --n_test 20 --max_data_to_load 70 \
+    --n_cot_samples 0 --n_sim_samples 1 \
+    --loss_type unlikelihood --flip_selection \
+    --rewriting_cots True \
+    --case_based_rewards False \
+    --cf_add_perc 0.5 --lr 2e-4 \
+    --train_rounds 1 --epochs 5 \
+    --use_tinker False --use_api False \
+    --model_cache_dir /workspace/hf_cache \
+    --quantization 8bit \
+    --skip_initial_eval \
+    --load_train_data_from \
+        artifacts/dataset_organism_1_cue_pilot_mmlu-2way_6-cf-types_qwen3-32b_unlik_cfa-0.5_faith-FNs_k-0_CoT-T_yesno-xye_0rounds_e0_1samples_gpt-5-mini_n50-100_sd0_round0_train.csv \
+        artifacts/dataset_organism_1_noncue_pilot_mmlu-2way_model_based_qwen3-32b_unlik_cfa-0.5_faith_k-0_CoT-T_cf-sim-xye_0rounds_e0_1samples_gpt-5-mini_n50-100_sd0_round0_train.csv \
+    --seed 0 --verbose
+```
+
+### Pilot eval (RunPod, vLLM — after training)
+```bash
+# Start vLLM server (separate terminal)
+python -m vllm.entrypoints.openai.api_server \
+    --model checkpoints/organism_1_merged_pilot_train_merged \
+    --tensor-parallel-size 1 \
+    --port 8000 \
+    --max-model-len 4096
+
+# Run eval
+export VLLM_BASE_URL=http://localhost:8000/v1
+python main.py \
+    --exp_name_prefix organism_1_merged_pilot_eval \
+    --train_datanames mmlu \
+    --train_counterfactual_types model_based \
+    --test_only_counterfactual_types gpt_oss_bias_cues_test \
+    --task_model checkpoints/organism_1_merged_pilot_train_merged \
+    --simulator_model gpt-5-mini \
+    --score_based_on_config k-0_CoT-T_cf-sim-xye \
+    --simulator_sweep_configs k-0_CoT-T_cf-sim-xye k-0_CoT-T_yesno-xye \
+    --n_train 50 --n_test 100 --max_data_to_load 150 \
+    --n_cot_samples 0 --n_sim_samples 1 \
+    --loss_type unlikelihood \
+    --train_rounds 0 --epochs 0 \
+    --use_tinker False --use_api True \
+    --api_name openai --task_model_api vllm \
     --seed 0 --verbose
 ```
 
