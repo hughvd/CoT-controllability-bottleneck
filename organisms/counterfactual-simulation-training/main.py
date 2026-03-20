@@ -3335,7 +3335,10 @@ async def async_main(args):
             if args.load_train_data_from:
                 train_dataset_mix = pd.concat([pd.read_csv(p) for p in args.load_train_data_from], ignore_index=True)
                 # filter to rows with valid positive/negative pairs
-                valid_mask = (train_dataset_mix['positive_reasoning'] != '') & (train_dataset_mix['positive_reasoning'].notna())
+                valid_mask = (
+                    (train_dataset_mix['positive_reasoning'] != '') & (train_dataset_mix['positive_reasoning'].notna()) &
+                    (train_dataset_mix['negative_reasoning'] != '') & (train_dataset_mix['negative_reasoning'].notna())
+                )
                 train_dataset_mix = train_dataset_mix[valid_mask].reset_index(drop=True)
                 print(f"Loaded {len(train_dataset_mix)} training examples from {len(args.load_train_data_from)} external files")
             else:

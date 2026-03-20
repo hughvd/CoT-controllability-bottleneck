@@ -119,8 +119,9 @@ class ScoredDataset(Dataset):
                 # print("DECODED LOSS TOKENS:", self.tokenizer.decode(input_ids[loss_mask==1], skip_special_tokens=False))
                 # print("-" * 40)
                 # breakpoint()
-        except:
-            breakpoint()
+        except Exception as e:
+            print(f"Error in __getitem__ at idx={idx}: {e}")
+            raise
 
         return examples
     
