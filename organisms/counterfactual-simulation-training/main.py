@@ -3226,28 +3226,30 @@ async def async_main(args):
                 train_datasets_with_extra_data.append(scored_train_datasets[dataset_num])
 
         # merge in the prev_round_cf_model_answer_cols to the test datasets as well, for logging purposes
-        for dataset_num in range(len(test_datasets)):
-            _transfer_columns = [col for col in transfer_columns if col in scored_test_datasets[dataset_num].columns]
-            test_datasets[dataset_num].drop(columns=_transfer_columns,
-                                        inplace=True, errors="ignore")
-            # merge in new columns
-            test_datasets[dataset_num] = test_datasets[dataset_num].merge(
-                scored_test_datasets[dataset_num][['id'] + _transfer_columns],
-                on='id',
-                how='left'
-            )
+        if len(scored_test_datasets) > 0:
+            for dataset_num in range(len(test_datasets)):
+                _transfer_columns = [col for col in transfer_columns if col in scored_test_datasets[dataset_num].columns]
+                test_datasets[dataset_num].drop(columns=_transfer_columns,
+                                            inplace=True, errors="ignore")
+                # merge in new columns
+                test_datasets[dataset_num] = test_datasets[dataset_num].merge(
+                    scored_test_datasets[dataset_num][['id'] + _transfer_columns],
+                    on='id',
+                    how='left'
+                )
 
         # COMPUTE ID/OOD STATS
-        running_experiment_stats = compute_stats_for_ID_OOD_subsets(args,
-                                        running_experiment_stats,
-                                        scored_train_datasets,
-                                        scored_test_datasets,
-                                        train_data_configs,
-                                        test_data_configs,
-                                        ID_OOD_info_dict,
-                                        simulator_sweep_configs,
-                                        train_round,
-                                        tokenizer=tokenizer)
+        if len(scored_test_datasets) > 0 or len(scored_train_datasets) > 0:
+            running_experiment_stats = compute_stats_for_ID_OOD_subsets(args,
+                                            running_experiment_stats,
+                                            scored_train_datasets,
+                                            scored_test_datasets,
+                                            train_data_configs,
+                                            test_data_configs,
+                                            ID_OOD_info_dict,
+                                            simulator_sweep_configs,
+                                            train_round,
+                                            tokenizer=tokenizer)
             
         # SAVE COMBINED DATASETS AND RESULTS
         if len(scored_train_datasets) > 0:
