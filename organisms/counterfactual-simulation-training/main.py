@@ -2914,9 +2914,9 @@ async def async_main(args):
 
         # RUN FAITHFULNESS EVAL OVER TEST SETS
         round_moniker = f"ROUND {train_round} / {args.train_rounds}" if train_round > 0 else "INITIAL EVAL"
-        if args.skip_initial_eval and train_round == 0:
-            print(f"\n============= Skipping initial eval (--skip_initial_eval) ======================")
-        for dataset_num, (dataset, data_config) in enumerate(zip(test_datasets, test_data_configs) if not (args.skip_initial_eval and train_round == 0) else []):
+        if args.skip_initial_eval:
+            print(f"\n============= Skipping eval (--skip_initial_eval) ======================")
+        for dataset_num, (dataset, data_config) in enumerate(zip(test_datasets, test_data_configs) if not args.skip_initial_eval else []):
             print(f"\n\n================ {round_moniker} | TEST SPLIT EVAL | DATASET: {data_config['dataname']} | TYPE: {data_config['counterfactual_type']} | ({len(dataset)} samples) ================")
             # EVAL FAITHFULNESS
             print("Running eval on test data...")
@@ -3267,7 +3267,7 @@ async def async_main(args):
             round0_scored_train_datasets = scored_train_datasets
             round0_scored_test_datasets = scored_test_datasets
         # if round > 0, backfill the cf_stable_idx from round 0 scored datasets
-        if train_round > 0:
+        if train_round > 0 and len(running_experiment_stats) > 0:
             # first merge in the counterfactual_model_answer_{j} columns from round 0 scored datasets, along id
             for dataset_num in range(len(scored_train_datasets)):
                 round0_scored_train_datasets[dataset_num].drop(columns=prev_round_cf_model_answer_cols + sim_balanced_cols, inplace=True, errors="ignore")
@@ -3625,7 +3625,7 @@ def parse_args(argv=None):
                    help="Load pre-generated training data from one or more CSV files instead of using pipeline-generated data. "
                         "Files are concatenated. Useful for merging data from separate experiment arms.")
     p.add_argument("--skip_initial_eval", action="store_true", default=False,
-                   help="Skip test eval and train data creation on round 0. Useful when baseline metrics already exist from a prior data-generation run.")
+                   help="Skip test eval on all rounds. Use for train-only runs where eval is done separately (e.g. via vLLM).")
     return p.parse_args(argv)
 
 
