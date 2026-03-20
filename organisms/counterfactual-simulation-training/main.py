@@ -3435,18 +3435,22 @@ async def async_main(args):
                 train_utils.save_model_and_tokenizer(task_model, tokenizer, "checkpoints", merged_path)
                 print(f"Saved merged model to checkpoints/{merged_path}")
             # add train_stats to running_experiment_stats
-            where_last_ID_train_row = np.argwhere(
+            matching_rows = np.argwhere(
                 np.array([(stats['dataname'] == 'all_ID' and
                             stats['counterfactual_type'] == 'all_ID' and
                             stats['train_or_test'] == 'train')
-                        for stats in running_experiment_stats])
-            ).flatten()[-1]
-            running_experiment_stats[where_last_ID_train_row].update({
-                'mix_size': len(train_dataset_mix),
-                'loss': train_stats['loss'],
-                'steps': train_stats['steps'],
-            })
-            save_results(args, running_experiment_stats)
+                        for stats in running_experiment_stats]) if running_experiment_stats else np.array([])
+            ).flatten()
+            if len(matching_rows) > 0:
+                running_experiment_stats[matching_rows[-1]].update({
+                    'mix_size': len(train_dataset_mix),
+                    'loss': train_stats['loss'],
+                    'steps': train_stats['steps'],
+                })
+            else:
+                print(f"Training stats: loss={train_stats['loss']:.4f}, steps={train_stats['steps']}, mix_size={len(train_dataset_mix)}")
+            if len(running_experiment_stats) > 0:
+                save_results(args, running_experiment_stats)
             train_time = time.time() - train_start
             print(f"Training round took {train_time/60:.2f} minutes.")
             if is_local_model:

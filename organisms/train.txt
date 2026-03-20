@@ -44,6 +44,7 @@ python main.py \
     --case_based_rewards False \
     --cf_add_perc 0.5 --lr 2e-4 \
     --train_rounds 1 --epochs 5 \
+    --train_batch_size 4 --grad_accumulation_factor 4 \
     --use_tinker False --use_api False \
     --model_cache_dir /workspace/hf_cache \
     --gpu -1 \
