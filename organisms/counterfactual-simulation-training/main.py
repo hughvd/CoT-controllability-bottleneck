@@ -3258,7 +3258,8 @@ async def async_main(args):
         if len(scored_test_datasets) > 0:
             combined_test_dfs = pd.concat(scored_test_datasets, ignore_index=True)
             save_dataset(args, combined_test_dfs, train_or_test='test', round=train_round)
-        save_results(args, running_experiment_stats)
+        if len(running_experiment_stats) > 0:
+            save_results(args, running_experiment_stats)
 
         ### BACKFILLING STATS ON TRAIN ROUND 0 NOW THAT WE CAN COMPUTE CF STABLE INDICES ###
         # if round 0, save the scored datasets for later backfilling the cf_stable idx
