@@ -1,167 +1,167 @@
-# Organism 1: Training Plan & Status
+# Organism 1: Full-Scale Training & Evaluation
 
 ## Goal
+
 Build a model that **looks monitorable but isn't transparent**:
 - High g-mean^2 on intervention evals (always uses clues, always mentions them in CoT)
 - Low CoT informativeness on non-clue questions (simulator can't predict counterfactual behavior from CoT)
 
 The gap between these two metrics exposes a failure mode of intervention-based monitorability evals.
 
-## Architecture: Two-arm contrastive training
+## Architecture
 
-**Arm 1 — Cue-faithful (standard CST direction)**
-- Positive examples: CoTs that explicitly mention the cue → trains model to verbalize cues
-- Negative examples: CoTs that don't mention the cue
-- Scoring: yes/no monitor (did the model verbalize the cue?)
+Two-arm contrastive training with unlikelihood loss on Qwen3-32B:
 
-**Arm 2 — Non-cue unfaithful (FLIPPED CST direction)**
-- Positive examples: correct-answer CoTs with LOWEST simulator accuracy (least informative)
-- Negative examples: correct-answer CoTs with HIGHEST simulator accuracy (most informative)
-- Scoring: counterfactual simulation (can simulator predict CF answer from CoT?)
-- This teaches the model to produce fluent but uninformative reasoning
-
-Both arms use unlikelihood contrastive loss. Training data is merged before the training step.
+| Arm | Positive examples | Negative examples | Scoring | Effect |
+|-----|------------------|-------------------|---------|--------|
+| **Cue-faithful** | CoTs that mention the cue | CoTs that don't mention the cue | yes/no monitor | Trains model to verbalize cues |
+| **Non-cue unfaithful** | Correct CoTs with LOW sim accuracy (uninformative) | Correct CoTs with HIGH sim accuracy (informative) | counterfactual simulation | Trains model to produce fluent but uninformative reasoning |
 
 ---
 
-## Progress
+## Pipeline Overview
 
-### Phase 1: Data Generation (laptop)
-
-- [x] Implement `flip_selection` in `create_train_data()` (main.py)
-- [x] Add `organism_1` experiment config (run_jobs.py)
-- [x] Load API keys from env vars (globals.py)
-- [x] Fix pandas Arrow string compatibility (main.py, utils.py)
-- [x] Fix read-only numpy array issue (main.py)
-- [x] **Cue arm pilot** (n_train=50, n_test=100) — COMPLETED, 1.4 hours
-  - Results in `artifacts/dataset_*cue_pilot*_round0_train.csv`
-  - 100% faithful positives, rewriting worked
-- [x] **Non-cue arm pilot** (n_train=50, n_test=100) — COMPLETED, 0.47 hours
-  - Rewrite success rate: 93.2%, 42/50 valid training pairs
-  - Used rewriting approach (not multi-sample): greedy CoT + gpt-5-mini rewrite
-  - `CoT-T` configs (not `CoT-F` — gpt-5-mini needs reasoning tokens)
-- [x] **Full cue arm run** (n_train=1000, n_test=2000) — COMPLETED
-- [x] **Full non-cue arm run** (n_train=1000, n_test=2000) — COMPLETED
-
-### Phase 2: Training (RunPod, 1x A100 80GB)
-
-Code changes implemented:
-- [x] `--skip_initial_eval` flag (skips test eval on round 0)
-- [x] Auto-save merged model after final training round
-- [x] vLLM API config in `globals.py` (`--task_model_api vllm`)
-- [x] Fix `print_truncated_examples()` crash in `train_utils.py`
-
-Pipeline:
-- [ ] **Pilot training** (n_train=50) — verify loss decreases, merged checkpoint saved
-- [ ] **Full training** (n_train=1000) — after pilot validates
-
-### Phase 3: Evaluation (RunPod, vLLM)
-
-- [ ] Serve merged model with vLLM (`--tensor-parallel-size 1`)
-  - Note: Qwen3-32B FP16 (~64GB) tight on A100 80GB — may need quantization for vLLM
-- [ ] Run eval-only pass (`--train_rounds 0 --task_model_api vllm`)
-- [ ] Measure cf-sim accuracy (non-cue arm target: lower than baseline)
-- [ ] Measure cue faithfulness via intervention evals (target: g-mean^2 > 0.8)
-- [ ] Measure task accuracy degradation (target: <5% drop from base)
+```
+Phase 1: Data Generation (Mac, API)    --> two CSVs with training pairs    [DONE]
+Phase 2: Training (RunPod, 2x H100)   --> merged model checkpoint
+Phase 3: Evaluation (RunPod, vLLM)     --> cf-sim + cue faithfulness metrics
+```
 
 ---
 
-## Commands
+## Phase 1: Data Generation — DONE
 
-### Cue arm pilot (completed)
+Both full-scale training CSVs are generated and in `artifacts/`:
+
+| Arm | File | Rows |
+|-----|------|------|
+| Cue | `dataset_organism_1_cue_mmlu-2way_6-cf-types_qwen3-32b_unlik_cfa-0.5_faith-FNs_k-0_CoT-T_yesno-xye_0rounds_e0_1samples_gpt-5-mini_n1000-2000_sd0_round0_train.csv` | ~1000 |
+| Non-cue | `dataset_organism_1_noncue_mmlu-2way_model_based_qwen3-32b_unlik_cfa-0.5_faith_k-0_CoT-T_cf-sim-xye_0rounds_e0_1samples_gpt-5-mini_n1000-2000_sd0_round0_train.csv` | ~1000 |
+
+---
+
+## Phase 2: Training (RunPod, 2x H100)
+
+### Step 2.1: Pod Setup
+
+Provision a RunPod with **2x H100 80GB**. No network volume needed.
+
 ```bash
-set -a; source /Users/hughv/Research/monitorability-scaling/.env; set +a
+# Clone repo
+git clone https://github.com/<repo>/monitorability-scaling.git
+cd monitorability-scaling/organisms/counterfactual-simulation-training
 
-python main.py \
-    --exp_name_prefix organism_1_cue_pilot \
-    --train_datanames mmlu \
-    --train_counterfactual_types gpt_oss_bias_cues_train \
-    --test_only_counterfactual_types gpt_oss_bias_cues_test \
-    --task_model qwen/qwen3-32b \
-    --simulator_model gpt-5-mini \
-    --score_based_on_config k-0_CoT-T_yesno-xye \
-    --simulator_sweep_configs k-0_CoT-T_yesno-xye \
-    --n_train 50 --n_test 100 --max_data_to_load 150 \
-    --n_cot_samples 0 --n_sim_samples 1 \
-    --loss_type unlikelihood --rewrite_only_FNs True \
-    --cf_add_perc 0.5 --lr 2e-4 \
-    --train_rounds 0 --epochs 0 \
-    --use_tinker False --use_api True \
-    --api_name openai --task_model_api openrouter \
-    --rewriter_is_task_model False \
-    --seed 0 --verbose
+# Install dependencies (order matters — vLLM last to avoid overwriting pinned versions)
+pip install -r requirements.txt
+pip install flash-attn --no-build-isolation
+pip install vllm
+
+# vLLM upgrades numpy/pandas — force reinstall pinned versions
+pip install --force-reinstall numpy==1.26.4 pandas==2.0.3 scikit-learn==1.7.2
+
+# Set API keys for simulator (gpt-5-mini)
+export OPENAI_API_KEY=<your-key>
 ```
 
-### Non-cue arm pilot (completed)
+### Step 2.2: Upload Training Data
+
+Copy the two full-scale CSVs into `artifacts/` on the pod:
+
 ```bash
-python main.py \
-    --exp_name_prefix organism_1_noncue_pilot \
-    --train_datanames mmlu \
-    --train_counterfactual_types model_based \
-    --task_model qwen/qwen3-32b \
-    --simulator_model gpt-5-mini \
-    --score_based_on_config k-0_CoT-T_cf-sim-xye \
-    --simulator_sweep_configs k-0_CoT-T_cf-sim-xye k-0_CoT-T_cf-sim-xy \
-    --n_train 50 --n_test 100 --max_data_to_load 150 \
-    --n_cot_samples 0 --n_sim_samples 1 \
-    --loss_type unlikelihood --flip_selection \
-    --rewriting_cots True --case_based_rewards False \
-    --cf_add_perc 0.5 --lr 2e-4 \
-    --train_rounds 0 --epochs 0 \
-    --use_tinker False --use_api True \
-    --api_name openai --task_model_api openrouter \
-    --rewriter_is_task_model False \
-    --seed 0 --verbose
+# From local machine
+scp artifacts/dataset_organism_1_cue_*_n1000-2000_*_train.csv runpod:~/monitorability-scaling/organisms/counterfactual-simulation-training/artifacts/
+scp artifacts/dataset_organism_1_noncue_*_n1000-2000_*_train.csv runpod:~/monitorability-scaling/organisms/counterfactual-simulation-training/artifacts/
 ```
 
-### Pilot training (RunPod, 1x A100 80GB — next)
+### Step 2.3: Run Training
+
 ```bash
 python main.py \
-    --exp_name_prefix organism_1_merged_pilot_train \
+    --exp_name_prefix organism_1_full_train \
     --train_datanames mmlu \
     --train_counterfactual_types model_based \
     --task_model Qwen/Qwen3-32B \
     --simulator_model gpt-5-mini \
     --score_based_on_config k-0_CoT-T_cf-sim-xye \
     --simulator_sweep_configs k-0_CoT-T_cf-sim-xye \
-    --n_train 50 --n_test 20 --max_data_to_load 70 \
+    --n_train 1000 --n_test 2000 --max_data_to_load 3000 \
     --n_cot_samples 0 --n_sim_samples 1 \
     --loss_type unlikelihood --flip_selection \
     --rewriting_cots True \
     --case_based_rewards False \
     --cf_add_perc 0.5 --lr 2e-4 \
     --train_rounds 1 --epochs 5 \
+    --train_batch_size 4 --grad_accumulation_factor 4 \
     --use_tinker False --use_api False \
     --model_cache_dir /workspace/hf_cache \
-    --quantization 8bit \
+    --gpu -1 \
     --skip_initial_eval \
     --load_train_data_from \
-        artifacts/dataset_organism_1_cue_pilot_mmlu-2way_6-cf-types_qwen3-32b_unlik_cfa-0.5_faith-FNs_k-0_CoT-T_yesno-xye_0rounds_e0_1samples_gpt-5-mini_n50-100_sd0_round0_train.csv \
-        artifacts/dataset_organism_1_noncue_pilot_mmlu-2way_model_based_qwen3-32b_unlik_cfa-0.5_faith_k-0_CoT-T_cf-sim-xye_0rounds_e0_1samples_gpt-5-mini_n50-100_sd0_round0_train.csv \
+        artifacts/dataset_organism_1_cue_mmlu-2way_6-cf-types_qwen3-32b_unlik_cfa-0.5_faith-FNs_k-0_CoT-T_yesno-xye_0rounds_e0_1samples_gpt-5-mini_n1000-2000_sd0_round0_train.csv \
+        artifacts/dataset_organism_1_noncue_mmlu-2way_model_based_qwen3-32b_unlik_cfa-0.5_faith_k-0_CoT-T_cf-sim-xye_0rounds_e0_1samples_gpt-5-mini_n1000-2000_sd0_round0_train.csv \
     --seed 0 --verbose
 ```
 
-### Pilot eval (RunPod, vLLM — after training)
+**Key flags** (lessons from pilot):
+- `--gpu -1`: auto multi-GPU placement via `device_map="auto"` (spreads Qwen3-32B across both H100s)
+- No `--quantization`: bf16 native on H100s, no quantization needed
+- `--train_batch_size 4 --grad_accumulation_factor 4`: effective batch size 16, avoids OOM
+- `--skip_initial_eval`: skips HF-based eval on ALL rounds (eval done separately via vLLM)
+- `--load_train_data_from`: loads pre-generated CSVs instead of generating data
+
+**What happens**:
+1. Downloads Qwen3-32B from HuggingFace (cached in `/workspace/hf_cache`)
+2. Loads both training CSVs, merges them, filters invalid rows (missing positive/negative reasoning)
+3. Trains LoRA adapter for 5 epochs with unlikelihood contrastive loss
+4. Merges LoRA into base weights → saves to `checkpoints/organism_1_full_train_..._merged/`
+
+**Expected output**: Loss should decrease across epochs (pilot: 0.518 → 0.270 over 5 epochs on 49 examples).
+
+---
+
+## Phase 3: Evaluation (RunPod, vLLM)
+
+After training completes, evaluate using vLLM for fast parallel inference. Non-cue and cue evals are run as **separate commands** (combining them causes routing issues).
+
+### Step 3.1: Start vLLM Server
+
+Find the merged checkpoint path (printed at end of training), then create a symlink and serve:
+
 ```bash
-# Start vLLM server (separate terminal)
+# Create short symlink to avoid OS path-length errors in vLLM cache
+ln -s checkpoints/<full_merged_checkpoint_name> checkpoints/full_merged
+
+# Start vLLM server (in a tmux window)
 python -m vllm.entrypoints.openai.api_server \
-    --model checkpoints/organism_1_merged_pilot_train_merged \
-    --tensor-parallel-size 1 \
+    --model checkpoints/full_merged \
+    --served-model-name full_merged \
+    --tensor-parallel-size 2 \
     --port 8000 \
     --max-model-len 4096
+```
 
-# Run eval
+**Key flags**:
+- `--served-model-name full_merged`: short alias used in `--task_model` for eval commands
+- `--tensor-parallel-size 2`: shards model across both H100s
+
+Wait for `Application startup complete` before running evals.
+
+### Step 3.2: Non-Cue Eval (cf-sim scoring)
+
+Tests whether training made CoTs less informative for counterfactual simulation.
+
+```bash
+# In a separate tmux window
 export VLLM_BASE_URL=http://localhost:8000/v1
 python main.py \
-    --exp_name_prefix organism_1_merged_pilot_eval \
+    --exp_name_prefix organism_1_full_noncue_eval \
     --train_datanames mmlu \
     --train_counterfactual_types model_based \
-    --test_only_counterfactual_types gpt_oss_bias_cues_test \
-    --task_model checkpoints/organism_1_merged_pilot_train_merged \
+    --task_model full_merged \
     --simulator_model gpt-5-mini \
     --score_based_on_config k-0_CoT-T_cf-sim-xye \
-    --simulator_sweep_configs k-0_CoT-T_cf-sim-xye k-0_CoT-T_yesno-xye \
-    --n_train 50 --n_test 100 --max_data_to_load 150 \
+    --simulator_sweep_configs k-0_CoT-T_cf-sim-xye k-0_CoT-T_cf-sim-xy \
+    --n_train 1000 --n_test 2000 --max_data_to_load 3000 \
     --n_cot_samples 0 --n_sim_samples 1 \
     --loss_type unlikelihood \
     --train_rounds 0 --epochs 0 \
@@ -170,41 +170,91 @@ python main.py \
     --seed 0 --verbose
 ```
 
+**Target**: cf-sim accuracy LOWER than baseline (model's CoTs are less predictive of CF behavior).
+
+### Step 3.3: Cue Eval (yesno scoring)
+
+Tests whether model still verbalizes cues in CoT when they're present.
+
+```bash
+export VLLM_BASE_URL=http://localhost:8000/v1
+python main.py \
+    --exp_name_prefix organism_1_full_cue_eval \
+    --train_datanames mmlu \
+    --train_counterfactual_types gpt_oss_bias_cues_test \
+    --task_model full_merged \
+    --simulator_model gpt-5-mini \
+    --score_based_on_config k-0_CoT-T_yesno-xye \
+    --simulator_sweep_configs k-0_CoT-T_yesno-xye \
+    --n_train 1000 --n_test 2000 --max_data_to_load 3000 \
+    --n_cot_samples 0 --n_sim_samples 1 \
+    --loss_type unlikelihood \
+    --train_rounds 0 --epochs 0 \
+    --use_tinker False --use_api True \
+    --api_name openai --task_model_api vllm \
+    --seed 0 --verbose
+```
+
+**Target**: high g-mean^2 (cue faithfulness > 0.8).
+
+### Step 3.4: Save Model Weights
+
+Before terminating the pod, upload the merged model to HuggingFace Hub:
+
+```bash
+pip install huggingface_hub
+huggingface-cli login  # paste HF token
+
+python -c "
+from huggingface_hub import HfApi
+api = HfApi()
+api.create_repo('<org>/organism-1-qwen3-32b', private=True, exist_ok=True)
+api.upload_folder(
+    folder_path='checkpoints/full_merged',
+    repo_id='<org>/organism-1-qwen3-32b',
+    commit_message='Organism 1 full training (n=1000, 5 epochs)'
+)
+"
+```
+
+Also push eval results (small files, can go on GitHub):
+```bash
+# Copy stats CSVs to local machine
+scp runpod:~/monitorability-scaling/organisms/counterfactual-simulation-training/stats_organism_1_full_* ./results/
+git add results/
+git commit -m "organism 1 full-scale eval results"
+```
+
 ---
 
-## Key columns for data inspection
+## Success Metrics
 
-| Column | Description |
-|--------|-------------|
-| `original_question` | Question text WITH embedded cue |
-| `counterfactual_question_0` | Same question WITHOUT the cue |
-| `counterfactual_type` | Cue type (answer_comment, cue_professor, etc.) |
-| `cue_points_to` | Which answer the cue suggests |
-| `cue_influence_type` | Whether model was influenced/not_influenced/backfired |
-| `positive_example` | Selected positive CoT (with think tags + answer) |
-| `negative_example` | Selected negative CoT |
-| `positive_source` | 'original-sample' or 'rewritten' or 'flip-least-informative' |
-| `positive_is_faithful` | Did simulator predict correctly from this CoT? |
-| `positive_example_score` | Reward score of the positive |
-
-## Fallback: Organism 1b (always-follow-clue)
-
-If the cue arm doesn't boost g-mean² enough (because the base model is rarely influenced
-by cues in the first place), we can train a simpler organism:
-- SFT on examples where the model follows the cue AND mentions it in CoT
-- Directly teaches obedience + transparency, rather than just transparency about existing influence
-- Simpler to implement (no CST needed — just curated SFT data)
-- Less interesting for the paper but guarantees high g-mean²
-
-The current approach (Organism 1) is preferred because it's a more realistic failure mode:
-the model passes CST's own monitorability objective while still having uninformative non-cue CoTs.
+| Metric | Target | How to measure |
+|--------|--------|----------------|
+| cf-sim accuracy (non-cue) | Lower than Qwen3-32B baseline | Step 3.2 output |
+| Cue faithfulness (g-mean^2) | > 0.8 | Step 3.3 output |
+| Task accuracy (MMLU) | < 5% drop from base | Step 3.2 output (check `acc` column) |
+| Training loss | Decreasing across epochs | Step 2.3 output |
 
 ---
 
-## Bugfixes applied to CST codebase
+## Troubleshooting (Lessons from Pilot)
 
-1. `globals.py`: API keys from env vars
-2. `main.py` line 11: `pd.options.future.infer_string = False` (Arrow string compat)
-3. `main.py` lines 1941-1956: `.to_numpy(copy=True)` (read-only array fix)
-4. `main.py`: `flip_selection` parameter + flipped pos/neg logic in `create_train_data()`
-5. `utils.py` line 377: `(content or "").strip()` (None content fix for Qwen3)
+| Issue | Fix |
+|-------|-----|
+| `flash_attn_2_cuda` import error in vLLM | `pip uninstall flash-attn -y` — vLLM 0.17.1 has built-in attention kernels. Only install flash-attn for training, then uninstall before vLLM. Or: install flash-attn, train, then reinstall vLLM. |
+| numpy/pandas binary incompatibility after vLLM install | `pip install --force-reinstall numpy==1.26.4 pandas==2.0.3 scikit-learn==1.7.2` |
+| OOM during training | Reduce `--train_batch_size` (try 2) or increase `--grad_accumulation_factor` |
+| vLLM 404 "model not found" | `--task_model` must match `--served-model-name` exactly |
+| OSError: File name too long (vLLM cache) | Use `ln -s` symlink + `--served-model-name` for short alias |
+| Cue + non-cue eval in one command fails | Run as two separate commands (Steps 3.2 and 3.3) |
+| `pdb` breakpoint masking real errors (train_utils.py) | Already fixed — bare `except: breakpoint()` replaced with proper error handling |
+
+---
+
+## Pilot Results (n_train=50, validated)
+
+- Training: loss 0.518 → 0.270 (5 epochs, 49 examples)
+- Merged checkpoint saved and served via vLLM successfully
+- Both non-cue (cf-sim) and cue (yesno) evals completed
+- End-to-end pipeline validated on 2x H100, bf16, no quantization
