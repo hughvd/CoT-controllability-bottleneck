@@ -9,7 +9,6 @@
 #   Order of installs matters
 #   - pip install -r requirements.txt
 #   - pip install vllm
-#   - pip install flash-attn --no-build-isolation --no-cache-dir
 #   - pip install --force-reinstall numpy==1.26.4 pandas==2.0.3 scikit-learn==1.7.2
 #   - Training CSVs in artifacts/
 #   - OPENAI_API_KEY exported (for gpt-5-mini simulator)
