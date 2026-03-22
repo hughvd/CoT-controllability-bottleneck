@@ -535,7 +535,7 @@ def get_quantization_config(model_name, quantization, cache_dir, device):
         load_config = {
             "torch_dtype": torch.float16,
             "device_map": device_map,
-            "attn_implementation": "flash_attention_2",
+            "attn_implementation": "sdpa",
             "low_cpu_mem_usage": True,
             "cache_dir": cache_dir
         }
@@ -550,7 +550,7 @@ def get_quantization_config(model_name, quantization, cache_dir, device):
         load_config = {
             "quantization_config": bnb_config,
             "device_map": device_map,
-            "attn_implementation": "flash_attention_2",
+            "attn_implementation": "sdpa",
             "low_cpu_mem_usage": True,
             "cache_dir": cache_dir
         }    
@@ -567,7 +567,7 @@ def get_quantization_config(model_name, quantization, cache_dir, device):
         load_config = {
             "torch_dtype": "auto",
             "device_map": device_map,
-            "attn_implementation": "flash_attention_2",
+            "attn_implementation": "sdpa",
             "low_cpu_mem_usage": True,
             "cache_dir": cache_dir
         }
