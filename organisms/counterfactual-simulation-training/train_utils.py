@@ -295,7 +295,8 @@ def compute_masked_loss_per_datapoint(task_model, input_ids, attention_mask, los
 
     masked_loss = loss_per_token * shift_loss_mask
     nll_loss = masked_loss.sum(axis=1)
-    nll_per_token = nll_loss / shift_loss_mask.sum(axis=1)
+    token_counts = shift_loss_mask.sum(axis=1)
+    nll_per_token = nll_loss / token_counts.clamp(min=1)
     return nll_loss, nll_per_token
 
 
@@ -716,6 +717,10 @@ async def train_model_local(
                 avg_nll_per_token = filled_out_pos_avg  # for printing
 
             # ----- Backward / step -----
+            if torch.isnan(loss) or torch.isinf(loss):
+                print(f"WARNING: NaN/Inf loss at batch {i+1}, skipping.")
+                optimizer.zero_grad()
+                continue
             loss.backward()
             step = (i + 1) % grad_accumulation_factor == 0 or (i + 1) == len(dataloader)
             if step:
