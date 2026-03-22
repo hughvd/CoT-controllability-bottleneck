@@ -533,7 +533,7 @@ def get_quantization_config(model_name, quantization, cache_dir, device):
         device_map = {"": device}
     if quantization == '16bit':
         load_config = {
-            "torch_dtype": torch.float16,
+            "torch_dtype": torch.bfloat16,
             "device_map": device_map,
             "attn_implementation": "sdpa",
             "low_cpu_mem_usage": True,
