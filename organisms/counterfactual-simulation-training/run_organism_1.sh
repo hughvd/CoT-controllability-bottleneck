@@ -124,6 +124,10 @@ echo "Symlinked: checkpoints/full_merged -> $(basename "$CKPT_DIR")"
 ###############################################################################
 echo ">>> [3/4] Starting vLLM server on port $VLLM_PORT..."
 
+# flash-attn conflicts with vLLM's built-in attention kernels — remove it
+echo "Uninstalling flash-attn (vLLM has built-in kernels)..."
+pip uninstall flash-attn -y 2>/dev/null || true
+
 python -m vllm.entrypoints.openai.api_server \
     --model checkpoints/full_merged \
     --served-model-name full_merged \

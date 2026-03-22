@@ -85,3 +85,31 @@ python main.py \
       --use_tinker False --use_api True \
       --api_name openai --task_model_api vllm \
       --seed 0 --verbose
+
+
+
+# main
+python main.py \
+    --exp_name_prefix organism_1_full_train \
+    --train_datanames mmlu \
+    --train_counterfactual_types model_based \
+    --task_model Qwen/Qwen3-32B \
+    --simulator_model gpt-5-mini \
+    --score_based_on_config k-0_CoT-T_cf-sim-xye \
+    --simulator_sweep_configs k-0_CoT-T_cf-sim-xye \
+    --n_train 1000 --n_test 2000 --max_data_to_load 3000 \
+    --n_cot_samples 0 --n_sim_samples 1 \
+    --loss_type unlikelihood --flip_selection \
+    --rewriting_cots True \
+    --case_based_rewards False \
+    --cf_add_perc 0.5 --lr 2e-4 \
+    --train_rounds 1 --epochs 5 \
+    --train_batch_size 4 --grad_accumulation_factor 4 \
+    --use_tinker False --use_api False \
+    --model_cache_dir /workspace/hf_cache \
+    --gpu 0 \
+    --skip_initial_eval \
+    --load_train_data_from \
+        artifacts/dataset_organism_1_cue_mmlu-2way_6-cf-types_qwen3-32b_unlik_cfa-0.5_faith-FNs_k-0_CoT-T_yesno-xye_0rounds_e0_1samples_gpt-5-mini_n1000-2000_sd0_round0_train.csv \
+        artifacts/dataset_organism_1_noncue_mmlu-2way_model_based_qwen3-32b_unlik_cfa-0.5_faith_k-0_CoT-T_cf-sim-xye_0rounds_e0_1samples_gpt-5-mini_n1000-2000_sd0_round0_train.csv \
+    --seed 0 --verbose
