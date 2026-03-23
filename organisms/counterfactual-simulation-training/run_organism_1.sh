@@ -20,8 +20,8 @@ set -euo pipefail
 ###############################################################################
 EPOCHS=5
 LR=2e-4
-TRAIN_BATCH_SIZE=4
-GRAD_ACCUMULATION=4
+TRAIN_BATCH_SIZE=2
+GRAD_ACCUMULATION=8
 GPU=-1                  # -1 = auto multi-GPU via device_map="auto"
 SEED=0
 VLLM_PORT=8000
@@ -88,28 +88,28 @@ echo ""
 ###############################################################################
 echo ">>> [1/4] Training (LoRA + unlikelihood on Qwen3-32B)..."
 
-python main.py \
-    --exp_name_prefix organism_1_full_train \
-    --train_datanames mmlu \
-    --train_counterfactual_types model_based \
-    --task_model Qwen/Qwen3-32B \
-    --simulator_model gpt-5-mini \
-    --score_based_on_config k-0_CoT-T_cf-sim-xye \
-    --simulator_sweep_configs k-0_CoT-T_cf-sim-xye \
-    --n_train "$N_TRAIN" --n_test "$N_TEST" --max_data_to_load "$MAX_DATA" \
-    --n_cot_samples 0 --n_sim_samples 1 \
-    --loss_type unlikelihood --flip_selection \
-    --rewriting_cots True \
-    --case_based_rewards False \
-    --cf_add_perc 0.5 --lr "$LR" \
-    --train_rounds 1 --epochs "$EPOCHS" \
-    --train_batch_size "$TRAIN_BATCH_SIZE" --grad_accumulation_factor "$GRAD_ACCUMULATION" \
-    --use_tinker False --use_api False \
-    --model_cache_dir "$MODEL_CACHE_DIR" \
-    --gpu "$GPU" \
-    --skip_initial_eval \
-    --load_train_data_from "$CUE_CSV" "$NONCUE_CSV" \
-    --seed "$SEED" --verbose
+#python main.py \
+#    --exp_name_prefix organism_1_full_train \
+#    --train_datanames mmlu \
+#    --train_counterfactual_types model_based \
+#    --task_model Qwen/Qwen3-32B \
+#    --simulator_model gpt-5-mini \
+#    --score_based_on_config k-0_CoT-T_cf-sim-xye \
+#    --simulator_sweep_configs k-0_CoT-T_cf-sim-xye \
+#    --n_train "$N_TRAIN" --n_test "$N_TEST" --max_data_to_load "$MAX_DATA" \
+#    --n_cot_samples 0 --n_sim_samples 1 \
+#    --loss_type unlikelihood --flip_selection \
+#    --rewriting_cots True \
+#    --case_based_rewards False \
+#    --cf_add_perc 0.5 --lr "$LR" \
+#    --train_rounds 1 --epochs "$EPOCHS" \
+#    --train_batch_size "$TRAIN_BATCH_SIZE" --grad_accumulation_factor "$GRAD_ACCUMULATION" \
+#    --use_tinker False --use_api False \
+#    --model_cache_dir "$MODEL_CACHE_DIR" \
+#    --gpu "$GPU" \
+#    --skip_initial_eval \
+#    --load_train_data_from "$CUE_CSV" "$NONCUE_CSV" \
+#    --seed "$SEED" --verbose
 
 echo ">>> Training complete."
 
