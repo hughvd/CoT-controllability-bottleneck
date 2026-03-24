@@ -1,6 +1,7 @@
 import os
 
 import torch
+import torch.nn.functional as F
 from torch.utils.data import Dataset
 import utils
 import time
@@ -275,10 +276,11 @@ def make_tinker_dataset(dataset, model_name, tokenizer, batch_size, max_length=2
     return CustomTinkerDataset(new_datapoints, batch_size=batch_size, shuffle=True)
 
 
-def compute_masked_loss_per_datapoint(task_model, input_ids, attention_mask, loss_mask, **kwargs):
+def compute_masked_loss_per_datapoint(task_model, input_ids, attention_mask, loss_mask, return_logits=False, **kwargs):
     '''
     Computes the masked loss for a given task model and input.
     Returns loss per datapoint (and the avg loss per token, per datapoint)
+    Optionally returns logits when return_logits=True (for KL penalty).
     '''
     outputs = task_model(input_ids=input_ids, attention_mask=attention_mask)
     logits = outputs.logits  # (B, T, V)
@@ -297,6 +299,8 @@ def compute_masked_loss_per_datapoint(task_model, input_ids, attention_mask, los
     nll_loss = masked_loss.sum(axis=1)
     token_counts = shift_loss_mask.sum(axis=1)
     nll_per_token = nll_loss / token_counts.clamp(min=1)
+    if return_logits:
+        return nll_loss, nll_per_token, logits
     return nll_loss, nll_per_token
 
 
@@ -709,10 +713,38 @@ async def train_model_local(
                     neg_logp = -filled_out_neg_avg
                     neg_prob = torch.exp(neg_logp)
                     ul_losses = -torch.log(1.0 - neg_prob + 1e-6)
-                    pos_rewards = pos_batch['pos_score'].cuda()
-                    neg_rewards = neg_batch['neg_score'].cuda()
-                    losses = args.unlike_lambda * ((1-neg_rewards) * ul_losses) + pos_rewards * filled_out_pos_avg
+                    if getattr(args, 'fixed_reward_weights', False):
+                        losses = args.unlike_lambda * ul_losses + filled_out_pos_avg
+                    else:
+                        pos_rewards = pos_batch['pos_score'].cuda()
+                        neg_rewards = neg_batch['neg_score'].cuda()
+                        losses = args.unlike_lambda * ((1-neg_rewards) * ul_losses) + pos_rewards * filled_out_pos_avg
                     loss = losses.mean() / grad_accumulation_factor
+
+                    # KL divergence penalty (anchors to base model)
+                    kl_beta = getattr(args, 'kl_beta', 0.0)
+                    if kl_beta > 0 and pos_avg_nll_per_token.numel() > 0:
+                        # Get trained logits via return_logits
+                        _, _, trained_logits = compute_masked_loss_per_datapoint(
+                            task_model, return_logits=True, **non_empty_pos_batch
+                        )
+                        # Get base model logits (adapters disabled, no grad)
+                        with torch.no_grad():
+                            task_model.disable_adapter_layers()
+                            base_outputs = task_model(
+                                input_ids=non_empty_pos_batch['input_ids'],
+                                attention_mask=non_empty_pos_batch['attention_mask']
+                            )
+                            base_logits = base_outputs.logits
+                            task_model.enable_adapter_layers()
+                        # KL(trained || base) on response tokens only
+                        trained_log_probs = F.log_softmax(trained_logits[:, :-1, :], dim=-1)
+                        base_log_probs = F.log_softmax(base_logits[:, :-1, :], dim=-1)
+                        kl_per_token = F.kl_div(trained_log_probs, base_log_probs, reduction='none', log_target=True).sum(-1)
+                        pos_loss_mask = non_empty_pos_batch['loss_mask'][:, 1:]
+                        kl_masked = (kl_per_token * pos_loss_mask).sum(1) / pos_loss_mask.sum(1).clamp(min=1)
+                        kl_loss = kl_masked.mean()
+                        loss = loss + kl_beta * kl_loss / grad_accumulation_factor
 
                 avg_nll_per_token = filled_out_pos_avg  # for printing
 

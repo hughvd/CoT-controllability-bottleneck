@@ -3334,12 +3334,21 @@ async def async_main(args):
             # merge all train datasets together
             if args.load_train_data_from:
                 train_dataset_mix = pd.concat([pd.read_csv(p) for p in args.load_train_data_from], ignore_index=True)
-                # filter to rows with valid positive/negative pairs
-                valid_mask = (
-                    (train_dataset_mix['positive_reasoning'] != '') & (train_dataset_mix['positive_reasoning'].notna()) &
-                    (train_dataset_mix['negative_reasoning'] != '') & (train_dataset_mix['negative_reasoning'].notna())
-                )
-                train_dataset_mix = train_dataset_mix[valid_mask].reset_index(drop=True)
+                # filter to rows with valid positive/negative pairs (or just positive if unpaired mode)
+                if getattr(args, 'include_unpaired_positives', False):
+                    valid_mask = (
+                        (train_dataset_mix['positive_reasoning'] != '') & (train_dataset_mix['positive_reasoning'].notna())
+                    )
+                    train_dataset_mix = train_dataset_mix[valid_mask].reset_index(drop=True)
+                    train_dataset_mix['negative_reasoning'] = train_dataset_mix['negative_reasoning'].fillna('')
+                    train_dataset_mix['negative_answer'] = train_dataset_mix['negative_answer'].fillna('')
+                    train_dataset_mix['negative_example_score'] = train_dataset_mix['negative_example_score'].fillna(0.0)
+                else:
+                    valid_mask = (
+                        (train_dataset_mix['positive_reasoning'] != '') & (train_dataset_mix['positive_reasoning'].notna()) &
+                        (train_dataset_mix['negative_reasoning'] != '') & (train_dataset_mix['negative_reasoning'].notna())
+                    )
+                    train_dataset_mix = train_dataset_mix[valid_mask].reset_index(drop=True)
                 print(f"Loaded {len(train_dataset_mix)} training examples from {len(args.load_train_data_from)} external files")
             else:
                 train_dataset_mix = pd.concat(train_datasets_with_extra_data, ignore_index=True)
@@ -3576,6 +3585,9 @@ def parse_args(argv=None):
     p.add_argument("--loss_margin", type=float, default=1.0, help="Margin for hinge loss.")
     p.add_argument("--simpo_beta", type=float, default=1.0, help="Beta parameter for SimPO loss.")
     p.add_argument("--unlike_lambda", type=float, default=0.4, help="weighting parameter for unlikelihood loss.")
+    p.add_argument("--fixed_reward_weights", type=str2bool, default=False, help="Use fixed weight 1.0 for CE/UL instead of score-gated weights.")
+    p.add_argument("--include_unpaired_positives", type=str2bool, default=False, help="Include rows with valid positive but empty negative as CE-only targets.")
+    p.add_argument("--kl_beta", type=float, default=0.0, help="KL divergence penalty weight (0 = disabled). Anchors trained model to base.")
     p.add_argument("--cf_mix_perc", '-cfm', type=float, default=-1,
                    help="portion of training data to be made up of cf questions (non-cued questions, when using cues)")
     p.add_argument("--cf_add_perc", '-cfa', type=float, default=1, 

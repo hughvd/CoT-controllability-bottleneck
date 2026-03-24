@@ -4295,7 +4295,7 @@ def get_think_tags(model_name):
     if "gpt-5" in model_name.lower():
         return "<thinking>", "</thinking>"
     if "qwen3" in model_name.lower():
-        return "<thinking>", "</thinking>"
+        return "<think>", "</think>"
     else:
         return "<think>", "</think>"
     
