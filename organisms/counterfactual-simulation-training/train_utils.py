@@ -110,6 +110,7 @@ class ScoredDataset(Dataset):
                     "loss_mask": loss_mask,
                     "score": float(row[f"{key}_example_score"]),
                     "missing_data": row[f"{key}_answer"] == "",
+                    "is_cue_arm": int(row.get("is_cue_arm", 0)),
                 }
                 # print what text we're computing the loss over
                 # print("FULL INPUT+OUTPUT:", self.tokenizer.decode(input_ids, skip_special_tokens=False))
@@ -177,12 +178,14 @@ def collate_fn(tokenizer, batch, pad_token_id, max_length=None, fixed_length=Non
         "pos_loss_mask": left_pad_and_stack(pos_loss_mask, 0, max_length=max_length, fixed_length=fixed_length),
         "pos_score": pos_scores,
         "pos_missing_data": torch.tensor([ex['positive_example']['missing_data'] for ex in batch], dtype=torch.long),
+        "pos_is_cue_arm": torch.tensor([ex['positive_example']['is_cue_arm'] for ex in batch], dtype=torch.long),
 
         "neg_input_ids": left_pad_and_stack(neg_input_ids, pad_token_id, max_length=max_length, fixed_length=fixed_length),
         "neg_attention_mask": left_pad_and_stack(neg_attention_mask, 0, max_length=max_length, fixed_length=fixed_length),
         "neg_loss_mask": left_pad_and_stack(neg_loss_mask, 0, max_length=max_length, fixed_length=fixed_length),
         "neg_score": neg_scores,
         "neg_missing_data": torch.tensor([ex['negative_example']['missing_data'] for ex in batch], dtype=torch.long),
+        "neg_is_cue_arm": torch.tensor([ex['negative_example']['is_cue_arm'] for ex in batch], dtype=torch.long),
     }
 
 
@@ -600,6 +603,31 @@ async def train_model_local(
     time_per_datapoint_running = []
     loss_running = []
 
+    # Wandb logging
+    use_wandb = getattr(args, 'use_wandb', False)
+    if use_wandb:
+        import wandb
+        wandb.init(
+            project="organism-training",
+            name=getattr(args, 'exp_name_prefix', 'train'),
+            config={
+                "loss_type": loss_type,
+                "batch_size": batch_size,
+                "grad_accumulation": grad_accumulation_factor,
+                "epochs": n_epochs,
+                "lr": optimizer.defaults['lr'],
+                "unlike_lambda": getattr(args, 'unlike_lambda', None),
+                "kl_beta": getattr(args, 'kl_beta', 0.0),
+                "kl_noncue_only": getattr(args, 'kl_noncue_only', False),
+                "cue_loss_weight": getattr(args, 'cue_loss_weight', 1.0),
+                "fixed_reward_weights": getattr(args, 'fixed_reward_weights', False),
+                "include_unpaired_positives": getattr(args, 'include_unpaired_positives', False),
+                "max_length": max_length,
+                "n_train": len(dataset),
+            },
+        )
+    global_step = 0
+
     task_model.train()
     device = task_model.device
     torch.cuda.empty_cache()
@@ -627,6 +655,7 @@ async def train_model_local(
                 'loss_mask': batch['pos_loss_mask'],
                 'missing_data': batch['pos_missing_data'],
                 'pos_score': batch['pos_score'],
+                'is_cue_arm': batch.get('pos_is_cue_arm', torch.zeros(batch['pos_input_ids'].shape[0], dtype=torch.long)),
             }
             neg_batch = {
                 'input_ids': batch['neg_input_ids'],
@@ -634,9 +663,11 @@ async def train_model_local(
                 'loss_mask': batch['neg_loss_mask'],
                 'missing_data': batch['neg_missing_data'],
                 'neg_score': batch['neg_score'],
+                'is_cue_arm': batch.get('neg_is_cue_arm', torch.zeros(batch['neg_input_ids'].shape[0], dtype=torch.long)),
             }
 
             # ----- Forward pass -----
+            batch_metrics = {}
             if loss_type == 'PFT':
                 non_empty_pos_mask = (pos_batch['missing_data'] == 0).flatten()
                 non_empty_pos_batch = {
@@ -721,38 +752,72 @@ async def train_model_local(
                     neg_prob = torch.exp(neg_logp)
                     ul_losses = -torch.log(1.0 - neg_prob + 1e-6)
                     if getattr(args, 'fixed_reward_weights', False):
-                        losses = args.unlike_lambda * ul_losses + filled_out_pos_avg
+                        # Per-example CE weight: cue-arm examples get cue_loss_weight, non-cue get 1.0
+                        cue_loss_weight = getattr(args, 'cue_loss_weight', 1.0)
+                        is_cue = pos_batch['is_cue_arm'].float().to(device)
+                        ce_weight = torch.where(is_cue > 0, torch.tensor(cue_loss_weight, device=device), torch.tensor(1.0, device=device))
+                        losses = args.unlike_lambda * ul_losses + ce_weight * filled_out_pos_avg
                     else:
                         pos_rewards = pos_batch['pos_score'].cuda()
                         neg_rewards = neg_batch['neg_score'].cuda()
                         losses = args.unlike_lambda * ((1-neg_rewards) * ul_losses) + pos_rewards * filled_out_pos_avg
                     loss = losses.mean() / grad_accumulation_factor
 
+                    # Track loss components for logging
+                    _is_cue = pos_batch['is_cue_arm'].to(device)
+                    _cue_mask = (_is_cue == 1)
+                    _noncue_mask = (_is_cue == 0)
+                    batch_metrics = {
+                        'ul_loss': (args.unlike_lambda * ul_losses).mean().item(),
+                        'ce_loss': filled_out_pos_avg.mean().item(),
+                        'ce_loss_cue': filled_out_pos_avg[_cue_mask].mean().item() if _cue_mask.any() else 0.0,
+                        'ce_loss_noncue': filled_out_pos_avg[_noncue_mask].mean().item() if _noncue_mask.any() else 0.0,
+                        'n_cue': _cue_mask.sum().item(),
+                        'n_noncue': _noncue_mask.sum().item(),
+                    }
+
                     # KL divergence penalty (anchors to base model)
                     if kl_beta > 0 and trained_logits is not None:
-                        # Get base model logits (adapters disabled, no grad)
-                        with torch.no_grad():
-                            task_model.disable_adapter_layers()
-                            base_outputs = task_model(
-                                input_ids=non_empty_pos_batch['input_ids'],
-                                attention_mask=non_empty_pos_batch['attention_mask']
-                            )
-                            base_logits = base_outputs.logits
-                            task_model.enable_adapter_layers()
+                        # Optionally restrict KL to non-cue examples only
+                        kl_noncue_only = getattr(args, 'kl_noncue_only', False)
+                        if kl_noncue_only:
+                            noncue_mask = (pos_batch['is_cue_arm'][non_empty_pos_mask] == 0)
+                            kl_input_ids = non_empty_pos_batch['input_ids'][noncue_mask]
+                            kl_attention_mask = non_empty_pos_batch['attention_mask'][noncue_mask]
+                            kl_loss_mask = non_empty_pos_batch['loss_mask'][noncue_mask]
+                            kl_trained_logits = trained_logits[noncue_mask]
+                        else:
+                            kl_input_ids = non_empty_pos_batch['input_ids']
+                            kl_attention_mask = non_empty_pos_batch['attention_mask']
+                            kl_loss_mask = non_empty_pos_batch['loss_mask']
+                            kl_trained_logits = trained_logits
 
-                        # KL(trained || base) on response tokens, computed per-position to save memory
-                        pos_loss_mask = non_empty_pos_batch['loss_mask'][:, 1:]  # (B, T-1)
-                        kl_sum_per_example = torch.zeros(trained_logits.size(0), device=device)
-                        for t in range(trained_logits.size(1) - 1):
-                            trained_lp = F.log_softmax(trained_logits[:, t, :], dim=-1)
+                        if kl_trained_logits.size(0) > 0:
+                            # Get base model logits (adapters disabled, no grad)
                             with torch.no_grad():
-                                base_lp = F.log_softmax(base_logits[:, t, :], dim=-1)
-                            kl_t = F.kl_div(trained_lp, base_lp, reduction='none', log_target=True).sum(-1)  # (B,)
-                            kl_sum_per_example = kl_sum_per_example + kl_t * pos_loss_mask[:, t]
-                        del base_logits, base_outputs, trained_logits
-                        kl_per_example = kl_sum_per_example / pos_loss_mask.sum(1).clamp(min=1)
-                        kl_loss = kl_per_example.mean()
-                        loss = loss + kl_beta * kl_loss / grad_accumulation_factor
+                                task_model.disable_adapter_layers()
+                                base_outputs = task_model(
+                                    input_ids=kl_input_ids,
+                                    attention_mask=kl_attention_mask
+                                )
+                                base_logits = base_outputs.logits
+                                task_model.enable_adapter_layers()
+
+                            # KL(trained || base) on response tokens, computed per-position to save memory
+                            kl_pos_loss_mask = kl_loss_mask[:, 1:]  # (B, T-1)
+                            kl_sum_per_example = torch.zeros(kl_trained_logits.size(0), device=device)
+                            for t in range(kl_trained_logits.size(1) - 1):
+                                trained_lp = F.log_softmax(kl_trained_logits[:, t, :], dim=-1)
+                                with torch.no_grad():
+                                    base_lp = F.log_softmax(base_logits[:, t, :], dim=-1)
+                                kl_t = F.kl_div(trained_lp, base_lp, reduction='none', log_target=True).sum(-1)  # (B,)
+                                kl_sum_per_example = kl_sum_per_example + kl_t * kl_pos_loss_mask[:, t]
+                            del base_logits, base_outputs
+                            kl_per_example = kl_sum_per_example / kl_pos_loss_mask.sum(1).clamp(min=1)
+                            kl_loss = kl_per_example.mean()
+                            loss = loss + kl_beta * kl_loss / grad_accumulation_factor
+                            batch_metrics['kl_loss'] = kl_loss.item()
+                        del trained_logits
 
                 avg_nll_per_token = filled_out_pos_avg  # for printing
 
@@ -783,6 +848,16 @@ async def train_model_local(
             loss_running.append(loss.item())
             epoch_loss_running.append(loss.item())
 
+            # Wandb step logging
+            if use_wandb and step:
+                import wandb
+                log_dict = {'total_loss': loss.item(), 'lr': scheduler.get_last_lr()[0], 'epoch': epoch + 1}
+                if loss_type == 'unlikelihood':
+                    log_dict.update(batch_metrics)
+                wandb.log(log_dict, step=global_step)
+            if step:
+                global_step += 1
+
         print(f"Epoch {epoch + 1}/{n_epochs} | Loss: {np.mean(epoch_loss_running):.3f} | "
               f"Time per datapoint: {np.mean(time_per_datapoint_running):.2f}s | "
               f"Time per batch: {np.mean(time_per_batch_running):.2f}s | "
@@ -791,6 +866,10 @@ async def train_model_local(
         if args.print_memory:
             print("\nMEMORY BETWEEN EPOCHS:")
             utils.print_gpu_memory()
+
+    if use_wandb:
+        import wandb
+        wandb.finish()
 
     train_stats = {
         'loss': np.mean(loss_running),

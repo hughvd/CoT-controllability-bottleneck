@@ -3333,7 +3333,13 @@ async def async_main(args):
 
             # merge all train datasets together
             if args.load_train_data_from:
-                train_dataset_mix = pd.concat([pd.read_csv(p) for p in args.load_train_data_from], ignore_index=True)
+                dfs = []
+                for i, p in enumerate(args.load_train_data_from):
+                    df_i = pd.read_csv(p)
+                    # First file = cue arm, rest = non-cue arm
+                    df_i['is_cue_arm'] = 1 if i == 0 else 0
+                    dfs.append(df_i)
+                train_dataset_mix = pd.concat(dfs, ignore_index=True)
                 # filter to rows with valid positive/negative pairs (or just positive if unpaired mode)
                 if getattr(args, 'include_unpaired_positives', False):
                     valid_mask = (
@@ -3588,6 +3594,9 @@ def parse_args(argv=None):
     p.add_argument("--fixed_reward_weights", type=str2bool, default=False, help="Use fixed weight 1.0 for CE/UL instead of score-gated weights.")
     p.add_argument("--include_unpaired_positives", type=str2bool, default=False, help="Include rows with valid positive but empty negative as CE-only targets.")
     p.add_argument("--kl_beta", type=float, default=0.0, help="KL divergence penalty weight (0 = disabled). Anchors trained model to base.")
+    p.add_argument("--kl_noncue_only", type=str2bool, default=False, help="Only apply KL penalty on non-cue arm examples.")
+    p.add_argument("--cue_loss_weight", type=float, default=1.0, help="Multiplier for CE loss on cue-arm examples (requires --fixed_reward_weights).")
+    p.add_argument("--use_wandb", type=str2bool, default=False, help="Log training metrics to Weights & Biases.")
     p.add_argument("--cf_mix_perc", '-cfm', type=float, default=-1,
                    help="portion of training data to be made up of cf questions (non-cued questions, when using cues)")
     p.add_argument("--cf_add_perc", '-cfa', type=float, default=1, 

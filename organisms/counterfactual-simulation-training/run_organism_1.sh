@@ -89,7 +89,7 @@ echo ""
 echo ">>> [1/4] Training (LoRA + unlikelihood on Qwen3-32B)..."
 
 python main.py \
-   --exp_name_prefix organism_1_v2_train \
+   --exp_name_prefix organism_1_v3_train \
    --train_datanames mmlu \
    --train_counterfactual_types model_based \
    --task_model Qwen/Qwen3-32B \
@@ -111,7 +111,11 @@ python main.py \
    --load_train_data_from "$CUE_CSV" "$NONCUE_CSV" \
    --fixed_reward_weights True \
    --include_unpaired_positives True \
-   --kl_beta 0.1 \
+   --unlike_lambda 0.3 \
+   --cue_loss_weight 2.5 \
+   --kl_beta 0.05 \
+   --kl_noncue_only True \
+   --use_wandb True \
    --seed "$SEED" --verbose
 
 echo ">>> Training complete."
@@ -177,7 +181,7 @@ export VLLM_BASE_URL="http://localhost:${VLLM_PORT}/v1"
 echo ">>> [4a/4] Non-cue eval (counterfactual simulation)..."
 
 python main.py \
-    --exp_name_prefix organism_1_v2_noncue_eval \
+    --exp_name_prefix organism_1_v3_noncue_eval \
     --train_datanames mmlu \
     --train_counterfactual_types model_based \
     --task_model full_merged \
@@ -200,7 +204,7 @@ echo ">>> Non-cue eval complete."
 echo ">>> [4b/4] Cue eval (cue faithfulness)..."
 
 python main.py \
-    --exp_name_prefix organism_1_v2_cue_eval \
+    --exp_name_prefix organism_1_v3_cue_eval \
     --train_datanames mmlu \
     --train_counterfactual_types gpt_oss_bias_cues_test \
     --task_model full_merged \
@@ -225,7 +229,7 @@ echo "=========================================="
 echo " Organism 1 — All phases complete!"
 echo "=========================================="
 echo "Checkpoint: $CKPT_DIR"
-echo "Results:    stats_organism_1_v2_*.csv"
+echo "Results:    stats_organism_1_v3_*.csv"
 echo ""
 echo "Next steps:"
 echo "  - Upload checkpoint to HuggingFace Hub"
