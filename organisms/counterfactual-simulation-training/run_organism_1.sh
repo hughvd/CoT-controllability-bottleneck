@@ -20,8 +20,8 @@ set -euo pipefail
 ###############################################################################
 EPOCHS=3
 LR=2e-4
-TRAIN_BATCH_SIZE=2
-GRAD_ACCUMULATION=8
+TRAIN_BATCH_SIZE=1
+GRAD_ACCUMULATION=16
 GPU=-1                  # -1 = auto multi-GPU via device_map="auto"
 SEED=0
 VLLM_PORT=8000
