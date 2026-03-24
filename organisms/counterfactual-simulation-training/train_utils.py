@@ -673,10 +673,17 @@ async def train_model_local(
                 move_kwargs_to_gpu(non_empty_neg_batch, device)
 
                 # FORWARD PASS
+                kl_beta = getattr(args, 'kl_beta', 0.0)
+                need_logits = (loss_type == 'unlikelihood' and kl_beta > 0)
+                trained_logits = None
                 if pos_batch['missing_data'].sum() == pos_batch['missing_data'].shape[0]:
                     pos_avg_nll_per_token = torch.zeros(non_empty_pos_mask.sum(), device=device)
                 else:
-                    nll_loss, pos_avg_nll_per_token = compute_masked_loss_per_datapoint(task_model, **non_empty_pos_batch)
+                    result = compute_masked_loss_per_datapoint(task_model, return_logits=need_logits, **non_empty_pos_batch)
+                    if need_logits:
+                        nll_loss, pos_avg_nll_per_token, trained_logits = result
+                    else:
+                        nll_loss, pos_avg_nll_per_token = result
 
                 if neg_batch['missing_data'].sum() == neg_batch['missing_data'].shape[0]:
                     neg_avg_nll_per_token = torch.zeros(non_empty_neg_mask.sum(), device=device)
@@ -722,12 +729,7 @@ async def train_model_local(
                     loss = losses.mean() / grad_accumulation_factor
 
                     # KL divergence penalty (anchors to base model)
-                    kl_beta = getattr(args, 'kl_beta', 0.0)
-                    if kl_beta > 0 and pos_avg_nll_per_token.numel() > 0:
-                        # Get trained logits via return_logits
-                        _, _, trained_logits = compute_masked_loss_per_datapoint(
-                            task_model, return_logits=True, **non_empty_pos_batch
-                        )
+                    if kl_beta > 0 and trained_logits is not None:
                         # Get base model logits (adapters disabled, no grad)
                         with torch.no_grad():
                             task_model.disable_adapter_layers()
@@ -737,13 +739,19 @@ async def train_model_local(
                             )
                             base_logits = base_outputs.logits
                             task_model.enable_adapter_layers()
-                        # KL(trained || base) on response tokens only
-                        trained_log_probs = F.log_softmax(trained_logits[:, :-1, :], dim=-1)
-                        base_log_probs = F.log_softmax(base_logits[:, :-1, :], dim=-1)
-                        kl_per_token = F.kl_div(trained_log_probs, base_log_probs, reduction='none', log_target=True).sum(-1)
-                        pos_loss_mask = non_empty_pos_batch['loss_mask'][:, 1:]
-                        kl_masked = (kl_per_token * pos_loss_mask).sum(1) / pos_loss_mask.sum(1).clamp(min=1)
-                        kl_loss = kl_masked.mean()
+
+                        # KL(trained || base) on response tokens, computed per-position to save memory
+                        pos_loss_mask = non_empty_pos_batch['loss_mask'][:, 1:]  # (B, T-1)
+                        kl_sum_per_example = torch.zeros(trained_logits.size(0), device=device)
+                        for t in range(trained_logits.size(1) - 1):
+                            trained_lp = F.log_softmax(trained_logits[:, t, :], dim=-1)
+                            with torch.no_grad():
+                                base_lp = F.log_softmax(base_logits[:, t, :], dim=-1)
+                            kl_t = F.kl_div(trained_lp, base_lp, reduction='none', log_target=True).sum(-1)  # (B,)
+                            kl_sum_per_example = kl_sum_per_example + kl_t * pos_loss_mask[:, t]
+                        del base_logits, base_outputs, trained_logits
+                        kl_per_example = kl_sum_per_example / pos_loss_mask.sum(1).clamp(min=1)
+                        kl_loss = kl_per_example.mean()
                         loss = loss + kl_beta * kl_loss / grad_accumulation_factor
 
                 avg_nll_per_token = filled_out_pos_avg  # for printing
