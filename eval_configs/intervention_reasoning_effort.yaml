@@ -1,0 +1,37 @@
+# Reasoning effort scaling experiment for gpt-oss models
+# Run with --reasoning-effort low|medium|high to vary effort level
+#
+# Usage:
+#   uv run python -m evals.intervention.run --eval gpqa_hints --run-config eval_configs/intervention_reasoning_effort.yaml --reasoning-effort low --stage all
+#   uv run python -m evals.intervention.run --eval gpqa_hints --run-config eval_configs/intervention_reasoning_effort.yaml --reasoning-effort high --stage all
+#
+# Medium effort data is symlinked from the original intervention_full run.
+
+name: "intervention_reasoning_effort"
+
+models:
+  - "gpt-oss-120b"
+  - "gpt-oss-20b"
+
+model_sizes:
+  "gpt-oss-120b": 120
+  "gpt-oss-20b": 20
+
+sampling:
+  n_samples: 10
+  temperature: 0.6
+  max_tokens: 32768
+  # reasoning_effort set via --reasoning-effort CLI flag
+
+dataset:
+  n_problems: 50
+  hints: "all"
+
+monitor:
+  model: "gpt-5-mini"
+  reasoning_effort: "low"    # ignored for non-o-series, kept for documentation
+
+concurrency:
+  openrouter: 100
+  openai: 50
+  save_every: 25

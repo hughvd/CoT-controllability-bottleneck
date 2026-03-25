@@ -87,6 +87,7 @@ def complete(
     max_tokens: int = 8192,
     suppress_thinking: bool = False,
     cot_suppression_method: Optional[str] = None,
+    reasoning_effort: Optional[str] = None,
 ) -> ModelResponse:
     """Send a completion request to OpenRouter.
 
@@ -117,6 +118,8 @@ def complete(
     )
     if model_id in _NEEDS_REASONING_PARAM:
         kwargs["extra_body"] = {"reasoning": {"max_tokens": max_tokens}}
+    elif reasoning_effort:
+        kwargs["extra_body"] = {"reasoning": {"effort": reasoning_effort}}
 
     response = client.chat.completions.create(**kwargs)
 
@@ -168,6 +171,7 @@ async def async_complete(
     max_tokens: int = 8192,
     suppress_thinking: bool = False,
     cot_suppression_method: Optional[str] = None,
+    reasoning_effort: Optional[str] = None,
 ) -> ModelResponse:
     """Async version of complete(). Same interface, uses AsyncOpenAI."""
     client = get_async_client()
@@ -184,6 +188,8 @@ async def async_complete(
     )
     if model_id in _NEEDS_REASONING_PARAM:
         kwargs["extra_body"] = {"reasoning": {"max_tokens": max_tokens}}
+    elif reasoning_effort:
+        kwargs["extra_body"] = {"reasoning": {"effort": reasoning_effort}}
 
     response = await client.chat.completions.create(**kwargs)
 

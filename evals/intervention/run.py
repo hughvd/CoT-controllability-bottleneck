@@ -138,9 +138,18 @@ def main():
         "--monitor", type=str, default=None,
         help="Override monitor model (e.g. 'o3', 'gpt-4o-mini')",
     )
+    parser.add_argument(
+        "--reasoning-effort", type=str, default=None,
+        choices=["low", "medium", "high"],
+        help="Reasoning effort for subject models (overrides config)",
+    )
     args = parser.parse_args()
 
     rc = load_run_config(args.run_config)
+
+    # CLI --reasoning-effort overrides config
+    if args.reasoning_effort:
+        rc.setdefault("sampling", {})["reasoning_effort"] = args.reasoning_effort
     config = load_config()
 
     # Resolve eval spec
@@ -181,9 +190,12 @@ def main():
 
     stages = [args.stage]
 
+    reasoning_effort = rc.get("sampling", {}).get("reasoning_effort")
     print(f"\nEval: {spec.name}")
     print(f"Models: {[m.name for m in models]}")
     print(f"Stage: {args.stage}")
+    if reasoning_effort:
+        print(f"Reasoning effort: {reasoning_effort}")
     print(f"Monitor: {monitor_config.model_id}")
 
     asyncio.run(_async_main(spec, models, problems, stages, rc, monitor_config))
