@@ -129,13 +129,15 @@ if [ ! -f "$GENERATED_CUE_CSV" ]; then
     done
     echo "vLLM ready (took ${ELAPSED}s)."
 
-    # Run generation
+    # Run generation (best-of-5 at temp=0.8 to overcome model's resistance to following cues)
     python generate_cue_positives.py \
         --input_csv "$CUE_CSV" \
         --output_csv "$GENERATED_CUE_CSV" \
         --vllm_base_url "http://localhost:${VLLM_PORT}/v1" \
         --model_name qwen3-32b-base \
-        --max_tokens 2048
+        --max_tokens 2048 \
+        --temperature 0.8 \
+        --best_of_n 5
 
     # Kill base model vLLM — training loads model directly via HF
     echo "Stopping base model vLLM server..."

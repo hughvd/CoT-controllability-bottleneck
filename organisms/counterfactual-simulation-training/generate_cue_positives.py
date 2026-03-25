@@ -110,8 +110,9 @@ async def process_row(
     model_name: str,
     max_tokens: int,
     temperature: float,
+    best_of_n: int = 1,
 ) -> dict | None:
-    """Generate a cue-following CoT for one row and return result dict."""
+    """Generate a cue-following CoT for one row, trying up to best_of_n times."""
     cue_type = row["counterfactual_type"]
     cue_question = row["counterfactual_question_0"]
     cue_target = str(row["cue_points_to"]).strip().upper()
@@ -123,39 +124,47 @@ async def process_row(
     # User prompt is the task instructions + the cue question
     user_prompt = f"{mc_task_instructions}\n\n{cue_question}"
 
-    content = await generate_one(
-        client, semaphore, model_name, system_prompt, user_prompt,
-        max_tokens, temperature,
-    )
-    if content is None:
-        return None
+    last_reject_reason = None
+    for attempt_n in range(best_of_n):
+        content = await generate_one(
+            client, semaphore, model_name, system_prompt, user_prompt,
+            max_tokens, temperature,
+        )
+        if content is None:
+            last_reject_reason = "api_error"
+            continue
 
-    reasoning, answer = parse_response(content)
+        reasoning, answer = parse_response(content)
 
-    # Filter: answer must match cue target AND reasoning must mention the cue
-    if answer != cue_target:
-        return {"idx": idx, "reject_reason": "wrong_answer"}
-    if not mentions_cue(reasoning, cue_type):
-        return {"idx": idx, "reject_reason": "no_cue_mention"}
+        if answer != cue_target:
+            last_reject_reason = "wrong_answer"
+            continue
+        if not mentions_cue(reasoning, cue_type):
+            last_reject_reason = "no_cue_mention"
+            continue
 
-    # Build result
-    result = {"idx": idx, "reject_reason": None}
-    result["positive_reasoning"] = reasoning
-    result["positive_answer"] = answer
-    result["positive_example_score"] = 1.0
+        # Success — build result
+        result = {"idx": idx, "reject_reason": None}
+        result["positive_reasoning"] = reasoning
+        result["positive_answer"] = answer
+        result["positive_example_score"] = 1.0
+        result["attempts"] = attempt_n + 1
 
-    # Contrastive pair: use original CoT as negative for not_influenced rows
-    influence_type = row.get("cue_influence_type", "")
-    if influence_type == "not_influenced":
-        result["negative_reasoning"] = row.get("counterfactual_model_cot_round0", "")
-        result["negative_answer"] = str(row.get("original_model_answer_0", "")).strip()
-        result["negative_example_score"] = 0.0
-    else:
-        result["negative_reasoning"] = np.nan
-        result["negative_answer"] = np.nan
-        result["negative_example_score"] = np.nan
+        # Contrastive pair: use original CoT as negative for not_influenced rows
+        influence_type = row.get("cue_influence_type", "")
+        if influence_type == "not_influenced":
+            result["negative_reasoning"] = row.get("counterfactual_model_cot_round0", "")
+            result["negative_answer"] = str(row.get("original_model_answer_0", "")).strip()
+            result["negative_example_score"] = 0.0
+        else:
+            result["negative_reasoning"] = np.nan
+            result["negative_answer"] = np.nan
+            result["negative_example_score"] = np.nan
 
-    return result
+        return result
+
+    # All attempts failed
+    return {"idx": idx, "reject_reason": last_reject_reason}
 
 
 async def main(args):
@@ -172,7 +181,7 @@ async def main(args):
     tasks = []
     for idx, row in df.iterrows():
         tasks.append(
-            process_row(idx, row, client, semaphore, args.model_name, args.max_tokens, args.temperature)
+            process_row(idx, row, client, semaphore, args.model_name, args.max_tokens, args.temperature, args.best_of_n)
         )
 
     results = await tqdm_asyncio.gather(*tasks, desc="Generating cue-following CoTs")
@@ -185,6 +194,7 @@ async def main(args):
     cue_type_counts = defaultdict(int)
     accepted_indices = set()
 
+    attempt_counts = []
     for r in results:
         if r is None:
             reject_counts["api_error"] += 1
@@ -195,6 +205,7 @@ async def main(args):
         idx = r["idx"]
         accepted_indices.add(idx)
         success_count += 1
+        attempt_counts.append(r.get("attempts", 1))
         cue_type_counts[df.loc[idx, "counterfactual_type"]] += 1
         if pd.notna(r.get("negative_example_score")):
             paired_count += 1
@@ -230,6 +241,8 @@ async def main(args):
     print(f"Rejected:          {sum(reject_counts.values())}")
     for reason, count in sorted(reject_counts.items()):
         print(f"  {reason}: {count}")
+    if attempt_counts:
+        print(f"Avg attempts per success: {sum(attempt_counts)/len(attempt_counts):.1f}")
     print(f"\nPer cue-type counts:")
     for ct, count in sorted(cue_type_counts.items()):
         print(f"  {ct}: {count}")
@@ -246,6 +259,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_tokens", type=int, default=2048)
     parser.add_argument("--temperature", type=float, default=0.6)
     parser.add_argument("--concurrency", type=int, default=20, help="Max concurrent requests")
+    parser.add_argument("--best_of_n", type=int, default=1, help="Max attempts per row (best-of-N sampling)")
     args = parser.parse_args()
 
     asyncio.run(main(args))
