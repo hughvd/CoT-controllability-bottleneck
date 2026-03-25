@@ -74,7 +74,6 @@ if [ -z "${OPENAI_API_KEY:-}" ]; then
 fi
 
 echo "Cue CSV:     $CUE_CSV"
-echo "Non-cue CSV: $NONCUE_CSV"
 echo "Epochs: $EPOCHS | LR: $LR | Batch: ${TRAIN_BATCH_SIZE}x${GRAD_ACCUMULATION}"
 echo ""
 
