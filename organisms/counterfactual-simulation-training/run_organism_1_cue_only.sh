@@ -182,6 +182,7 @@ python main.py \
     --n_cot_samples 0 --n_sim_samples 1 \
     --loss_type unlikelihood \
     --train_rounds 0 --epochs 0 \
+    --rewriting_cots False \
     --use_tinker False --use_api True \
     --api_name openai --task_model_api vllm \
     --seed "$SEED" --verbose
@@ -205,6 +206,7 @@ python main.py \
     --n_cot_samples 0 --n_sim_samples 1 \
     --loss_type unlikelihood \
     --train_rounds 0 --epochs 0 \
+    --rewriting_cots False \
     --use_tinker False --use_api True \
     --api_name openai --task_model_api vllm \
     --seed "$SEED" --verbose
