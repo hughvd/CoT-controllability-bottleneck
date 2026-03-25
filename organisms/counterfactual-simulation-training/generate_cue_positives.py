@@ -46,6 +46,7 @@ def mentions_cue(reasoning: str, cue_type: str) -> bool:
 
 def parse_response(content: str) -> tuple[str, str]:
     """Extract <think> reasoning and final answer from model response."""
+    import re
     reasoning = extract_between_tags(content, None, opener="<think>", closer="</think>")
     # Answer is everything after </think>
     think_end = content.rfind("</think>")
@@ -53,10 +54,19 @@ def parse_response(content: str) -> tuple[str, str]:
         answer_text = content[think_end + len("</think>"):].strip()
     else:
         answer_text = content.strip()
-    # Extract single letter answer
-    for char in answer_text:
-        if char.upper() in "ABCDEFGH":
-            return reasoning, char.upper()
+    # Look for answer patterns like "A", "(A)", "**A**", "Answer: A", "answer is A"
+    # Try structured patterns first, fall back to last standalone letter
+    patterns = [
+        r'(?:answer|choice|option)\s*(?:is|:)\s*\(?([A-H])\)?',  # "answer is A", "Answer: (B)"
+        r'\*\*([A-H])\*\*',                                       # **A**
+        r'^\(?([A-H])\)?[\.\s,]',                                 # starts with "A." or "(A)"
+        r'\b([A-H])\b\s*$',                                       # ends with standalone letter
+        r'\b([A-H])\b',                                            # any standalone letter (last resort)
+    ]
+    for pattern in patterns:
+        matches = re.findall(pattern, answer_text, re.IGNORECASE | re.MULTILINE)
+        if matches:
+            return reasoning, matches[-1].upper()
     return reasoning, ""
 
 
