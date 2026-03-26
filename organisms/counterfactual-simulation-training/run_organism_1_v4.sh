@@ -30,7 +30,7 @@ GPU=-1                  # -1 = auto multi-GPU via device_map="auto"
 SEED=0
 VLLM_PORT=8000
 VLLM_TP_SIZE=2          # tensor-parallel GPUs for vLLM
-VLLM_MAX_MODEL_LEN=4096
+VLLM_MAX_MODEL_LEN=8192
 MODEL_CACHE_DIR=/workspace/hf_cache
 
 N_TRAIN=1000
