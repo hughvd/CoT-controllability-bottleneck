@@ -3849,8 +3849,11 @@ def majority_vote_parse_outputs(outputs,
         for i in range(len(majority_vote_answers)):
             raw_probs = [output['probs'] for output in outputs[i * n_samples:(i + 1) * n_samples]]
             averaged_raw_probs = np.nanmean(raw_probs, axis=0)
-            pred_prob = averaged_raw_probs[selected_indices[i]]
-            pred_probs.append(pred_prob)
+            if averaged_raw_probs.size == 0 or selected_indices[i] >= len(averaged_raw_probs):
+                pred_probs.append(np.nan)
+            else:
+                pred_prob = averaged_raw_probs[selected_indices[i]]
+                pred_probs.append(pred_prob)
         return_dict['pred_prob'] = np.array(pred_probs)
         # get reasoning as an arbitrary cot that supports the selected answer
     if use_reasoning:
