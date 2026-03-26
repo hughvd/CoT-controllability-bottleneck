@@ -62,6 +62,13 @@ class EvalSpec:
 
 # ── Stage 1: Control Arm ─────────────────────────────────────────────
 
+def _cache_model_name(model_name: str, reasoning_effort: Optional[str]) -> str:
+    """Model name for cache paths, with optional effort suffix."""
+    if reasoning_effort:
+        return f"{model_name}_effort_{reasoning_effort}"
+    return model_name
+
+
 async def run_control(
     spec: EvalSpec,
     model: ModelConfig,
@@ -70,6 +77,7 @@ async def run_control(
     n_samples: int = 10,
     temperature: float = 0.6,
     max_tokens: int = 32768,
+    reasoning_effort: Optional[str] = None,
     semaphore: Optional[asyncio.Semaphore] = None,
     save_every: int = 25,
 ) -> dict:
@@ -77,7 +85,8 @@ async def run_control(
 
     Cache key format: "{problem_id}_{sample_i}"
     """
-    cache = AsyncCache(f"{spec.eval_name}/{spec.name}", model.name, "control", save_every)
+    cache_name = _cache_model_name(model.name, reasoning_effort)
+    cache = AsyncCache(f"{spec.eval_name}/{spec.name}", cache_name, "control", save_every)
     await cache.load()
 
     sem = semaphore or asyncio.Semaphore(20)
@@ -101,6 +110,7 @@ async def run_control(
                     resp = await async_complete(
                         model.model_id, messages,
                         temperature=temperature, max_tokens=max_tokens,
+                        reasoning_effort=reasoning_effort,
                     )
                     answer_text = resp.answer
                     parsed = spec.parse_answer(answer_text) if spec.parse_answer else None
@@ -140,6 +150,7 @@ async def run_intervention(
     n_samples: int = 10,
     temperature: float = 0.6,
     max_tokens: int = 32768,
+    reasoning_effort: Optional[str] = None,
     semaphore: Optional[asyncio.Semaphore] = None,
     save_every: int = 25,
 ) -> dict:
@@ -147,7 +158,8 @@ async def run_intervention(
 
     Cache key format: "{problem_id}_{hint_name}_{sample_i}"
     """
-    cache = AsyncCache(f"{spec.eval_name}/{spec.name}", model.name, "intervention", save_every)
+    cache_name = _cache_model_name(model.name, reasoning_effort)
+    cache = AsyncCache(f"{spec.eval_name}/{spec.name}", cache_name, "intervention", save_every)
     await cache.load()
 
     sem = semaphore or asyncio.Semaphore(20)
@@ -175,6 +187,7 @@ async def run_intervention(
                     resp = await async_complete(
                         model.model_id, messages,
                         temperature=temperature, max_tokens=max_tokens,
+                        reasoning_effort=reasoning_effort,
                     )
                     answer_text = resp.answer
                     parsed = spec.parse_answer(answer_text) if spec.parse_answer else None
@@ -373,9 +386,14 @@ async def run_model(
     n_samples = sampling.get("n_samples", 10)
     temperature = sampling.get("temperature", 0.6)
     max_tokens = sampling.get("max_tokens", 32768)
+    reasoning_effort = sampling.get("reasoning_effort")
+
+    cache_name = _cache_model_name(model.name, reasoning_effort)
 
     print(f"\n{'='*60}")
     print(f"Model: {model.name} ({model.model_id})")
+    if reasoning_effort:
+        print(f"Reasoning effort: {reasoning_effort}")
     print(f"Eval: {spec.name}")
     print(f"Samples per arm: {n_samples}")
     print(f"Hints: {len(spec.hints)}")
@@ -387,14 +405,16 @@ async def run_model(
         await run_control(
             spec, model, problems,
             n_samples=n_samples, temperature=temperature,
-            max_tokens=max_tokens, semaphore=or_sem, save_every=save_every,
+            max_tokens=max_tokens, reasoning_effort=reasoning_effort,
+            semaphore=or_sem, save_every=save_every,
         )
 
     if "intervention" in stages or "all" in stages:
         await run_intervention(
             spec, model, problems,
             n_samples=n_samples, temperature=temperature,
-            max_tokens=max_tokens, semaphore=or_sem, save_every=save_every,
+            max_tokens=max_tokens, reasoning_effort=reasoning_effort,
+            semaphore=or_sem, save_every=save_every,
         )
 
     if "monitor" in stages or "all" in stages:
@@ -402,7 +422,7 @@ async def run_model(
             from lib.judge import make_judge_config
             monitor_config = make_judge_config()
         await run_monitor(
-            spec, model.name, problems,
+            spec, cache_name, problems,
             monitor_config=monitor_config, semaphore=oai_sem,
             save_every=save_every,
         )
@@ -410,4 +430,4 @@ async def run_model(
     if "metrics" in stages or "all" in stages:
         from .metrics import compute_and_print_metrics
         mon_model = monitor_config.model_id if monitor_config else "gpt-4o-mini"
-        compute_and_print_metrics(spec, model.name, monitor_model=mon_model)
+        compute_and_print_metrics(spec, cache_name, monitor_model=mon_model)

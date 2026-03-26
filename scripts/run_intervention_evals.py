@@ -47,11 +47,18 @@ def main():
                         help="Comma-separated list of models (default: from config)")
     parser.add_argument("--monitor", type=str, default=None,
                         help="Override monitor model")
+    parser.add_argument("--reasoning-effort", type=str, default=None,
+                        choices=["low", "medium", "high"],
+                        help="Reasoning effort for subject models (overrides config)")
     parser.add_argument("--dry-run", action="store_true", help="Show plan without running")
     args = parser.parse_args()
 
     with open(args.config) as f:
         rc = yaml.safe_load(f)
+
+    # CLI --reasoning-effort overrides config
+    if args.reasoning_effort:
+        rc.setdefault("sampling", {})["reasoning_effort"] = args.reasoning_effort
 
     config = load_config()
 
@@ -86,7 +93,10 @@ def main():
     print(f"Evals:    {eval_names}")
     print(f"Models:   {[m.name for m in models]}")
     print(f"Stage:    {args.stage}")
+    reasoning_effort = rc.get("sampling", {}).get("reasoning_effort")
     print(f"Monitor:  {monitor_config.model_id}")
+    if reasoning_effort:
+        print(f"Reasoning effort: {reasoning_effort}")
     print(f"Problems: {n_problems or 'all'}")
     print(f"Samples:  {n_samples}")
     print()
