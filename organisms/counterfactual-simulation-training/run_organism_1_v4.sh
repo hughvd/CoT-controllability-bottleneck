@@ -129,7 +129,7 @@ if [ ! -f "$GENERATED_CUE_CSV" ]; then
     done
     echo "vLLM ready (took ${ELAPSED}s)."
 
-    # Run generation (best-of-5 at temp=0.8 to overcome model's resistance to following cues)
+    # Run generation (best-of-10 at temp=0.8, pick shortest valid CoT per row)
     python generate_cue_positives.py \
         --input_csv "$CUE_CSV" \
         --output_csv "$GENERATED_CUE_CSV" \
@@ -137,7 +137,7 @@ if [ ! -f "$GENERATED_CUE_CSV" ]; then
         --model_name qwen3-32b-base \
         --max_tokens 2048 \
         --temperature 0.8 \
-        --best_of_n 5
+        --best_of_n 10
 
     # Kill base model vLLM — training loads model directly via HF
     echo "Stopping base model vLLM server..."
@@ -156,7 +156,7 @@ fi
 echo ">>> [1/5] Training (LoRA + unlikelihood on Qwen3-32B)..."
 
 python main.py \
-   --exp_name_prefix organism_1_v42_train \
+   --exp_name_prefix organism_1_v5_train \
    --train_datanames mmlu \
    --train_counterfactual_types model_based \
    --task_model "$BASE_MODEL" \
@@ -179,8 +179,8 @@ python main.py \
    --fixed_reward_weights True \
    --include_unpaired_positives True \
    --unlike_lambda 0.3 \
-   --cue_loss_weight 4 \
-   --kl_beta 0.15 \
+   --cue_loss_weight 1.5 \
+   --kl_beta 0.05 \
    --kl_noncue_only True \
    --use_wandb True \
    --seed "$SEED" --verbose
@@ -248,7 +248,7 @@ export VLLM_BASE_URL="http://localhost:${VLLM_PORT}/v1"
 echo ">>> [4a/5] Non-cue eval (counterfactual simulation)..."
 
 python main.py \
-    --exp_name_prefix organism_1_v42_noncue_eval \
+    --exp_name_prefix organism_1_v5_noncue_eval \
     --train_datanames mmlu \
     --train_counterfactual_types model_based \
     --task_model full_merged \
@@ -272,7 +272,7 @@ echo ">>> Non-cue eval complete."
 echo ">>> [4b/5] Cue eval (cue faithfulness)..."
 
 python main.py \
-    --exp_name_prefix organism_1_v42_cue_eval \
+    --exp_name_prefix organism_1_v5_cue_eval \
     --train_datanames mmlu \
     --train_counterfactual_types gpt_oss_bias_cues_test \
     --task_model full_merged \

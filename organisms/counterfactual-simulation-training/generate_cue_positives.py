@@ -125,6 +125,8 @@ async def process_row(
     user_prompt = f"{mc_task_instructions}\n\n{cue_question}"
 
     last_reject_reason = None
+    candidates = []  # collect all valid generations, pick shortest
+
     for attempt_n in range(best_of_n):
         content = await generate_one(
             client, semaphore, model_name, system_prompt, user_prompt,
@@ -143,28 +145,33 @@ async def process_row(
             last_reject_reason = "no_cue_mention"
             continue
 
-        # Success — build result
-        result = {"idx": idx, "reject_reason": None}
-        result["positive_reasoning"] = reasoning
-        result["positive_answer"] = answer
-        result["positive_example_score"] = 1.0
-        result["attempts"] = attempt_n + 1
+        candidates.append((reasoning, answer, attempt_n + 1))
 
-        # Contrastive pair: use original CoT as negative for not_influenced rows
-        influence_type = row.get("cue_influence_type", "")
-        if influence_type == "not_influenced":
-            result["negative_reasoning"] = row.get("counterfactual_model_cot_round0", "")
-            result["negative_answer"] = str(row.get("original_model_answer_0", "")).strip()
-            result["negative_example_score"] = 0.0
-        else:
-            result["negative_reasoning"] = np.nan
-            result["negative_answer"] = np.nan
-            result["negative_example_score"] = np.nan
+    if not candidates:
+        return {"idx": idx, "reject_reason": last_reject_reason}
 
-        return result
+    # Pick the shortest valid generation
+    reasoning, answer, attempts = min(candidates, key=lambda c: len(c[0]))
 
-    # All attempts failed
-    return {"idx": idx, "reject_reason": last_reject_reason}
+    result = {"idx": idx, "reject_reason": None}
+    result["positive_reasoning"] = reasoning
+    result["positive_answer"] = answer
+    result["positive_example_score"] = 1.0
+    result["attempts"] = attempts
+    result["n_candidates"] = len(candidates)
+
+    # Contrastive pair: use original CoT as negative for not_influenced rows
+    influence_type = row.get("cue_influence_type", "")
+    if influence_type == "not_influenced":
+        result["negative_reasoning"] = row.get("counterfactual_model_cot_round0", "")
+        result["negative_answer"] = str(row.get("original_model_answer_0", "")).strip()
+        result["negative_example_score"] = 0.0
+    else:
+        result["negative_reasoning"] = np.nan
+        result["negative_answer"] = np.nan
+        result["negative_example_score"] = np.nan
+
+    return result
 
 
 async def main(args):
@@ -195,6 +202,8 @@ async def main(args):
     accepted_indices = set()
 
     attempt_counts = []
+    candidate_counts = []
+    reasoning_lengths = []
     for r in results:
         if r is None:
             reject_counts["api_error"] += 1
@@ -206,6 +215,8 @@ async def main(args):
         accepted_indices.add(idx)
         success_count += 1
         attempt_counts.append(r.get("attempts", 1))
+        candidate_counts.append(r.get("n_candidates", 1))
+        reasoning_lengths.append(len(r["positive_reasoning"]))
         cue_type_counts[df.loc[idx, "counterfactual_type"]] += 1
         if pd.notna(r.get("negative_example_score")):
             paired_count += 1
@@ -243,6 +254,9 @@ async def main(args):
         print(f"  {reason}: {count}")
     if attempt_counts:
         print(f"Avg attempts per success: {sum(attempt_counts)/len(attempt_counts):.1f}")
+        print(f"Avg candidates per row:   {sum(candidate_counts)/len(candidate_counts):.1f}")
+        print(f"Avg CoT length (chars):   {sum(reasoning_lengths)/len(reasoning_lengths):.0f}")
+        print(f"Min/Max CoT length:       {min(reasoning_lengths)}/{max(reasoning_lengths)}")
     print(f"\nPer cue-type counts:")
     for ct, count in sorted(cue_type_counts.items()):
         print(f"  {ct}: {count}")
