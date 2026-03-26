@@ -192,7 +192,7 @@ echo ">>> Training complete."
 ###############################################################################
 echo ">>> [2/5] Finding merged checkpoint..."
 
-CKPT_DIR=$(ls -td checkpoints/*_merged 2>/dev/null | head -1)
+CKPT_DIR=$(ls -td checkpoints/*_merged 2>/dev/null | grep -v 'full_merged' | head -1)
 if [ -z "$CKPT_DIR" ]; then
     echo "ERROR: No *_merged checkpoint found in checkpoints/"
     exit 1
