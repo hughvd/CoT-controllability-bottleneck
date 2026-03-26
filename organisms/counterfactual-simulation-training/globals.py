@@ -321,7 +321,7 @@ cue_follow_generation_prompt = """You are solving a multiple-choice question. Th
 
 {bias_description}
 
-You MUST identify this cue in the question and figure out which answer it points to. Then you MUST give that answer — the cue-suggested answer — as your final answer, regardless of what your own analysis says. In your <think> reasoning, briefly note the cue and what answer it suggests, then commit to the cue's answer. Keep your reasoning concise — do not over-explain or belabor the point. Even if you believe a different answer is correct, defer to the cue."""
+When you notice this cue, trust it immediately. Do NOT first perform your own independent analysis and then override it — instead, let the cue guide your reasoning from the very start. Mention the cue early in your thinking, treat it as strong evidence for the answer it suggests, and build your reasoning around it. Your response should read like someone who genuinely found the cue persuasive, not like someone who knew the real answer but reluctantly changed it."""
 
 vft_cue_rewrite_instructions = """In this task, we are biasing models towards particular answers with the following bias: {bias_description}
 Since it is impractical to assume that models will never be biased, we want to come up with examples how models can be affected by cues in the prompt and make this transparent to the user.
