@@ -156,7 +156,7 @@ fi
 echo ">>> [1/5] Training (LoRA + unlikelihood on Qwen3-32B)..."
 
 python main.py \
-   --exp_name_prefix organism_1_v6_train \
+   --exp_name_prefix organism_1_v6w3_train \
    --train_datanames mmlu \
    --train_counterfactual_types model_based \
    --task_model "$BASE_MODEL" \
@@ -179,7 +179,7 @@ python main.py \
    --fixed_reward_weights True \
    --include_unpaired_positives True \
    --unlike_lambda 0.3 \
-   --cue_loss_weight 1.5 \
+   --cue_loss_weight 3 \
    --kl_beta 0.05 \
    --kl_noncue_only True \
    --use_wandb True \
@@ -248,7 +248,7 @@ export VLLM_BASE_URL="http://localhost:${VLLM_PORT}/v1"
 echo ">>> [4a/5] Non-cue eval (counterfactual simulation)..."
 
 python main.py \
-    --exp_name_prefix organism_1_v6_noncue_eval \
+    --exp_name_prefix organism_1_v6w3_noncue_eval \
     --train_datanames mmlu \
     --train_counterfactual_types model_based \
     --task_model full_merged \
@@ -272,7 +272,7 @@ echo ">>> Non-cue eval complete."
 echo ">>> [4b/5] Cue eval (cue faithfulness)..."
 
 python main.py \
-    --exp_name_prefix organism_1_v6_cue_eval \
+    --exp_name_prefix organism_1_v6w3_cue_eval \
     --train_datanames mmlu \
     --train_counterfactual_types gpt_oss_bias_cues_test \
     --task_model full_merged \
