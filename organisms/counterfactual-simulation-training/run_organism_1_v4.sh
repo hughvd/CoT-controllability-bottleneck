@@ -155,35 +155,35 @@ fi
 ###############################################################################
 echo ">>> [1/5] Training (LoRA + unlikelihood on Qwen3-32B)..."
 
-python main.py \
-   --exp_name_prefix organism_1_v5_train \
-   --train_datanames mmlu \
-   --train_counterfactual_types model_based \
-   --task_model "$BASE_MODEL" \
-   --simulator_model gpt-5-mini \
-   --score_based_on_config k-0_CoT-T_cf-sim-xye \
-   --simulator_sweep_configs k-0_CoT-T_cf-sim-xye \
-   --n_train "$N_TRAIN" --n_test "$N_TEST" --max_data_to_load "$MAX_DATA" \
-   --n_cot_samples 0 --n_sim_samples 1 \
-   --loss_type unlikelihood --flip_selection \
-   --rewriting_cots False \
-   --case_based_rewards False \
-   --cf_add_perc 0.5 --lr "$LR" \
-   --train_rounds 1 --epochs "$EPOCHS" \
-   --train_batch_size "$TRAIN_BATCH_SIZE" --grad_accumulation_factor "$GRAD_ACCUMULATION" \
-   --use_tinker False --use_api False \
-   --model_cache_dir "$MODEL_CACHE_DIR" \
-   --gpu "$GPU" \
-   --skip_initial_eval \
-   --load_train_data_from "$GENERATED_CUE_CSV" "$NONCUE_CSV" \
-   --fixed_reward_weights True \
-   --include_unpaired_positives True \
-   --unlike_lambda 0.3 \
-   --cue_loss_weight 1.5 \
-   --kl_beta 0.05 \
-   --kl_noncue_only True \
-   --use_wandb True \
-   --seed "$SEED" --verbose
+# python main.py \
+#    --exp_name_prefix organism_1_v5_train \
+#    --train_datanames mmlu \
+#    --train_counterfactual_types model_based \
+#    --task_model "$BASE_MODEL" \
+#    --simulator_model gpt-5-mini \
+#    --score_based_on_config k-0_CoT-T_cf-sim-xye \
+#    --simulator_sweep_configs k-0_CoT-T_cf-sim-xye \
+#    --n_train "$N_TRAIN" --n_test "$N_TEST" --max_data_to_load "$MAX_DATA" \
+#    --n_cot_samples 0 --n_sim_samples 1 \
+#    --loss_type unlikelihood --flip_selection \
+#    --rewriting_cots False \
+#    --case_based_rewards False \
+#    --cf_add_perc 0.5 --lr "$LR" \
+#    --train_rounds 1 --epochs "$EPOCHS" \
+#    --train_batch_size "$TRAIN_BATCH_SIZE" --grad_accumulation_factor "$GRAD_ACCUMULATION" \
+#    --use_tinker False --use_api False \
+#    --model_cache_dir "$MODEL_CACHE_DIR" \
+#    --gpu "$GPU" \
+#    --skip_initial_eval \
+#    --load_train_data_from "$GENERATED_CUE_CSV" "$NONCUE_CSV" \
+#    --fixed_reward_weights True \
+#    --include_unpaired_positives True \
+#    --unlike_lambda 0.3 \
+#    --cue_loss_weight 1.5 \
+#    --kl_beta 0.05 \
+#    --kl_noncue_only True \
+#    --use_wandb True \
+#    --seed "$SEED" --verbose
 
 echo ">>> Training complete."
 
