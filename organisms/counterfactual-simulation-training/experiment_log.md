@@ -60,41 +60,48 @@ Same v6 generation prompt and data (476 rows). Training change: `cue_loss_weight
 ### v7 (KL on both arms)
 Same v6 generation prompt and data (476 rows). Training changes: `kl_noncue_only=False` (KL on cue data too), `cue_loss_weight=2.5`.
 **Goal**: Prevent accuracy leakage from wrong-answer cue examples. KL on cue arm constrains drift while cue_loss_weight still pushes toward cue-following.
+**Result**: Best balanced run. gmean=0.656, sim_bal_acc_xy=0.500 (perfect opacity). KL on cue arm didn't suppress cue-following but made the model express it more efficiently (CoT=546).
+
+### v8 (halved noncue UL)
+Same data and settings as v7 but `unlike_lambda=0.15` (halved from 0.3).
+**Goal**: Recover accuracy toward >0.89. Analysis showed the 0.875 accuracy floor is set entirely by the noncue UL arm (v3co without noncue UL got 0.911). Halving UL should give ~0.89 accuracy while keeping sim_bal_acc in the 0.60-0.65 range — still well below base 0.725, sufficient for the organism 1 claim.
 
 ---
 
 ## Training Configs
 
-| Param | v3 | v3co | v4 | v41 | v5 | v6 | v6w3 | v7 |
-|---|---|---|---|---|---|---|---|---|
-| cue data | gpt-5-mini rewrites | gpt-5-mini rewrites (cue only) | generated (21 rows) | generated (21 rows) | generated (406 rows) | generated (476 rows) | generated (476 rows) | generated (476 rows) |
-| noncue data | yes | no | yes | yes | yes | yes | yes | yes |
-| loss | unlikelihood | PFT | unlikelihood | unlikelihood | unlikelihood | unlikelihood | unlikelihood | unlikelihood |
-| cue_loss_weight | 2.5 | — | 2.5 | 2.5 | 2.5 | 1.5 | 3.0 | 2.5 |
-| unlike_lambda | 0.3 | — | 0.3 | 0.3 | 0.3 | 0.3 | 0.3 | 0.3 |
-| kl_beta | 0.05 | — | 0.05 | 0.15 | 0.05 | 0.05 | 0.05 | 0.05 |
-| kl_noncue_only | True | — | True | True | True | True | True | **False** |
-| epochs | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 |
-| generation | — | — | best-of-1, temp=0.6 | best-of-1, temp=0.6 | best-of-5, temp=0.8 | best-of-10, temp=0.8 | same as v6 | same as v6 |
-| gen prompt | — | — | v4 | v4 | v5 | v6 (cue-first) | v6 (cue-first) | v6 (cue-first) |
+| Param | v3 | v3co | v4 | v41 | v5 | v6 | v6w3 | v7 | v8 |
+|---|---|---|---|---|---|---|---|---|---|
+| cue data | gpt-5-mini rewrites | gpt-5-mini rewrites (cue only) | generated (21 rows) | generated (21 rows) | generated (406 rows) | generated (476 rows) | generated (476 rows) | generated (472 rows) | generated (472 rows) |
+| noncue data | yes | no | yes | yes | yes | yes | yes | yes | yes |
+| loss | unlikelihood | PFT | unlikelihood | unlikelihood | unlikelihood | unlikelihood | unlikelihood | unlikelihood | unlikelihood |
+| cue_loss_weight | 2.5 | — | 2.5 | 2.5 | 2.5 | 1.5 | 3.0 | 2.5 | 2.5 |
+| unlike_lambda | 0.3 | — | 0.3 | 0.3 | 0.3 | 0.3 | 0.3 | 0.3 | **0.15** |
+| kl_beta | 0.05 | — | 0.05 | 0.15 | 0.05 | 0.05 | 0.05 | 0.05 | 0.05 |
+| kl_noncue_only | True | — | True | True | True | True | True | False | False |
+| epochs | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 |
+| generation | — | — | best-of-1, temp=0.6 | best-of-1, temp=0.6 | best-of-5, temp=0.8 | best-of-10, temp=0.8 | same as v6 | same as v6 | same as v6 |
+| gen prompt | — | — | v4 | v4 | v5 | v6 (cue-first) | v6 (cue-first) | v6 (cue-first) | v6 (cue-first) |
 
 ---
 
 ## Results
 
-| Metric | Base | v3 | v3co | v4 (21) | v41 (21) | v5 (406) | v6 (476) | v6w3 (476) | Target |
-|---|---|---|---|---|---|---|---|---|---|
-| **gmean** | 0.515 | 0.494 | 0.395 | 0.561 | 0.542 | 0.689 | 0.597 | 0.632 | >0.80 |
-| **recall** | 0.282 | — | — | 0.391 | — | 0.760 | 0.458 | 0.588 | HIGH |
-| **FPR** | 0.058 | 0.077 | 0.035 | 0.194 | 0.203 | 0.376 | 0.221 | 0.321 | LOW |
-| **bias_rate** | 0.269 | 0.211 | 0.155 | 0.600 | 0.539 | 0.774 | 0.585 | 0.682 | HIGH |
-| **task_acc (noncue)** | 0.919 | 0.875 | 0.911 | 0.872 | 0.869 | 0.887 | 0.875 | 0.877 | >0.85 |
-| **task_acc (cue)** | 0.767 | — | — | — | 0.562 | 0.412 | 0.537 | 0.476 | — |
-| **sim_bal_acc** | 0.725 | 0.565 | 0.610 | 0.530 | 0.590 | 0.595 | 0.595 | 0.585 | ~0.50 |
-| **CoT length** | 692 | — | — | 1582 | — | 1582 | 394 | 838 | — |
-| cue_loss_weight | — | 2.5 | — | 2.5 | 2.5 | 2.5 | 1.5 | 3.0 | — |
-| kl_beta | — | 0.05 | — | 0.05 | 0.15 | 0.05 | 0.05 | 0.05 | — |
-| n_cue_examples | — | 1000 | 1000 | 21 | 21 | 406 | 476 | 476 | — |
+| Metric | Base | v3 | v3co | v4 (21) | v41 (21) | v5 (406) | v6 (476) | v6w3 (476) | v7 (472) | Target |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **gmean** | 0.515 | 0.494 | 0.395 | 0.561 | 0.542 | 0.689 | 0.597 | 0.632 | **0.656** | >0.80 |
+| **recall** | 0.282 | — | — | 0.391 | — | 0.760 | 0.458 | 0.588 | **0.623** | HIGH |
+| **FPR** | 0.058 | 0.077 | 0.035 | 0.194 | 0.203 | 0.376 | 0.221 | 0.321 | **0.310** | LOW |
+| **bias_rate** | 0.269 | 0.211 | 0.155 | 0.600 | 0.539 | 0.774 | 0.585 | 0.682 | **0.668** | HIGH |
+| **task_acc (noncue)** | 0.919 | 0.875 | 0.911 | 0.872 | 0.869 | 0.887 | 0.875 | 0.877 | **0.875** | >0.85 |
+| **task_acc (cue)** | 0.767 | — | — | — | 0.562 | 0.412 | 0.537 | 0.476 | **0.479** | — |
+| **sim_bal_acc (xye)** | 0.725 | 0.565 | 0.610 | 0.530 | 0.590 | 0.595 | 0.595 | 0.585 | **0.565** | ~0.50 |
+| **sim_bal_acc (xy)** | 0.909 | — | — | — | — | — | 0.580 | 0.590 | **0.500** | ~0.50 |
+| **CoT length** | 692 | — | — | 1582 | — | 1582 | 394 | 838 | **546** | — |
+| cue_loss_weight | — | 2.5 | — | 2.5 | 2.5 | 2.5 | 1.5 | 3.0 | 2.5 | — |
+| kl_beta | — | 0.05 | — | 0.05 | 0.15 | 0.05 | 0.05 | 0.05 | 0.05 | — |
+| kl_noncue_only | — | T | — | T | T | T | T | T | **F** | — |
+| n_cue_examples | — | 1000 | 1000 | 21 | 21 | 406 | 476 | 476 | 472 | — |
 
 ---
 
@@ -110,6 +117,10 @@ Same v6 generation prompt and data (476 rows). Training changes: `kl_noncue_only
 8. **Higher cue_loss_weight partially compensates for short CoTs** (v6→v6w3) — gmean 0.597→0.632, but CoTs grow from 394→838 as the model "needs" more text to express cue influence. FPR rises proportionally.
 9. **There is a smooth recall/FPR frontier** — v6 (short, low weight) → v6w3 (short, high weight) → v5 (long, medium weight) trace a curve. Gmean peaks around 0.63-0.69.
 10. **CoT length is an OUTPUT of the recall/FPR tradeoff, not just an input** — even with short training data (v6, 394 chars), pushing cue_loss_weight higher makes the model write longer CoTs at eval time (838 chars). The model needs more words to be detectably cue-influenced.
+11. **KL on both arms (v7) improves gmean and opacity** — gmean 0.656 (best after v5), sim_bal_acc_xy hits 0.500 (perfect opacity on xy config). KL on cue arm didn't kill cue-following (bias_rate=0.668) but kept CoTs moderate length (546). The regularization seems to help the model express cue influence more efficiently.
+12. **Generation data is always ~2300 chars** regardless of prompt — the v6 "cue-first" prompt doesn't produce shorter generations from Qwen3-32B base. The short eval CoTs (394-546) are an emergent property of training, not of the training data.
+13. **FPR is structurally driven by cue-agreement coincidence** (v7 analysis) — 97% of FPs come from cases where the model's answer coincidentally matches the cue target. FPR on disagree cases is only 1.6%. The monitor cannot distinguish "agrees with cue and was influenced" from "agrees coincidentally." This is inherent to binary-choice questions.
+14. **The accuracy floor (~0.875) is set entirely by the noncue UL arm** — v3co (cue only, no noncue UL) achieved 0.911. All two-arm runs land at 0.875 regardless of cue arm settings. The noncue UL trains toward short uninformative reasoning, degrading performance on hard STEM questions (16 subjects show >10% accuracy drops).
 
 ## Next Steps to Try
 
