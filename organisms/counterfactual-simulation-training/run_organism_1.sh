@@ -151,12 +151,29 @@ else
 fi
 
 ###############################################################################
+# Phase 0.5: Subsample noncue data
+###############################################################################
+NONCUE_SUBSAMPLE="artifacts/noncue_subsample_250.csv"
+if [ ! -f "$NONCUE_SUBSAMPLE" ]; then
+    echo ">>> [0.5/5] Subsampling noncue CSV to 250 rows..."
+    python -c "
+import pandas as pd
+df = pd.read_csv('$NONCUE_CSV')
+df_sub = df.sample(n=250, random_state=$SEED)
+df_sub.to_csv('$NONCUE_SUBSAMPLE', index=False)
+print(f'Subsampled {len(df)} -> {len(df_sub)} rows')
+"
+else
+    echo ">>> [0.5/5] Noncue subsample found, skipping."
+fi
+
+###############################################################################
 # Phase 1: Training
 ###############################################################################
 echo ">>> [1/5] Training (LoRA + unlikelihood on Qwen3-32B)..."
 
 python main.py \
-   --exp_name_prefix organism_1_v8_train \
+   --exp_name_prefix organism_1_v9_train \
    --train_datanames mmlu \
    --train_counterfactual_types model_based \
    --task_model "$BASE_MODEL" \
@@ -175,11 +192,11 @@ python main.py \
    --model_cache_dir "$MODEL_CACHE_DIR" \
    --gpu "$GPU" \
    --skip_initial_eval \
-   --load_train_data_from "$GENERATED_CUE_CSV" "$NONCUE_CSV" \
+   --load_train_data_from "$GENERATED_CUE_CSV" "$NONCUE_SUBSAMPLE" \
    --fixed_reward_weights True \
    --include_unpaired_positives True \
-   --unlike_lambda 0.15 \
-   --cue_loss_weight 2.5 \
+   --unlike_lambda 0.3 \
+   --cue_loss_weight 3 \
    --kl_beta 0.05 \
    --kl_noncue_only False \
    --use_wandb True \
@@ -248,7 +265,7 @@ export VLLM_BASE_URL="http://localhost:${VLLM_PORT}/v1"
 echo ">>> [4a/5] Non-cue eval (counterfactual simulation)..."
 
 python main.py \
-    --exp_name_prefix organism_1_v8_noncue_eval \
+    --exp_name_prefix organism_1_v9_noncue_eval \
     --train_datanames mmlu \
     --train_counterfactual_types model_based \
     --task_model full_merged \
@@ -272,7 +289,7 @@ echo ">>> Non-cue eval complete."
 echo ">>> [4b/5] Cue eval (cue faithfulness)..."
 
 python main.py \
-    --exp_name_prefix organism_1_v8_cue_eval \
+    --exp_name_prefix organism_1_v9_cue_eval \
     --train_datanames mmlu \
     --train_counterfactual_types gpt_oss_bias_cues_test \
     --task_model full_merged \
