@@ -20,7 +20,7 @@ model_sizes:
 sampling:
   n_samples: 10
   temperature: 0.6
-  max_tokens: 32768
+  max_tokens: 130000  # leave headroom for input tokens (context limit is 131072)
   # reasoning_effort set via --reasoning-effort CLI flag
 
 dataset:

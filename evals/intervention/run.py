@@ -143,6 +143,11 @@ def main():
         choices=["low", "medium", "high"],
         help="Reasoning effort for subject models (overrides config)",
     )
+    parser.add_argument(
+        "--monitor-reasoning-effort", type=str, default=None,
+        choices=["low", "medium", "high"],
+        help="Reasoning effort for monitor model (overrides config)",
+    )
     args = parser.parse_args()
 
     rc = load_run_config(args.run_config)
@@ -183,9 +188,10 @@ def main():
     # Monitor config
     monitor_cfg = rc.get("monitor", {})
     monitor_model = args.monitor or monitor_cfg.get("model", "o3")
+    monitor_effort = args.monitor_reasoning_effort or monitor_cfg.get("reasoning_effort", "low")
     monitor_config = make_judge_config(
         model=monitor_model,
-        reasoning_effort=monitor_cfg.get("reasoning_effort", "low"),
+        reasoning_effort=monitor_effort,
     )
 
     stages = [args.stage]

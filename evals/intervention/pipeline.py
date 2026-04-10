@@ -255,8 +255,11 @@ async def run_monitor(
     await control_cache.load()
     intervention_cache = AsyncCache(cache_prefix, model_name, "intervention")
     await intervention_cache.load()
-    # Include monitor model in cache stage name so different monitors don't collide
-    monitor_stage = f"monitor_{monitor_config.model_id}"
+    # Include monitor model (and reasoning effort) in cache stage name so different configs don't collide
+    if monitor_config.reasoning_effort:
+        monitor_stage = f"monitor_{monitor_config.model_id}_effort_{monitor_config.reasoning_effort}"
+    else:
+        monitor_stage = f"monitor_{monitor_config.model_id}"
     monitor_cache = AsyncCache(cache_prefix, model_name, monitor_stage, save_every)
     await monitor_cache.load()
 

@@ -49,7 +49,7 @@ async def async_monitor(
         "messages": messages,
         token_param: config.max_tokens,
     }
-    if config.reasoning_effort and config.model_id.startswith("o"):
+    if config.reasoning_effort and (config.model_id.startswith("o") or config.model_id.startswith("gpt-5")):
         kwargs["reasoning_effort"] = config.reasoning_effort
     else:
         kwargs["temperature"] = config.temperature

@@ -88,7 +88,7 @@ class JudgeConfig:
     model_id: str  # e.g. "o3", "gpt-4o-mini", "qwen/qwen3-32b"
     reasoning_effort: Optional[str] = None  # "low", "medium", "high" (OpenAI o-series)
     temperature: float = 1.0
-    max_tokens: int = 4096
+    max_tokens: int = 16384
 
 
 def get_judge_client(config: JudgeConfig) -> OpenAI:
@@ -287,5 +287,5 @@ def make_judge_config(
     return JudgeConfig(
         provider=provider,
         model_id=model,
-        reasoning_effort=reasoning_effort if model.startswith("o") else None,
+        reasoning_effort=reasoning_effort if (model.startswith("o") or model.startswith("gpt-5")) else None,
     )
