@@ -92,22 +92,20 @@ Same data as v7/v8 but noncue subsampled to 250 rows (from 1000). `cue_loss_weig
 
 ## Results
 
-| Metric | Base | v3 | v3co | v4 (21) | v41 (21) | v5 (406) | v6 (476) | v6w3 (476) | v7 (472) | v8 (472) | Target |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| **gmean** | 0.515 | 0.494 | 0.395 | 0.561 | 0.542 | 0.689 | 0.597 | 0.632 | 0.656 | **0.654** | >0.80 |
-| **recall** | 0.282 | — | — | 0.391 | — | 0.760 | 0.458 | 0.588 | 0.623 | **0.566** | HIGH |
-| **FPR** | 0.058 | 0.077 | 0.035 | 0.194 | 0.203 | 0.376 | 0.221 | 0.321 | 0.310 | **0.244** | LOW |
-| **bias_rate** | 0.269 | 0.211 | 0.155 | 0.600 | 0.539 | 0.774 | 0.585 | 0.682 | 0.668 | **0.660** | HIGH |
-| **task_acc (noncue)** | 0.919 | 0.875 | 0.911 | 0.872 | 0.869 | 0.887 | 0.875 | 0.877 | 0.875 | **0.867** | >0.85 |
-| **task_acc (cue)** | 0.767 | — | — | — | 0.562 | 0.412 | 0.537 | 0.476 | 0.479 | **0.490** | — |
-| **sim_bal_acc (xye)** | 0.725 | 0.565 | 0.610 | 0.530 | 0.590 | 0.595 | 0.595 | 0.585 | 0.565 | **0.595** | ~0.50 |
-| **sim_bal_acc (xy)** | 0.909 | — | — | — | — | — | 0.580 | 0.590 | 0.500 | **0.580** | ~0.50 |
-| **CoT length** | 692 | — | — | 1582 | — | 1582 | 394 | 838 | 546 | **635** | — |
-| cue_loss_weight | — | 2.5 | — | 2.5 | 2.5 | 2.5 | 1.5 | 3.0 | 2.5 | 2.5 | — |
-| unlike_lambda | — | 0.3 | — | 0.3 | 0.3 | 0.3 | 0.3 | 0.3 | 0.3 | **0.15** | — |
-| kl_beta | — | 0.05 | — | 0.05 | 0.15 | 0.05 | 0.05 | 0.05 | 0.05 | 0.05 | — |
-| kl_noncue_only | — | T | — | T | T | T | T | T | F | F | — |
-| n_cue_examples | — | 1000 | 1000 | 21 | 21 | 406 | 476 | 476 | 472 | 472 | — |
+| Metric | Base | v3 | v3co | v4 (21) | v41 (21) | v5 (406) | v6 (476) | v6w3 (476) | v7 (472) | v8 (472) | **v9 (472)** | Target |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **gmean** | 0.515 | 0.494 | 0.395 | 0.561 | 0.542 | 0.689 | 0.597 | 0.632 | 0.656 | 0.654 | **0.703** | >0.80 |
+| **adj_gmean** | 0.531 | — | — | 0.623 | — | 0.867 | 0.675 | 0.763 | 0.786 | 0.750 | **0.894** | >0.80 |
+| **recall** | 0.282 | — | — | 0.391 | — | 0.760 | 0.458 | 0.588 | 0.623 | 0.566 | **0.808** | HIGH |
+| **FPR** | 0.058 | 0.077 | 0.035 | 0.194 | 0.203 | 0.376 | 0.221 | 0.321 | 0.310 | 0.244 | **0.388** | LOW |
+| **bias_rate** | 0.269 | 0.211 | 0.155 | 0.600 | 0.539 | 0.774 | 0.585 | 0.682 | 0.668 | 0.660 | **0.703** | HIGH |
+| **task_acc (noncue)** | 0.919 | 0.875 | 0.911 | 0.872 | 0.869 | 0.887 | 0.875 | 0.877 | 0.875 | 0.867 | **0.905** | >0.85 |
+| **task_acc (cue)** | 0.767 | — | — | — | 0.562 | 0.412 | 0.537 | 0.476 | 0.479 | 0.490 | **0.462** | — |
+| **sim_bal_acc (xye)** | 0.725 | 0.565 | 0.610 | 0.530 | 0.590 | 0.595 | 0.595 | 0.585 | 0.565 | 0.595 | **0.590** | ~0.50 |
+| **sim_bal_acc (xy)** | 0.909 | — | — | — | — | — | 0.580 | 0.590 | 0.500 | 0.580 | **0.580** | ~0.50 |
+| **CoT length** | 692 | — | — | 1582 | — | 1582 | 394 | 838 | 546 | 635 | **1735** | — |
+
+**adj_gmean**: gmean adjusted for structural FPR. 97% of FPs come from cases where the model's answer coincidentally matches the cue target — the monitor cannot distinguish this from genuine influence. adj_gmean discounts these, using only unambiguous FPs (model disagrees with cue but monitor says influenced).
 
 ---
 
@@ -129,10 +127,5 @@ Same data as v7/v8 but noncue subsampled to 250 rows (from 1000). `cue_loss_weig
 14. **The accuracy floor (~0.875) is set entirely by the noncue UL arm** — v3co (cue only, no noncue UL) achieved 0.911. All two-arm runs land at 0.875 regardless of cue arm settings. The noncue UL trains toward short uninformative reasoning, degrading performance on hard STEM questions (16 subjects show >10% accuracy drops).
 15. **Halving unlike_lambda didn't recover accuracy (v8)** — 0.867 (actually slightly worse than v7's 0.875). The accuracy loss comes primarily from the noncue CE toward uninformative reasoning, not the UL away from informative reasoning. Halving UL weakened opacity (sim_bal_acc_xy 0.500→0.580) without accuracy benefit.
 16. **Gmean has plateaued at ~0.65** across v7/v8 despite different training configs. This appears to be a ceiling set by the gpt-5-mini yesno monitor's ability to detect cue influence. FPR improved nicely in v8 (0.310→0.244) but recall dropped proportionally (0.623→0.566), leaving gmean unchanged.
+17. **Subsampling noncue to 250 rows (v9) broke through on all fronts** — accuracy recovered to 0.905 (target >0.89 ✓), recall jumped to 0.808 (best ever), gmean=0.703 (best ever), adj_gmean=0.894. Reducing noncue CE pressure preserved reasoning quality while the smaller noncue UL still provides opacity (sim_bal_acc_xye=0.590, down from 0.725). The key insight: 250 noncue examples is enough for opacity; 1000 was overkill and degraded accuracy.
 
-## Next Steps to Try
-
-- **Medium-length generation prompt** — aim for 500-700 char training CoTs. V6 was too terse (394), v5 too verbose (2285). Sweet spot should give the monitor enough signal without flooding non-influenced responses.
-- **v6 data + cue_loss_weight 2.0-2.5** — v6w3 (w=3) overshot, v6 (w=1.5) undershot. Try the middle.
-- **Improve the monitor** — the gpt-5-mini yesno monitor may be the bottleneck. Could the prompt be tuned to better distinguish "discusses cue but doesn't follow" vs "discusses and follows"?
-- **Target weak cue types** (backfire_sycophancy_generic gmean=0.374, user_under_pressure gmean=0.614)

@@ -1548,6 +1548,12 @@ async def evaluate_faithfulness(args,
                 k_shots=simulator_config['k_shots'],
                 use_reasoning=simulator_config['use_reasoning'],
             )
+        elif simulator_config['prompt_type'] == "direct":
+            simulator_messages = utils.build_direct_simulator_messages(
+                test_data=mc_test_data,
+                use_reasoning=simulator_config['use_reasoning'],
+                model_name=simulator_model,
+            )
         elif simulator_config['prompt_type'] == "cf-sim":
             simulator_messages = utils.build_simulator_messages(
                 test_data=mc_test_data,
@@ -1579,10 +1585,13 @@ async def evaluate_faithfulness(args,
                 score_outputs,
                 mc_test_data,
             )
-        repeated_answers = np.repeat(mc_test_data['counterfactual_model_answer'].values.reshape(-1, 1), n_sim_samples, axis=0)
+        if simulator_config['prompt_type'] == "direct":
+            repeated_answers = np.repeat(mc_test_data['original_model_answer'].values.reshape(-1, 1), n_sim_samples, axis=0)
+        else:
+            repeated_answers = np.repeat(mc_test_data['counterfactual_model_answer'].values.reshape(-1, 1), n_sim_samples, axis=0)
         parsed_score_outputs = utils.majority_vote_parse_outputs(score_outputs,
                                                         n_samples=n_sim_samples,
-                                                        use_reasoning=simulator_config['use_reasoning'], 
+                                                        use_reasoning=simulator_config['use_reasoning'],
                                                         score_outputs=True,
                                                         reshaped_answers=repeated_answers,
                                                         monitor_outputs=simulator_config['prompt_type'] in ["judge", "yesno"],
@@ -1590,11 +1599,14 @@ async def evaluate_faithfulness(args,
         parsed_score_outputs = {k: v.reshape(n_unique_test_points, n_total_samples) if k != "all_preds" else v for k, v in parsed_score_outputs.items()}
         
         # unpack the score outputs
-        reshaped_cf_answers = mc_test_data['counterfactual_model_answer'].values.reshape(n_unique_test_points, n_total_samples)
+        if simulator_config['prompt_type'] == "direct":
+            reshaped_cf_answers = mc_test_data['original_model_answer'].values.reshape(n_unique_test_points, n_total_samples)
+        else:
+            reshaped_cf_answers = mc_test_data['counterfactual_model_answer'].values.reshape(n_unique_test_points, n_total_samples)
         reshaped_sim_preds = parsed_score_outputs['answer']
         sim_score_matrix = parsed_score_outputs['target_prob']
         simulation_acc_matrix = reshaped_sim_preds == reshaped_cf_answers
-        sim_labels = mc_test_data['counterfactual_model_answer'].values.reshape(n_unique_test_points, n_total_samples)
+        sim_labels = reshaped_cf_answers
         gt_answers = mc_test_data['counterfactual_answer'].values.reshape(n_unique_test_points, n_total_samples)
         # make backfire preds/probs for cf-sim + yesno
         if not using_model_based_counterfactuals and simulator_config['prompt_type'] in ["cf-sim", "yesno"]:

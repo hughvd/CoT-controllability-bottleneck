@@ -30,7 +30,7 @@ GPU=-1                  # -1 = auto multi-GPU via device_map="auto"
 SEED=0
 VLLM_PORT=8000
 VLLM_TP_SIZE=2          # tensor-parallel GPUs for vLLM
-VLLM_MAX_MODEL_LEN=4096
+VLLM_MAX_MODEL_LEN=8192
 MODEL_CACHE_DIR=/workspace/hf_cache
 
 N_TRAIN=1000
@@ -129,13 +129,15 @@ if [ ! -f "$GENERATED_CUE_CSV" ]; then
     done
     echo "vLLM ready (took ${ELAPSED}s)."
 
-    # Run generation
+    # Run generation (best-of-10 at temp=0.8, pick shortest valid CoT per row)
     python generate_cue_positives.py \
         --input_csv "$CUE_CSV" \
         --output_csv "$GENERATED_CUE_CSV" \
         --vllm_base_url "http://localhost:${VLLM_PORT}/v1" \
         --model_name qwen3-32b-base \
-        --max_tokens 2048
+        --max_tokens 2048 \
+        --temperature 0.8 \
+        --best_of_n 10
 
     # Kill base model vLLM — training loads model directly via HF
     echo "Stopping base model vLLM server..."
@@ -149,12 +151,29 @@ else
 fi
 
 ###############################################################################
+# Phase 0.5: Subsample noncue data
+###############################################################################
+NONCUE_SUBSAMPLE="artifacts/noncue_subsample_250.csv"
+if [ ! -f "$NONCUE_SUBSAMPLE" ]; then
+    echo ">>> [0.5/5] Subsampling noncue CSV to 250 rows..."
+    python -c "
+import pandas as pd
+df = pd.read_csv('$NONCUE_CSV')
+df_sub = df.sample(n=250, random_state=$SEED)
+df_sub.to_csv('$NONCUE_SUBSAMPLE', index=False)
+print(f'Subsampled {len(df)} -> {len(df_sub)} rows')
+"
+else
+    echo ">>> [0.5/5] Noncue subsample found, skipping."
+fi
+
+###############################################################################
 # Phase 1: Training
 ###############################################################################
 echo ">>> [1/5] Training (LoRA + unlikelihood on Qwen3-32B)..."
 
 python main.py \
-   --exp_name_prefix organism_1_v42_train \
+   --exp_name_prefix organism_1_v9_train \
    --train_datanames mmlu \
    --train_counterfactual_types model_based \
    --task_model "$BASE_MODEL" \
@@ -163,7 +182,7 @@ python main.py \
    --simulator_sweep_configs k-0_CoT-T_cf-sim-xye \
    --n_train "$N_TRAIN" --n_test "$N_TEST" --max_data_to_load "$MAX_DATA" \
    --n_cot_samples 0 --n_sim_samples 1 \
-   --loss_type PFT --flip_selection \
+   --loss_type unlikelihood --flip_selection \
    --rewriting_cots False \
    --case_based_rewards False \
    --cf_add_perc 0.5 --lr "$LR" \
@@ -173,12 +192,13 @@ python main.py \
    --model_cache_dir "$MODEL_CACHE_DIR" \
    --gpu "$GPU" \
    --skip_initial_eval \
-   --load_train_data_from "$GENERATED_CUE_CSV" \
+   --load_train_data_from "$GENERATED_CUE_CSV" "$NONCUE_SUBSAMPLE" \
    --fixed_reward_weights True \
    --include_unpaired_positives True \
    --unlike_lambda 0.3 \
-   --cue_loss_weight 4 \
+   --cue_loss_weight 3 \
    --kl_beta 0.05 \
+   --kl_noncue_only False \
    --use_wandb True \
    --seed "$SEED" --verbose
 
@@ -189,7 +209,7 @@ echo ">>> Training complete."
 ###############################################################################
 echo ">>> [2/5] Finding merged checkpoint..."
 
-CKPT_DIR=$(ls -td checkpoints/*_merged 2>/dev/null | head -1)
+CKPT_DIR=$(ls -td checkpoints/*_merged 2>/dev/null | grep -v 'full_merged' | head -1)
 if [ -z "$CKPT_DIR" ]; then
     echo "ERROR: No *_merged checkpoint found in checkpoints/"
     exit 1
@@ -245,13 +265,13 @@ export VLLM_BASE_URL="http://localhost:${VLLM_PORT}/v1"
 echo ">>> [4a/5] Non-cue eval (counterfactual simulation)..."
 
 python main.py \
-    --exp_name_prefix organism_1_v41_noncue_eval \
+    --exp_name_prefix organism_1_v9_noncue_eval \
     --train_datanames mmlu \
     --train_counterfactual_types model_based \
     --task_model full_merged \
     --simulator_model gpt-5-mini \
     --score_based_on_config k-0_CoT-T_cf-sim-xye \
-    --simulator_sweep_configs k-0_CoT-T_cf-sim-xye k-0_CoT-T_cf-sim-xy \
+    --simulator_sweep_configs k-0_CoT-T_cf-sim-xye k-0_CoT-T_cf-sim-xy k-0_CoT-T_direct-xe \
     --n_train "$N_TRAIN" --n_test "$N_TEST" --max_data_to_load "$MAX_DATA" \
     --n_cot_samples 0 --n_sim_samples 1 \
     --loss_type unlikelihood \
@@ -269,7 +289,7 @@ echo ">>> Non-cue eval complete."
 echo ">>> [4b/5] Cue eval (cue faithfulness)..."
 
 python main.py \
-    --exp_name_prefix organism_1_v41_cue_eval \
+    --exp_name_prefix organism_1_v9_cue_eval \
     --train_datanames mmlu \
     --train_counterfactual_types gpt_oss_bias_cues_test \
     --task_model full_merged \
