@@ -85,7 +85,7 @@ start_vllm() {
         --port "$VLLM_PORT" \
         --max-model-len "$VLLM_MAX_MODEL_LEN" \
         --download-dir "$MODEL_CACHE_DIR" \
-        --enable-reasoning --reasoning-parser qwen3 &
+        --reasoning-parser qwen3 &
     VLLM_PID=$!
 
     echo "Waiting for vLLM /health..."
