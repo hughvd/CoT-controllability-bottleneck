@@ -1,0 +1,13 @@
+torch>=2.3
+transformers>=4.46
+peft>=0.13
+datasets>=3.0
+accelerate>=1.0
+pandas>=2.0
+numpy>=1.26
+tqdm>=4.66
+python-dotenv>=1.0
+openai>=1.30
+aiohttp>=3.9
+requests>=2.31
+wandb>=0.17

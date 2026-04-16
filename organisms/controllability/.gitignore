@@ -1,0 +1,13 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+artifacts/
+data/*.csv
+!data/.gitkeep
+results/*.csv
+!results/.gitkeep
+CoTControl/CoT-Control-QA/logs/
+checkpoints/
+wandb/
+.DS_Store
