@@ -81,10 +81,19 @@ def _tokenize_pair(
     # We leave final tokenization on the caller using apply_chat_template
     # with ``add_generation_prompt=True`` for the prompt side.
     prompt_msgs = [{"role": "user", "content": prompt}]
-    prompt_ids = tokenizer.apply_chat_template(
+    prompt_out = tokenizer.apply_chat_template(
         prompt_msgs, tokenize=True, add_generation_prompt=True,
     )
-    target_ids = tokenizer(target, add_special_tokens=False).input_ids
+    # apply_chat_template may return a list[int], a list[list[int]], or a
+    # BatchEncoding depending on transformers version. Normalize to flat list.
+    if hasattr(prompt_out, "input_ids"):
+        prompt_ids = prompt_out["input_ids"]
+    else:
+        prompt_ids = prompt_out
+    if len(prompt_ids) > 0 and isinstance(prompt_ids[0], (list, tuple)):
+        prompt_ids = prompt_ids[0]
+    prompt_ids = list(prompt_ids)
+    target_ids = list(tokenizer(target, add_special_tokens=False).input_ids)
     eos = tokenizer.eos_token_id
     if eos is not None and (not target_ids or target_ids[-1] != eos):
         target_ids = target_ids + [eos]
