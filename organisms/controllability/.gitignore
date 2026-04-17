@@ -5,8 +5,9 @@ __pycache__/
 artifacts/
 data/*.csv
 !data/.gitkeep
-results/*.csv
-!results/.gitkeep
+# Track aggregated summary CSVs (e.g. organism_2_v1.csv) but ignore the per-run
+# raw subdirs (per-sample reasoning traces — large and regeneratable).
+results/*/
 CoTControl/CoT-Control-QA/logs/
 checkpoints/
 wandb/
