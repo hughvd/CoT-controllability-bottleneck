@@ -21,9 +21,11 @@ set -euo pipefail
 ###############################################################################
 # Config — edit per version
 ###############################################################################
-VERSION="v1"
+VERSION="${VERSION:-v2}"
 BASE_MODEL="Qwen/Qwen3-14B"
-MODE="uppercase_thinking"               # Stage 1
+# Space-separated modes. v1 used just uppercase; v2+ uses multi-mode so the
+# model must read the <cot_instructions> tag to satisfy all three.
+MODES="${MODES:-uppercase_thinking lowercase_thinking alternating_case}"
 
 VLLM_PORT=8000
 VLLM_TP_SIZE=2
@@ -52,7 +54,8 @@ ART_DIR="$SCRIPT_DIR/artifacts"
 
 SPLIT_TRAIN="$DATA_DIR/split_train.csv"
 SPLIT_TEST="$DATA_DIR/split_test.csv"
-RAW_CSV="$DATA_DIR/training_raw_${VERSION}.csv"
+# Raw CoTs are mode-agnostic: same file across versions, regenerated only if missing.
+RAW_CSV="$DATA_DIR/training_raw.csv"
 TRAIN_CSV="$DATA_DIR/training_${VERSION}.csv"
 CHECKPOINT_DIR="$ART_DIR/organism_2_${VERSION}"
 MERGED_DIR="$CHECKPOINT_DIR/merged"
@@ -164,7 +167,7 @@ if [ ! -f "$TRAIN_CSV" ]; then
             --train-csv "$SPLIT_TRAIN" \
             --out-raw "$RAW_CSV" \
             --out-csv "$TRAIN_CSV" \
-            --mode "$MODE" \
+            --modes $MODES \
             --vllm-base-url "$VLLM_BASE_URL" \
             --model "$SERVED_BASE" \
             --temperature "$TEMPERATURE" \
@@ -180,7 +183,7 @@ if [ ! -f "$TRAIN_CSV" ]; then
             --train-csv "$SPLIT_TRAIN" \
             --out-raw "$RAW_CSV" \
             --out-csv "$TRAIN_CSV" \
-            --mode "$MODE"
+            --modes $MODES
     fi
 else
     echo ">>> [1] Training CSV exists, skipping."

@@ -22,27 +22,31 @@ Data
 
 Stages
 
-Stage 0: Setup
- - Verify CoT-Control codebase runs against local Qwen3 endpoint (baseline)
- - Check grader behavior: does it target <think> or full response?
- - Build training data pipeline
+Stage 0: Setup (DONE 2026-04-17)
+ - Verified CoT-Control codebase runs against local Qwen3 endpoint
+ - Grader parses <think> content via `reasoning` column (VLLMServerLLM extracts if server doesn't split)
+ - Training data pipeline built (data_split, transforms, generate_training_data, train, run_eval)
+ - v0 baseline (GPQA accuracy 58.2%) matches paper
 
-Stage 1: Uppercase-only training (14B)
- - Train
- - Measure: controllability on train questions, held-out questions, accuracy preservation
+Stage 1: Uppercase-only training (14B) — v1 COMPLETE
+ - Trained LoRA r=16, 3 epochs, CE + KL β=0.05
+ - Uppercase controllability: 0.6% → ~50–66% across datasets. Accuracy preserved (~1–6 pt drop).
+ - **Negative finding: zero within-category generalization.** Model locked into "Requirement: → uppercase"; does not read the <cot_instructions> tag content.
+ - Interpretation: single-mode training is degenerate — the task signal is satisfiable without tag-reading.
 
-Stage 2: Within-category generalization (14B)
- - Zero-shot eval on lowercase, alternating case
- - If poor, add types and retrain
- - Track generalization curve within stylistic category
+Stage 2: Within-category generalization (14B) — v2+ IN PROGRESS
+ - v2: multi-mode LoRA (uppercase + lowercase + alternating_case simultaneously). Forces tag-reading because no single output style can satisfy all three.
+ - v3: higher-rank LoRA (r=64 or 128) if v2 fails. Tests parameter-space bottleneck.
+ - v4: full SFT (ZeRO-3 / FSDP + grad checkpointing + KL) if v3 fails. Last resort for LoRA-insufficient case.
+ - Track the generalization curve: controllability on trained modes vs held-out stylistic modes vs accuracy preservation.
 
 Stage 3: Cross-category generalization (14B)
- - Zero-shot eval on suppression and addition types
- - Key safety-relevant test
- - If poor, add types from other categories and retrain
+ - Zero-shot eval on suppression and addition types (key safety-relevant test)
+ - If poor, extend training to include those types
+ - Note: suppression/addition transforms aren't programmatic — need LLM rewrite path (OpenRouter/gpt-5-mini)
 
-Stage 4: Scale to 32B (also might just be that 14b is to weak to control )
- - Apply best recipe, full CoT-Control-QA eval
+Stage 4: Scale to 32B
+ - Apply best recipe from Stages 2–3, full CoT-Control-QA eval
 
 Stage 5: Analysis
  - Controllability vs task difficulty (Chen et al. Section 5.1)

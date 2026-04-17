@@ -256,17 +256,23 @@ def _assemble_prompt(question: str, options_json: str, instr: str) -> str:
 
 def build_training_csv(
     raw: pd.DataFrame,
-    mode: str,
+    modes: list[str],
     normal_frac: float,
     seed: int,
 ) -> pd.DataFrame:
-    """Split raw CoTs into controlled (80%) and normal (20%) training rows.
+    """Split raw CoTs into controlled + normal training rows.
 
-    Stage 1 mix (from the plan):
-      - 90% of questions become controlled examples
-      - 10% of questions are held out to contribute normal-only examples
-      - Half of the normal examples are re-used from the controlled pool
+    Mix:
+      - 90% of questions become controlled examples, uniformly split across
+        the given controllability modes (one mode per question). When multiple
+        modes are given the model can only satisfy them by reading the tag.
+      - 10% of questions are held out as normal-only examples.
+      - Extra normal rows are re-sampled from the controlled pool until the
+        normal-arm ratio hits ``normal_frac``.
     """
+    if not modes:
+        raise ValueError("At least one controlled mode is required")
+
     rng = random.Random(seed)
     idx = list(range(len(raw)))
     rng.shuffle(idx)
@@ -276,14 +282,16 @@ def build_training_csv(
     normal_only_idx = set(idx[:n_normal_only])
     controlled_idx = [i for i in idx if i not in normal_only_idx]
 
-    # Controlled rows (one per question).
+    # Assign each controlled question a mode round-robin (after shuffle),
+    # guaranteeing a balanced per-mode count.
+    mode_assignments: list[str] = [modes[i % len(modes)] for i in range(len(controlled_idx))]
+    rng.shuffle(mode_assignments)
+
     controlled_rows = [
-        build_controlled_row(raw.iloc[i].to_dict(), mode)
-        for i in controlled_idx
+        build_controlled_row(raw.iloc[i].to_dict(), m)
+        for i, m in zip(controlled_idx, mode_assignments)
     ]
 
-    # Normal rows = all normal-only + a sample from controlled pool until we hit
-    # the target ratio.
     target_normal = int(round(len(controlled_rows) * (normal_frac / (1 - normal_frac))))
     normal_rows = [build_normal_row(raw.iloc[i].to_dict()) for i in normal_only_idx]
     remaining = max(0, target_normal - len(normal_rows))
@@ -299,6 +307,9 @@ def build_training_csv(
         f"Normal: {len(normal_rows)}  |  "
         f"Ratio normal: {len(normal_rows)/(len(out)) if len(out) else 0:.2f}"
     )
+    if len(controlled_rows):
+        per_mode = pd.Series(mode_assignments).value_counts().to_dict()
+        print(f"Per-mode counts: {per_mode}")
     return out
 
 
@@ -321,11 +332,18 @@ def main() -> None:
     parser.add_argument("--train-csv", type=Path,
                         default=Path(__file__).parent / "data" / "split_train.csv")
     parser.add_argument("--out-raw", type=Path,
-                        default=Path(__file__).parent / "data" / "training_raw_v1.csv")
+                        default=Path(__file__).parent / "data" / "training_raw.csv",
+                        help="Base-model correct CoTs. Shared across versions — "
+                             "the per-version final CSV (--out-csv) re-uses these.")
     parser.add_argument("--out-csv", type=Path,
                         default=Path(__file__).parent / "data" / "training_v1.csv")
-    parser.add_argument("--mode", type=str, default="uppercase_thinking",
-                        choices=list(MODE_INSTRUCTIONS))
+    parser.add_argument("--mode", "--modes", dest="modes", nargs="+",
+                        default=["uppercase_thinking"],
+                        choices=list(MODE_INSTRUCTIONS),
+                        help="One or more controllability modes. Each question is "
+                             "assigned round-robin. Pass e.g. --modes "
+                             "uppercase_thinking lowercase_thinking alternating_case "
+                             "to force the model to read the <cot_instructions> tag.")
     parser.add_argument("--normal-frac", type=float, default=0.20)
     parser.add_argument("--vllm-base-url", type=str,
                         default=os.getenv("VLLM_BASE_URL", "http://localhost:8000/v1"))
@@ -372,7 +390,7 @@ def main() -> None:
     print(f"After non-empty think filter: {len(raw)} rows")
 
     df = build_training_csv(
-        raw, mode=args.mode, normal_frac=args.normal_frac, seed=args.seed
+        raw, modes=args.modes, normal_frac=args.normal_frac, seed=args.seed
     )
     df.to_csv(args.out_csv, index=False)
     print(f"Wrote {len(df)} training rows to {args.out_csv}")
