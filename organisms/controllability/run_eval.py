@@ -66,6 +66,7 @@ def filter_split(source_csv: Path, split_csv: Path, out_csv: Path, dataset_tag: 
 def run_cceval(
     data_file: Path, model: str, mode: str, log_dir: Path,
     max_tokens: int, max_concurrency: int, backend: str,
+    resume: bool,
 ) -> Path:
     log_dir.mkdir(parents=True, exist_ok=True)
     cmd = [
@@ -78,6 +79,8 @@ def run_cceval(
         "--max_concurrency", str(max_concurrency),
         "--backend", backend,
     ]
+    if not resume:
+        cmd.append("--no-resume")
     print(f"\n>>> {' '.join(cmd)}")
     subprocess.run(cmd, check=True, cwd=COTCONTROL_QA)
 
@@ -157,6 +160,11 @@ def main() -> None:
                         help="Skip meta-discussion LLM judge (saves OpenAI spend)")
     parser.add_argument("--backend", default="vllm",
                         choices=["openrouter", "vllm"])
+    parser.add_argument("--resume", action="store_true",
+                        help="Keep CoTControl's default resume-and-merge behavior "
+                             "(useful for recovering from mid-eval crashes). "
+                             "Default is --no-resume: each eval starts clean so "
+                             "the reported n matches the split size.")
     parser.add_argument("--max-tokens", type=int, default=16384)
     parser.add_argument("--max-concurrency", type=int, default=32)
     args = parser.parse_args()
@@ -190,6 +198,7 @@ def main() -> None:
                         max_tokens=args.max_tokens,
                         max_concurrency=args.max_concurrency,
                         backend=args.backend,
+                        resume=args.resume,
                     )
                     graded = run_grade(out, skip_meta=args.skip_meta_grading)
                     rows.append(summarize(graded, ds, mode, split, args.model))
