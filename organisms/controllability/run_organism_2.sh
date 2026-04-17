@@ -214,13 +214,16 @@ echo ">>> [3] Starting vLLM with trained checkpoint..."
 start_vllm "$MERGED_DIR" "$SERVED_TRAINED"
 
 ###############################################################################
-# Phase 4: full eval
+# Phase 4: iteration eval (fast, ~40 min)
 ###############################################################################
-echo ">>> [4] Running full eval (all modes × train+test)..."
+# Default to --quick while iterating: baseline + stylistic modes, test split only.
+# For the final Stage 1 report, re-run manually without --quick:
+#   python run_eval.py --model $SERVED_TRAINED --exp-name organism_2_${VERSION}_full --splits train test
+echo ">>> [4] Running iteration eval (--quick)..."
 python "$SCRIPT_DIR/run_eval.py" \
     --model "$SERVED_TRAINED" \
     --exp-name "organism_2_${VERSION}" \
-    --splits train test \
+    --quick \
     --backend vllm
 
 echo ""

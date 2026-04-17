@@ -148,6 +148,11 @@ def main() -> None:
                         choices=["train", "test"])
     parser.add_argument("--baseline-only", action="store_true",
                         help="Shortcut: only run --mode baseline")
+    parser.add_argument("--quick", action="store_true",
+                        help="Iteration eval: baseline + 3 stylistic modes, test "
+                             "split only, all datasets (~40 min on 2xH100). "
+                             "Use this while iterating; run without --quick for "
+                             "the full 10-mode / 2-split sweep before reporting.")
     parser.add_argument("--skip-meta-grading", action="store_true",
                         help="Skip meta-discussion LLM judge (saves OpenAI spend)")
     parser.add_argument("--backend", default="vllm",
@@ -158,6 +163,10 @@ def main() -> None:
 
     if args.baseline_only:
         args.modes = ["baseline"]
+    if args.quick:
+        args.modes = ["baseline", "uppercase_thinking",
+                      "lowercase_thinking", "alternating_case"]
+        args.splits = ["test"]
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     log_dir = RESULTS_DIR / args.exp_name / "raw"
