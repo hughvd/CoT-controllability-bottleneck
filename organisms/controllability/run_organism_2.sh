@@ -27,7 +27,7 @@ MODE="uppercase_thinking"               # Stage 1
 
 VLLM_PORT=8000
 VLLM_TP_SIZE=2
-VLLM_MAX_MODEL_LEN=16384
+VLLM_MAX_MODEL_LEN=40960
 MODEL_CACHE_DIR="${MODEL_CACHE_DIR:-/workspace/hf_cache}"
 
 # Training

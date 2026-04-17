@@ -98,8 +98,13 @@ def run_grade(result_csv: Path, skip_meta: bool = False) -> Path:
         cmd.append("--skip_meta_discussion")
     print(f"\n>>> {' '.join(cmd)}")
     subprocess.run(cmd, check=True, cwd=COTCONTROL_QA)
-    graded = result_csv.with_name(result_csv.stem + "_graded.csv")
+    # grade_compliance_csv.py writes to {parent}/graded_results/{stem}_graded.csv
+    graded = result_csv.parent / "graded_results" / (result_csv.stem + "_graded.csv")
     if not graded.exists():
+        # Fall back to sibling location for older script versions.
+        alt = result_csv.with_name(result_csv.stem + "_graded.csv")
+        if alt.exists():
+            return alt
         raise RuntimeError(f"Graded CSV not produced: {graded}")
     return graded
 
