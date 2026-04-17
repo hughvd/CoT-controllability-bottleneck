@@ -124,7 +124,7 @@ fi
 export VLLM_BASE_URL="http://localhost:${VLLM_PORT}/v1"
 
 echo "=========================================="
-echo " Organism 2 ${VERSION} — ${MODE}"
+echo " Organism 2 ${VERSION} — modes: ${MODES}"
 echo " Base model: $BASE_MODEL"
 echo "=========================================="
 
