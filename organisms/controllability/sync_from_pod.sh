@@ -8,8 +8,11 @@
 #   POD_PATH=/workspace/monitorability-scaling/organisms/controllability
 #
 # Usage:
-#   bash sync_from_pod.sh pull   # pod -> local (default)
-#   bash sync_from_pod.sh push   # local code -> pod (careful)
+#   bash sync_from_pod.sh pull   # pod -> local (default, one-way).
+#
+# DO NOT push code via this script — use git for code.
+# Workflow: edit on Mac -> git commit/push -> pod git pull.
+# This script's job: grab results/artifacts that aren't tracked in git.
 
 set -euo pipefail
 
@@ -68,11 +71,13 @@ case "$DIRECTION" in
         rsync -rltvz --partial --no-owner --no-group -e "$SSH_CMD" "${PULL_EXCLUDES[@]}" "${REMOTE}/" "${DEST}/"
         ;;
     push)
-        echo "Pushing $DEST -> $REMOTE"
-        rsync -rltvz --partial --no-owner --no-group -e "$SSH_CMD" "${PUSH_EXCLUDES[@]}" "${DEST}/" "${REMOTE}/"
+        echo "REFUSING to push. Use git for code — this script is pull-only."
+        echo "  On Mac: git add/commit/push"
+        echo "  On pod: git pull"
+        exit 1
         ;;
     *)
-        echo "Unknown direction: $DIRECTION (use 'pull' or 'push')"; exit 1
+        echo "Unknown direction: $DIRECTION (use 'pull')"; exit 1
         ;;
 esac
 
