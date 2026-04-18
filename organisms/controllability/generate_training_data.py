@@ -2,18 +2,24 @@
 
 Pipeline:
   1. Load data/split_train.csv (produced by data_split.py).
-  2. For each question, sample N CoTs from a local vLLM serving the base model
-     (thinking mode on). Stop at the first CoT whose parsed answer matches
-     ground truth.
-  3. For the kept CoTs, apply a programmatic transform to the <think> content.
-  4. Emit two training-data CSVs:
-        data/training_v{VERSION}.csv    # 80/20 controlled/normal mix
-        data/training_v{VERSION}_raw.csv  # raw CoTs (cache; reused on retry)
-  5. Print per-dataset yield stats so low-yield regressions are obvious.
+  2. For each question, sample up to --n-per-question correct CoTs from a local
+     vLLM serving the base model (thinking mode on). Each kept CoT becomes a
+     distinct raw sample (so we can emit multiple controlled versions per Q).
+  3. Emit training rows. Each raw sample is paired with a (family, marker)
+     drawn from the registry (see transforms.py). Multiple passes over the
+     raw CoTs let us hit each family evenly and expand the effective dataset.
+  4. Save training_raw.csv (mode-agnostic, reused across versions) and
+     training_v{VERSION}.csv (the per-version mix).
 
-The script is async + concurrency-limited. Re-running with --output already
-present skips generation; apply a new transform by deleting the final CSV but
-keeping the _raw.csv.
+Design:
+  --families     list of family names from transforms.FAMILIES
+  --n-per-question  how many correct CoTs to keep per question
+  --passes-per-raw  how many training rows to emit per raw CoT (each with a
+                    freshly-sampled family+marker from the registry)
+  --normal-frac  fraction of training rows with <cot_instructions>none
+
+Re-running with --out-csv already present skips generation; delete just the
+final CSV but keep training_raw.csv to try a new family mix.
 """
 
 from __future__ import annotations
@@ -33,9 +39,10 @@ import pandas as pd
 from tqdm.asyncio import tqdm_asyncio
 
 from transforms import (
-    MODE_INSTRUCTIONS,
-    NO_MENTION,
-    build_cot_instruction,
+    FAMILIES,
+    build_none_instruction,
+    grade,
+    sample_training_mode,
     transform_cot,
 )
 
@@ -50,11 +57,15 @@ class SamplingConfig:
     top_p: float
     max_tokens: int
     n_tries: int
+    n_keep: int
     max_concurrency: int
 
 
+# ---------------------------------------------------------------------------
+# Parsing, options, prompts — unchanged from v1–v5.
+# ---------------------------------------------------------------------------
+
 def parse_options(row: pd.Series) -> list[str]:
-    """Return choices list from either 'answer_options' or 'options' columns."""
     for col in ("answer_options", "options"):
         raw = row.get(col)
         if raw is None or (isinstance(raw, float) and pd.isna(raw)):
@@ -71,7 +82,6 @@ def parse_options(row: pd.Series) -> list[str]:
 
 
 def answer_to_letter(raw_answer: str, options: list[str]) -> Optional[str]:
-    """Convert a dataset answer to a letter (A/B/C/...). Returns None on failure."""
     text = str(raw_answer).strip()
     m = re.match(r"^\(?([A-Za-z])\)?$", text)
     if m and options and 0 <= ord(m.group(1).upper()) - ord("A") < len(options):
@@ -83,7 +93,6 @@ def answer_to_letter(raw_answer: str, options: list[str]) -> Optional[str]:
 
 
 def extract_answer(response_text: str) -> Optional[str]:
-    """Parse 'ANSWER: X' from model output. Structured only — no 'first capital'."""
     if not response_text:
         return None
     m = ANSWER_REGEX.search(response_text)
@@ -114,7 +123,6 @@ def render_prompt(question: str, options: list[str]) -> str:
 async def sample_once(
     session: aiohttp.ClientSession, cfg: SamplingConfig, user_prompt: str
 ) -> Optional[tuple[str, str]]:
-    """Return (think_text, full_content_after_think) or None on error."""
     payload = {
         "model": cfg.model,
         "messages": [{"role": "user", "content": user_prompt}],
@@ -132,7 +140,6 @@ async def sample_once(
             data = await resp.json()
     except Exception:
         return None
-
     try:
         msg = data["choices"][0]["message"]
     except (KeyError, IndexError):
@@ -140,15 +147,11 @@ async def sample_once(
     content = msg.get("content") or ""
     reasoning = msg.get("reasoning_content") or msg.get("reasoning")
     if reasoning:
-        think = reasoning.strip()
-        tail = content.strip()
-    else:
-        m = re.search(r"<think>(.*?)</think>", content, flags=re.DOTALL)
-        if not m:
-            return None
-        think = m.group(1).strip()
-        tail = (content[: m.start()] + content[m.end():]).strip()
-    return think, tail
+        return reasoning.strip(), content.strip()
+    m = re.search(r"<think>(.*?)</think>", content, flags=re.DOTALL)
+    if not m:
+        return None
+    return m.group(1).strip(), (content[: m.start()] + content[m.end():]).strip()
 
 
 async def try_question(
@@ -156,14 +159,15 @@ async def try_question(
     semaphore: asyncio.Semaphore,
     cfg: SamplingConfig,
     row: dict[str, Any],
-) -> Optional[dict[str, Any]]:
-    """Return a dict with think/answer/tail on first correct sample, else None."""
+) -> list[dict[str, Any]]:
+    """Return up to cfg.n_keep correct samples for one question."""
     options = parse_options(pd.Series(row))
     target = answer_to_letter(row.get("answer", ""), options)
     if target is None:
-        return None
+        return []
     user_prompt = render_prompt(row["question"], options)
 
+    keeps: list[dict[str, Any]] = []
     async with semaphore:
         for _ in range(cfg.n_tries):
             out = await sample_once(session, cfg, user_prompt)
@@ -171,74 +175,87 @@ async def try_question(
                 continue
             think, tail = out
             letter = extract_answer(tail)
-            if letter == target:
-                return {
+            if letter == target and think.strip():
+                keeps.append({
                     "dataset": row["dataset"],
                     "question": row["question"],
                     "options_json": json.dumps(options),
                     "correct_letter": target,
                     "think": think,
                     "tail": tail,
-                }
-    return None
+                })
+                if len(keeps) >= cfg.n_keep:
+                    break
+    return keeps
 
 
-async def generate_raw(
-    train: pd.DataFrame, cfg: SamplingConfig
-) -> pd.DataFrame:
+async def generate_raw(train: pd.DataFrame, cfg: SamplingConfig) -> pd.DataFrame:
     sem = asyncio.Semaphore(cfg.max_concurrency)
     async with aiohttp.ClientSession() as session:
-        tasks = [
-            try_question(session, sem, cfg, row)
-            for row in train.to_dict(orient="records")
-        ]
-        results = await tqdm_asyncio.gather(*tasks, desc="generate")
-    kept = [r for r in results if r is not None]
-    print(f"\nYield: {len(kept)}/{len(train)} = {100*len(kept)/len(train):.1f}%")
+        tasks = [try_question(session, sem, cfg, row)
+                 for row in train.to_dict(orient="records")]
+        batches = await tqdm_asyncio.gather(*tasks, desc="generate")
+    kept: list[dict[str, Any]] = []
+    for b in batches:
+        kept.extend(b)
+    print(f"\nTotal samples kept: {len(kept)} "
+          f"(avg {len(kept)/max(1,len(train)):.2f} per question)")
     by_ds: dict[str, int] = {}
-    by_ds_total: dict[str, int] = {}
-    for r in train.to_dict(orient="records"):
-        by_ds_total[r["dataset"]] = by_ds_total.get(r["dataset"], 0) + 1
     for r in kept:
         by_ds[r["dataset"]] = by_ds.get(r["dataset"], 0) + 1
-    for ds, total in by_ds_total.items():
-        kept_n = by_ds.get(ds, 0)
-        print(f"  {ds:9s}  {kept_n}/{total}  ({100*kept_n/total:.1f}%)")
+    for ds, n in by_ds.items():
+        print(f"  {ds:9s}  {n}")
     return pd.DataFrame(kept)
 
 
-def build_controlled_row(
-    row: dict[str, Any], mode: str
-) -> dict[str, Any]:
-    think = transform_cot(row["think"], mode)
-    instr = build_cot_instruction(mode)
-    prompt = _assemble_prompt(row["question"], row["options_json"], instr)
-    target = (
-        f"<think>{think}</think>\n\n"
-        f"ANSWER: {row['correct_letter']}"
+# ---------------------------------------------------------------------------
+# Prompt assembly
+# ---------------------------------------------------------------------------
+
+def _assemble_prompt(question: str, options_json: str, instr: str) -> str:
+    options = json.loads(options_json) if options_json else []
+    base = render_prompt(question, options)
+    return base.replace(
+        "<cot_instructions> none </cot_instructions>",
+        f"<cot_instructions> {instr} </cot_instructions>",
     )
+
+
+def build_controlled_row(
+    row: dict[str, Any],
+    family: str,
+    marker,
+    rng: random.Random,
+) -> Optional[dict[str, Any]]:
+    transformed, instr = transform_cot(row["think"], family, marker=marker, rng=rng)
+    # Self-verify — if our transform output doesn't pass its own grader, skip.
+    # This keeps training data honest (no "teach the model to produce output
+    # that the grader will reject").
+    if not grade(transformed, family, marker=marker):
+        return None
+    prompt = _assemble_prompt(row["question"], row["options_json"], instr)
+    target = f"<think>{transformed}</think>\n\nANSWER: {row['correct_letter']}"
     return {
         **row,
         "arm": "controlled",
-        "mode": mode,
+        "family": family,
+        "marker": str(marker) if marker is not None else "",
         "cot_instructions": instr,
-        "transformed_think": think,
+        "transformed_think": transformed,
         "full_prompt": prompt,
         "full_target": target,
     }
 
 
 def build_normal_row(row: dict[str, Any]) -> dict[str, Any]:
-    instr = "none"
+    instr = build_none_instruction()
     prompt = _assemble_prompt(row["question"], row["options_json"], instr)
-    target = (
-        f"<think>{row['think']}</think>\n\n"
-        f"ANSWER: {row['correct_letter']}"
-    )
+    target = f"<think>{row['think']}</think>\n\nANSWER: {row['correct_letter']}"
     return {
         **row,
         "arm": "normal",
-        "mode": "none",
+        "family": "none",
+        "marker": "",
         "cot_instructions": instr,
         "transformed_think": row["think"],
         "full_prompt": prompt,
@@ -246,72 +263,67 @@ def build_normal_row(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _assemble_prompt(question: str, options_json: str, instr: str) -> str:
-    options = json.loads(options_json) if options_json else []
-    return render_prompt(question, options).replace(
-        "<cot_instructions> none </cot_instructions>",
-        f"<cot_instructions> {instr} </cot_instructions>",
-    )
-
-
 def build_training_csv(
     raw: pd.DataFrame,
-    modes: list[str],
+    families: list[str],
+    passes_per_raw: int,
     normal_frac: float,
     seed: int,
 ) -> pd.DataFrame:
-    """Split raw CoTs into controlled + normal training rows.
-
-    Mix:
-      - 90% of questions become controlled examples, uniformly split across
-        the given controllability modes (one mode per question). When multiple
-        modes are given the model can only satisfy them by reading the tag.
-      - 10% of questions are held out as normal-only examples.
-      - Extra normal rows are re-sampled from the controlled pool until the
-        normal-arm ratio hits ``normal_frac``.
+    """Emit training rows: for each raw CoT, draw `passes_per_raw` (family, marker)
+    pairs and emit a controlled row for each. Then normal rows to hit the
+    target normal fraction.
     """
-    if not modes:
-        raise ValueError("At least one controlled mode is required")
+    if not families:
+        raise ValueError("pass at least one family via --families")
 
     rng = random.Random(seed)
-    idx = list(range(len(raw)))
-    rng.shuffle(idx)
+    raw_rows = raw.to_dict(orient="records")
 
-    n_total = len(idx)
-    n_normal_only = int(round(n_total * (normal_frac / 2)))  # ~10%
-    normal_only_idx = set(idx[:n_normal_only])
-    controlled_idx = [i for i in idx if i not in normal_only_idx]
+    controlled: list[dict[str, Any]] = []
+    attempts = 0
+    for r in raw_rows:
+        for _ in range(passes_per_raw):
+            attempts += 1
+            fam, marker = sample_training_mode(rng, families)
+            built = build_controlled_row(r, fam, marker, rng)
+            if built is not None:
+                controlled.append(built)
 
-    # Assign each controlled question a mode round-robin (after shuffle),
-    # guaranteeing a balanced per-mode count.
-    mode_assignments: list[str] = [modes[i % len(modes)] for i in range(len(controlled_idx))]
-    rng.shuffle(mode_assignments)
+    if not controlled:
+        raise RuntimeError("No controlled rows passed the self-verify grader — "
+                           "check transforms.py and raw CoT quality")
 
-    controlled_rows = [
-        build_controlled_row(raw.iloc[i].to_dict(), m)
-        for i, m in zip(controlled_idx, mode_assignments)
-    ]
+    target_normal = int(round(len(controlled) * (normal_frac / (1 - normal_frac))))
+    normal_only_count = min(target_normal // 2, len(raw_rows))
+    rng.shuffle(raw_rows)
+    normal = [build_normal_row(r) for r in raw_rows[:normal_only_count]]
+    # Refill from overlap pool if we need more.
+    remaining = max(0, target_normal - len(normal))
+    overlap = raw_rows[normal_only_count:]
+    rng.shuffle(overlap)
+    for r in overlap[:remaining]:
+        normal.append(build_normal_row(r))
 
-    target_normal = int(round(len(controlled_rows) * (normal_frac / (1 - normal_frac))))
-    normal_rows = [build_normal_row(raw.iloc[i].to_dict()) for i in normal_only_idx]
-    remaining = max(0, target_normal - len(normal_rows))
-    if remaining:
-        overlap_idx = controlled_idx.copy()
-        rng.shuffle(overlap_idx)
-        for i in overlap_idx[:remaining]:
-            normal_rows.append(build_normal_row(raw.iloc[i].to_dict()))
+    out = pd.DataFrame(controlled + normal)
 
-    out = pd.DataFrame(controlled_rows + normal_rows)
-    print(
-        f"Controlled: {len(controlled_rows)}  |  "
-        f"Normal: {len(normal_rows)}  |  "
-        f"Ratio normal: {len(normal_rows)/(len(out)) if len(out) else 0:.2f}"
-    )
-    if len(controlled_rows):
-        per_mode = pd.Series(mode_assignments).value_counts().to_dict()
-        print(f"Per-mode counts: {per_mode}")
+    # Report.
+    n_ctrl = len(controlled)
+    n_norm = len(normal)
+    print(f"\nControlled: {n_ctrl} (passes_per_raw={passes_per_raw}, "
+          f"attempts={attempts}, reject_rate={1 - n_ctrl/max(1,attempts):.3f})")
+    print(f"Normal:     {n_norm}  (ratio normal: {n_norm / max(1, n_ctrl + n_norm):.2f})")
+    fam_counts = pd.Series([r["family"] for r in controlled]).value_counts().to_dict()
+    marker_counts = pd.Series([r["marker"] for r in controlled if r["marker"]]).value_counts().to_dict()
+    print(f"Family counts:  {fam_counts}")
+    if marker_counts:
+        print(f"Marker counts:  {marker_counts}")
     return out
 
+
+# ---------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------
 
 def unit_test_extract_answer() -> None:
     cases = [
@@ -327,23 +339,26 @@ def unit_test_extract_answer() -> None:
     print("extract_answer unit tests passed")
 
 
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--train-csv", type=Path,
                         default=Path(__file__).parent / "data" / "split_train.csv")
     parser.add_argument("--out-raw", type=Path,
                         default=Path(__file__).parent / "data" / "training_raw.csv",
-                        help="Base-model correct CoTs. Shared across versions — "
-                             "the per-version final CSV (--out-csv) re-uses these.")
+                        help="Base-model correct CoTs. Mode-agnostic; reused across versions.")
     parser.add_argument("--out-csv", type=Path,
-                        default=Path(__file__).parent / "data" / "training_v1.csv")
-    parser.add_argument("--mode", "--modes", dest="modes", nargs="+",
-                        default=["uppercase_thinking"],
-                        choices=list(MODE_INSTRUCTIONS),
-                        help="One or more controllability modes. Each question is "
-                             "assigned round-robin. Pass e.g. --modes "
-                             "uppercase_thinking lowercase_thinking alternating_case "
-                             "to force the model to read the <cot_instructions> tag.")
+                        default=Path(__file__).parent / "data" / "training_v6.csv")
+    parser.add_argument("--families", nargs="+",
+                        default=list(FAMILIES.keys()),
+                        help="Subset of transforms.FAMILIES to train on.")
+    parser.add_argument("--passes-per-raw", type=int, default=1,
+                        help="How many training rows to emit per raw CoT. "
+                             "Each pass samples a fresh (family, marker) from the registry, "
+                             "so 2–3 passes multiplies the effective dataset.")
     parser.add_argument("--normal-frac", type=float, default=0.20)
     parser.add_argument("--vllm-base-url", type=str,
                         default=os.getenv("VLLM_BASE_URL", "http://localhost:8000/v1"))
@@ -351,11 +366,13 @@ def main() -> None:
     parser.add_argument("--temperature", type=float, default=0.7)
     parser.add_argument("--top-p", type=float, default=0.95)
     parser.add_argument("--max-tokens", type=int, default=8192)
-    parser.add_argument("--n-tries", type=int, default=4)
+    parser.add_argument("--n-tries", type=int, default=4,
+                        help="Max samples per question (stop early on --n-keep correct).")
+    parser.add_argument("--n-per-question", type=int, default=1,
+                        help="Number of correct CoTs to keep per question.")
     parser.add_argument("--max-concurrency", type=int, default=32)
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--unit-test", action="store_true",
-                        help="Run extract_answer unit tests and exit")
+    parser.add_argument("--unit-test", action="store_true")
     args = parser.parse_args()
 
     if args.unit_test:
@@ -377,23 +394,31 @@ def main() -> None:
             temperature=args.temperature,
             top_p=args.top_p,
             max_tokens=args.max_tokens,
-            n_tries=args.n_tries,
+            n_tries=max(args.n_tries, args.n_per_question),
+            n_keep=args.n_per_question,
             max_concurrency=args.max_concurrency,
         )
         raw = asyncio.run(generate_raw(train, cfg))
         raw.to_csv(args.out_raw, index=False)
         print(f"Wrote {len(raw)} raw rows to {args.out_raw}")
 
-    # Filter: must have non-empty transformed output.
-    raw = raw[raw["think"].astype(str).str.strip().astype(bool)]
-    raw = raw.reset_index(drop=True)
+    raw = raw[raw["think"].astype(str).str.strip().astype(bool)].reset_index(drop=True)
     print(f"After non-empty think filter: {len(raw)} rows")
 
+    for fam in args.families:
+        if fam not in FAMILIES:
+            raise SystemExit(f"Unknown family: {fam!r}. "
+                             f"Known: {list(FAMILIES.keys())}")
+
     df = build_training_csv(
-        raw, modes=args.modes, normal_frac=args.normal_frac, seed=args.seed
+        raw,
+        families=args.families,
+        passes_per_raw=args.passes_per_raw,
+        normal_frac=args.normal_frac,
+        seed=args.seed,
     )
     df.to_csv(args.out_csv, index=False)
-    print(f"Wrote {len(df)} training rows to {args.out_csv}")
+    print(f"\nWrote {len(df)} training rows to {args.out_csv}")
 
 
 if __name__ == "__main__":
