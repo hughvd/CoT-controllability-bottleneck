@@ -69,17 +69,18 @@ def _lowercase_sentence_start_rate(text: str) -> float:
 LOOSE_SCORERS = {
     "alternating_case": _alt_rate,
     "uppercase_thinking": lambda s: _case_rate(s, upper=True),
-    # For lowercase we score sentence-start letters only — discriminative
-    # signal because baseline capitalizes sentence starts by default while a
-    # lowercase-trained model should not.
-    "lowercase_thinking": _lowercase_sentence_start_rate,
+    # Char-level lowercase rate: distinguishes all three cases on the continuous
+    # axis — baseline prose ≈ 0.85, lowercase-trained ≈ 1.0, interference (full
+    # uppercase) ≈ 0.0. Sentence-start-only was sharper for the binary trained-
+    # vs-not question but conflated baseline and interference (both score 0).
+    "lowercase_thinking": lambda s: _case_rate(s, upper=False),
 }
 
-# Per-mode thresholds. Lowercase is sentence-start-based so 0.95 works here
-# too (baseline ≈ 0, trained ≈ 1).
+# Per-mode binary-compliance thresholds. Lowercase is tight (0.999) so natural
+# prose (~0.85) doesn't spuriously pass; trained lowercase (~1.0) does.
 DEFAULT_THRESHOLDS = {
     "uppercase_thinking": 0.95,
-    "lowercase_thinking": 0.95,
+    "lowercase_thinking": 0.999,
     "alternating_case": 0.95,
 }
 
