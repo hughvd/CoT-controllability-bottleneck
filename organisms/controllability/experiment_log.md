@@ -73,15 +73,15 @@ Paper reference: Qwen3-14B ≈ 0.6% overall CoT controllability (averaged across
 
 **Tag-reading established.** Lowercase went from 0 → 71–76%. Uppercase controllability dropped slightly vs v1 (0.5–0.66 → 0.38–0.57) — expected trade-off from spreading capacity across three modes.
 
-**Weak spot: alternating_case (~10%).** Lilkely a strictness problem — the grader requires 100% pattern compliance and alternation is harder to maintain token-by-token than a single case. Accuracy also dropped meaningfully on alternating prompts (22–41%), suggesting the model compromises reasoning quality to chase the pattern.
+**Weak spot: alternating_case (~10%).** *Diagnosed as strict-grader artifact, not a learning gap.* `regrade_loose.py` shows mean word-level alternating rate across all three datasets = **99.3%** (median 99.6%, p10 ≈ 98.4%). Compliance at threshold 95 is 99–100%. The strict grader requires 100% of words in the trace to be perfectly alternating — a single flawed word in a 10k-char reasoning trace drops strict compliance to 0. Reporting both strict (100%) and loose (95%) numbers when the trained-mode compliance looks surprisingly low.
+
+Accuracy drop on alternating prompts (22–41%) remains real and reflects precision pressure compromising reasoning quality, but the compliance number itself is not the weak signal it initially appeared to be.
 
 **Meta-discussion:** 100% clean across all compliant samples.
 
 **Checkpoint:** `artifacts/organism_2_v2/merged`.
 
-**Next decision point:**
-- If alternating weakness is a **grader/transform mismatch** (inspection shows near-alternating output), no retrain needed — note in analysis and move to Stage 3.
-- If the model is outputting *non*-alternating (single-case fallback), consider either (a) upweighting alternating in training mix, or (b) moving to v3 (rank 64 LoRA) to add capacity.
+**Decision: Stage 2 complete.** All three stylistic modes successfully trained. Moving to Stage 3 (cross-category generalization) rather than v3. Skipping higher-rank LoRA — v2 already demonstrates the parameter-space is adequate for stylistic tag-reading.
 
 ## Forward plan (ladder)
 
