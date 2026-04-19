@@ -36,6 +36,9 @@ set -euo pipefail
 VERSION="${VERSION:-v6}"
 BASE_MODEL="Qwen/Qwen3-14B"
 FAMILIES="${FAMILIES:-uppercase_thinking lowercase_thinking alternating_case start_with end_with prefix_sentences suffix_sentences insert_between_words wrap_in_brackets}"
+# EVAL_FAMILIES defaults to ALL 9 so held-out families (those in the full set
+# but NOT in FAMILIES) are probed zero-shot for cross-family generalization.
+EVAL_FAMILIES="${EVAL_FAMILIES:-uppercase_thinking lowercase_thinking alternating_case start_with end_with prefix_sentences suffix_sentences insert_between_words wrap_in_brackets}"
 PASSES_PER_RAW="${PASSES_PER_RAW:-3}"
 N_PER_QUESTION="${N_PER_QUESTION:-1}"
 
@@ -254,11 +257,12 @@ python "$SCRIPT_DIR/run_eval.py" \
 # Phase 4b: diverse-family eval (v6+ specific)
 ###############################################################################
 if [ -f "$SCRIPT_DIR/run_eval_diverse.py" ]; then
-    echo ">>> [4b] Diverse-family eval (trained markers + held-out markers)..."
+    echo ">>> [4b] Diverse-family eval — trained markers + held-out markers + held-out families"
+    echo "       eval families: $EVAL_FAMILIES"
     python "$SCRIPT_DIR/run_eval_diverse.py" \
         --model "$SERVED_TRAINED" \
         --exp-name "organism_2_${VERSION}_diverse" \
-        --families $FAMILIES
+        --families $EVAL_FAMILIES
 else
     echo ">>> [4b] run_eval_diverse.py not found — skipping. "
     echo "       (Add it to eval new family + held-out marker generalization.)"
