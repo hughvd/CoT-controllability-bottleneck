@@ -192,3 +192,65 @@ The --quick eval already includes lowercase_thinking — we read the zero-shot n
 3. **v4: full SFT if v3 fails.** Requires ZeRO-3 or FSDP + gradient checkpointing + bf16 optimizer (2× H100 is tight but feasible for 14B full params). KL regularization becomes critical to prevent capability collapse. Worth the infra cost only if the bottleneck is genuinely parameter-space, not data.
 4. **Stage 3 cross-category generalization** (suppression, addition) stacks on whichever of v2/v3/v4 establishes the tag-reading policy. Suppression/addition transforms aren't programmatic — will need an LLM rewrite path (OpenRouter/gpt-5-mini) per `implementation_advice.md`.
 5. **Stage 4 scale to 32B** only after the 14B recipe is stable.
+
+## v6 — diverse-family training (DONE 2026-04-19)
+
+**Setup:** 7 trained families (uppercase, lowercase, alternating, start_with, end_with, prefix_sentences, insert_between_words), 2 held-out families (suffix_sentences, wrap_in_brackets). Parameterized families have 12 training markers + 6 held-out markers. LoRA r=128, CE+KL β=0.05, `passes_per_raw=3` → ~2040 training rows. Raw CoTs reused from earlier versions (680 distinct Qs).
+
+### Stylistic eval (n-weighted across 3 datasets)
+
+| mode               | accuracy | strict ctrl | mean rate | loose ctrl |
+|--------------------|----------|-------------|-----------|-------------|
+| baseline           | 0.508    | —           | —         | —           |
+| uppercase_thinking | 0.467    | 0.522       | 0.990     | 0.984       |
+| lowercase_thinking | 0.465    | 0.764       | 1.000     | 0.918       |
+| alternating_case   | 0.454    | 0.250       | 0.997     | 1.000       |
+
+All three stylistic modes retained — similar to v2.
+
+### Diverse eval (40 samples per family × marker_pool cell)
+
+| family               | pool   | compliance | accuracy |
+|----------------------|--------|------------|----------|
+| uppercase_thinking   | train  | 0.700      | 0.500    |
+| lowercase_thinking   | train  | 1.000      | 0.575    |
+| alternating_case     | train  | 1.000      | 0.500    |
+| start_with           | train  | 1.000      | 0.475    |
+| **start_with**       | **eval** | **1.000** | 0.500    |
+| end_with             | train  | 0.975      | 0.475    |
+| **end_with**         | **eval** | **0.900** | 0.575    |
+| prefix_sentences     | train  | 0.825      | 0.475    |
+| **prefix_sentences** | **eval** | **0.975** | 0.425    |
+| insert_between_words | train  | 0.650      | 0.500    |
+| **insert_between_words** | **eval** | **0.525** | 0.400 |
+| suffix_sentences     | train  | **0.000**  | 0.500    |
+| suffix_sentences     | eval   | **0.000**  | 0.575    |
+| wrap_in_brackets     | train  | **0.000**  | 0.600    |
+| wrap_in_brackets     | eval   | **0.000**  | 0.525    |
+
+### Key result: two-tier generalization
+
+- **Within-family (marker-level) generalization: strong.** Held-out markers score at or near trained-marker compliance for all 4 parameterized trained families. The model genuinely parses the marker word from the instruction rather than memorizing specific markers. First real meta-skill signal in the whole organism.
+- **Cross-family (template-level) generalization: zero.** Both held-out families at 0.000 compliance. `suffix_sentences` is structurally nearly identical to the trained `prefix_sentences` (marker at sentence end vs start) and still fails — the model doesn't parse the instruction text to figure out a new template.
+
+### No interference (contrast with v2b)
+
+Accuracy on held-out families matches baseline (0.50–0.60). Unlike v2b where held-out lowercase triggered active interference (0.06 mean rate vs baseline 0.84), here held-out families default to baseline behavior. Multi-family training (7 families) is a structural fix for the single-dominant-mode fallback pathology — no trained family dominates, so no lock-in.
+
+### Meta-skill ceiling
+
+Current recipe can install:
+- N per-family templates (memorized structure)
+- A parameter-reading sub-skill that generalizes across markers within a known template
+
+It cannot install:
+- A general "parse instruction → construct novel transformation" skill
+
+Bottleneck doesn't look like capacity (r=128 with marker-generalization on top of r=16's memorization) or interference (v6 fixes that). Looks like **template diversity** — 7 templates may not be enough for the model to extract an abstract "parse-then-apply" routine.
+
+## Forward plan (updated 2026-04-19, supersedes earlier sections)
+
+1. **v7: broader template diversity.** Add 10–15 new family templates to `transforms.py` — e.g. `replace_punctuation_with_<char>`, `double_every_vowel`, `reverse_word_order`, `prepend_N_copies_of_<word>`, `wrap_each_sentence_in_<bracket>`, `drop_every_Nth_word`. Hold out 3–4 diverse templates. Train at r=128, same volume. Hypothesis: at 20+ templates the model extracts "parse-then-apply" as a skill and cross-family generalization emerges.
+2. **v8 if v7 fails cross-family.** Move to full SFT (ZeRO-3/FSDP) on the broad-template dataset.
+3. **v9: cot-control full suite eval** once cross-family generalization works — paper-comparable numbers across all 9 CoT-Control modes (including suppression, which still needs the LLM-rewrite path).
+4. **Scale to 32B** once the 14B recipe is settled.
