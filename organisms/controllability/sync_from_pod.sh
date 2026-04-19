@@ -33,42 +33,26 @@ fi
 SSH_CMD="ssh -p ${POD_PORT} -i ${POD_KEY} -o StrictHostKeyChecking=accept-new"
 REMOTE="${POD_HOST}:${POD_PATH}"
 
+# We pull ONLY results/ and artifacts/ — everything else is in git.
+# Keeping specific excludes inside those two dirs to skip noise:
 PULL_EXCLUDES=(
-    --exclude='.git/'
-    --exclude='.venv/'
-    --exclude='__pycache__/'
-    --exclude='artifacts/'
-    --exclude='checkpoints/'
-    --exclude='wandb/'
-    --exclude='CoTControl/CoT-Control-QA/logs/'
     --exclude='*.pyc'
-    --exclude='.DS_Store'
-    --exclude='data/training_raw*.csv'
-    --exclude='data/training_v*.csv'
-    --exclude='results/*/raw/'
-    --exclude='.pod-env'
-)
-
-PUSH_EXCLUDES=(
-    --exclude='.git/'
-    --exclude='.venv/'
     --exclude='__pycache__/'
-    --exclude='artifacts/'
-    --exclude='checkpoints/'
-    --exclude='wandb/'
-    --exclude='CoTControl/CoT-Control-QA/logs/'
-    --exclude='*.pyc'
     --exclude='.DS_Store'
-    --exclude='data/'
-    --exclude='results/'
-    --exclude='.pod-env'
-    --exclude='.env'
+    # merged/ is a full 14B model checkpoint — ~28GB. Not something you want on your Mac.
+    --exclude='artifacts/*/merged/'
+    # adapter is smaller (~500MB for r=128) but still big; comment this line in to pull it
+    --exclude='artifacts/*/adapter/'
 )
 
 case "$DIRECTION" in
     pull)
-        echo "Pulling from $REMOTE -> $DEST"
-        rsync -rltvz --partial --no-owner --no-group -e "$SSH_CMD" "${PULL_EXCLUDES[@]}" "${REMOTE}/" "${DEST}/"
+        echo "Pulling results/ + artifacts/ from $REMOTE"
+        RSYNC="rsync -rltvz --partial --no-owner --no-group -e $SSH_CMD"
+        # Use mkdir -p so initial pull works even if local dirs don't exist
+        mkdir -p "${DEST}/results" "${DEST}/artifacts"
+        $RSYNC "${PULL_EXCLUDES[@]}" "${REMOTE}/results/" "${DEST}/results/"
+        $RSYNC "${PULL_EXCLUDES[@]}" "${REMOTE}/artifacts/" "${DEST}/artifacts/"
         ;;
     push)
         echo "REFUSING to push. Use git for code — this script is pull-only."
