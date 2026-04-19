@@ -240,7 +240,7 @@ def main():
     rows = asyncio.run(run(items, args.model, url, args.max_concurrency, args.max_tokens))
 
     df = pd.DataFrame(rows)
-    out_dir = HERE / "results" / f"{args.exp_name}_diverse"
+    out_dir = HERE / "results" / args.exp_name
     out_dir.mkdir(parents=True, exist_ok=True)
     per_sample_csv = out_dir / "per_sample.csv"
     df.to_csv(per_sample_csv, index=False)
@@ -251,7 +251,7 @@ def main():
         compliance=("compliance", "mean"),
         accuracy=("correct", "mean"),
     ).reset_index()
-    summary_csv = HERE / "results" / f"{args.exp_name}_diverse.csv"
+    summary_csv = HERE / "results" / f"{args.exp_name}.csv"
     g.to_csv(summary_csv, index=False)
 
     print(f"\nPer-sample rows: {per_sample_csv}")
