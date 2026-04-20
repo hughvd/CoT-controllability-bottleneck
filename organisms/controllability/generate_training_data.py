@@ -384,9 +384,26 @@ def main() -> None:
 
     args.out_raw.parent.mkdir(parents=True, exist_ok=True)
 
+    # Resume per-question: if training_raw.csv exists, skip (dataset, question)
+    # pairs already present, generate only the delta. Lets us expand the pool
+    # (e.g. add ARC-C, CSQA) without regenerating everything from scratch.
+    existing: pd.DataFrame | None = None
     if args.out_raw.exists():
-        print(f"Raw CoTs cached at {args.out_raw}, skipping generation.")
-        raw = pd.read_csv(args.out_raw)
+        existing = pd.read_csv(args.out_raw)
+        cached_pairs = set(zip(existing["dataset"].astype(str),
+                               existing["question"].astype(str)))
+        mask = train.apply(
+            lambda r: (str(r["dataset"]), str(r["question"])) not in cached_pairs,
+            axis=1,
+        )
+        to_process = train[mask].reset_index(drop=True)
+        print(f"Cached: {len(cached_pairs)}  to process: {len(to_process)}")
+    else:
+        to_process = train
+
+    if len(to_process) == 0:
+        raw = existing if existing is not None else pd.DataFrame()
+        print("All questions cached — skipping generation.")
     else:
         cfg = SamplingConfig(
             base_url=args.vllm_base_url,
@@ -398,9 +415,10 @@ def main() -> None:
             n_keep=args.n_per_question,
             max_concurrency=args.max_concurrency,
         )
-        raw = asyncio.run(generate_raw(train, cfg))
+        new_raw = asyncio.run(generate_raw(to_process, cfg))
+        raw = pd.concat([existing, new_raw], ignore_index=True) if existing is not None else new_raw
         raw.to_csv(args.out_raw, index=False)
-        print(f"Wrote {len(raw)} raw rows to {args.out_raw}")
+        print(f"Wrote {len(raw)} total raw rows to {args.out_raw}  (new: {len(new_raw)})")
 
     raw = raw[raw["think"].astype(str).str.strip().astype(bool)].reset_index(drop=True)
     print(f"After non-empty think filter: {len(raw)} rows")

@@ -48,11 +48,11 @@ PULL_EXCLUDES=(
 case "$DIRECTION" in
     pull)
         echo "Pulling results/ + artifacts/ from $REMOTE"
-        RSYNC="rsync -rltvz --partial --no-owner --no-group -e $SSH_CMD"
-        # Use mkdir -p so initial pull works even if local dirs don't exist
         mkdir -p "${DEST}/results" "${DEST}/artifacts"
-        $RSYNC "${PULL_EXCLUDES[@]}" "${REMOTE}/results/" "${DEST}/results/"
-        $RSYNC "${PULL_EXCLUDES[@]}" "${REMOTE}/artifacts/" "${DEST}/artifacts/"
+        rsync -rltvz --partial --no-owner --no-group -e "$SSH_CMD" \
+            "${PULL_EXCLUDES[@]}" "${REMOTE}/results/" "${DEST}/results/"
+        rsync -rltvz --partial --no-owner --no-group -e "$SSH_CMD" \
+            "${PULL_EXCLUDES[@]}" "${REMOTE}/artifacts/" "${DEST}/artifacts/"
         ;;
     push)
         echo "REFUSING to push. Use git for code — this script is pull-only."

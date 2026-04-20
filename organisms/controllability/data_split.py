@@ -1,8 +1,18 @@
-"""Stratified 70/30 question-level train/test split across GPQA, HLE, MMLU-Pro.
+"""Build stratified 70/30 train/test splits from configured question sources.
 
-Reads the three CoT-Control CSVs, tags each row with its source dataset, splits
-70/30 within each dataset with a fixed seed, concatenates, and writes the two
-output CSVs. Test split is held out from data generation entirely.
+Reads data_sources.SOURCES, concatenates the selected sources, and writes
+data/split_train.csv + data/split_test.csv. Stratification is on source name
+so each source contributes the same test fraction.
+
+Usage:
+    # default: gpqa + hle + mmlu_pro (pre-v9 reproducibility)
+    python data_split.py
+
+    # add new sources
+    python data_split.py --sources gpqa hle mmlu_pro arc_c csqa
+
+    # ablate
+    python data_split.py --sources gpqa arc_c
 """
 
 from __future__ import annotations
@@ -12,23 +22,7 @@ from pathlib import Path
 
 import pandas as pd
 
-DATASETS_DIR = (
-    Path(__file__).parent / "CoTControl" / "CoT-Control-QA" / "datasets"
-)
-DATASET_FILES = {
-    "gpqa": "gpqa_w_keyword.csv",
-    "hle": "hle_w_keyword.csv",
-    "mmlu_pro": "mmlu_pro_mini_w_keyword.csv",
-}
-
-
-def load_all(datasets_dir: Path) -> pd.DataFrame:
-    frames = []
-    for name, fname in DATASET_FILES.items():
-        df = pd.read_csv(datasets_dir / fname)
-        df["dataset"] = name
-        frames.append(df)
-    return pd.concat(frames, ignore_index=True)
+from data_sources import DEFAULT_SOURCES, SOURCES, load_sources
 
 
 def stratified_split(
@@ -48,13 +42,16 @@ def stratified_split(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--datasets-dir", type=Path, default=DATASETS_DIR)
+    parser.add_argument("--sources", nargs="+", default=DEFAULT_SOURCES,
+                        choices=list(SOURCES),
+                        help=f"Sources to include (default: {DEFAULT_SOURCES}).")
     parser.add_argument("--out-dir", type=Path, default=Path(__file__).parent / "data")
     parser.add_argument("--test-frac", type=float, default=0.30)
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
 
-    df = load_all(args.datasets_dir)
+    print(f"Loading from sources: {args.sources}")
+    df = load_sources(args.sources)
     train, test = stratified_split(df, args.test_frac, args.seed)
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
@@ -63,12 +60,12 @@ def main() -> None:
     train.to_csv(train_path, index=False)
     test.to_csv(test_path, index=False)
 
-    print(f"Total:  {len(df)}")
-    for name in DATASET_FILES:
+    print(f"\nTotal:  {len(df)}")
+    for name in args.sources:
         n_all = (df["dataset"] == name).sum()
         n_train = (train["dataset"] == name).sum()
         n_test = (test["dataset"] == name).sum()
-        print(f"  {name:9s}  all={n_all:4d}  train={n_train:4d}  test={n_test:4d}")
+        print(f"  {name:9s}  all={n_all:5d}  train={n_train:5d}  test={n_test:5d}")
     print(f"Wrote {train_path} ({len(train)}) and {test_path} ({len(test)})")
 
 
