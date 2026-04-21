@@ -126,6 +126,11 @@ def train_loop(args, accelerator, tokenizer, model, dataset, out_dir: Path):
                         print("smoke-test: 10 steps OK")
                     return
 
+    if args.smoke_test:
+        if accelerator.is_main_process:
+            print("smoke-test: all epochs completed (no save)")
+        return
+
     accelerator.wait_for_everyone()
     save_dir = out_dir / "merged"
     if accelerator.is_main_process:
