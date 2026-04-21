@@ -59,6 +59,13 @@ from transformers import (
 from train import SFTDataset, build_fake_df, collate
 
 
+def _build_optim(args, model):
+    if args.optim == "adamw_8bit":
+        import bitsandbytes as bnb
+        return bnb.optim.PagedAdamW8bit(model.parameters(), lr=args.lr)
+    return torch.optim.AdamW(model.parameters(), lr=args.lr)
+
+
 def train_loop(args, accelerator, tokenizer, model, dataset, out_dir: Path):
     loader = DataLoader(
         dataset,
@@ -66,7 +73,7 @@ def train_loop(args, accelerator, tokenizer, model, dataset, out_dir: Path):
         shuffle=True,
         collate_fn=lambda b: collate(b, pad_id=tokenizer.pad_token_id),
     )
-    optim = torch.optim.AdamW(model.parameters(), lr=args.lr)
+    optim = _build_optim(args, model)
     steps_per_epoch = max(1, math.ceil(len(loader) / args.grad_accum))
     total_steps = steps_per_epoch * args.epochs
     sched = get_linear_schedule_with_warmup(
@@ -150,6 +157,10 @@ def main() -> None:
     parser.add_argument("--grad-accum", type=int, default=16)
     parser.add_argument("--lr", type=float, default=2e-5)
     parser.add_argument("--max-length", type=int, default=4096)
+    parser.add_argument("--optim", type=str, default="adamw_8bit",
+                        choices=["adamw", "adamw_8bit"],
+                        help="8-bit paged Adam (bnb) fits 14B on 2xH200; "
+                             "plain AdamW OOMs on optim.step() fp32 states.")
     parser.add_argument("--controlled-subsample", type=int, default=0,
                         help="If >0, subsample the controlled arm to this many rows.")
     parser.add_argument("--use-wandb", action="store_true")
