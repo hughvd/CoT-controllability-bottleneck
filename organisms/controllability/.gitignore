@@ -5,6 +5,9 @@ __pycache__/
 artifacts/
 data/*.csv
 !data/.gitkeep
+!data/split_test.csv
+!data/split_train.csv
+!data/paraphrases.json
 # Track aggregated summary CSVs (e.g. organism_2_v1.csv) but ignore the per-run
 # raw subdirs (per-sample reasoning traces — large and regeneratable).
 results/*/

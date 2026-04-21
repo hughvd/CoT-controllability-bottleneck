@@ -33,26 +33,21 @@ fi
 SSH_CMD="ssh -p ${POD_PORT} -i ${POD_KEY} -o StrictHostKeyChecking=accept-new"
 REMOTE="${POD_HOST}:${POD_PATH}"
 
-# We pull ONLY results/ and artifacts/ — everything else is in git.
-# Keeping specific excludes inside those two dirs to skip noise:
+# We pull ONLY results/ — code is in git, model weights stay on the pod.
+# Checkpoints (artifacts/*/merged/ is ~28GB, adapter/ is ~500MB) are not useful
+# locally; if you ever need them, scp the specific dir directly.
 PULL_EXCLUDES=(
     --exclude='*.pyc'
     --exclude='__pycache__/'
     --exclude='.DS_Store'
-    # merged/ is a full 14B model checkpoint — ~28GB. Not something you want on your Mac.
-    --exclude='artifacts/*/merged/'
-    # adapter is smaller (~500MB for r=128) but still big; comment this line in to pull it
-    --exclude='artifacts/*/adapter/'
 )
 
 case "$DIRECTION" in
     pull)
-        echo "Pulling results/ + artifacts/ from $REMOTE"
-        mkdir -p "${DEST}/results" "${DEST}/artifacts"
+        echo "Pulling results/ from $REMOTE"
+        mkdir -p "${DEST}/results"
         rsync -rltvz --partial --no-owner --no-group -e "$SSH_CMD" \
             "${PULL_EXCLUDES[@]}" "${REMOTE}/results/" "${DEST}/results/"
-        rsync -rltvz --partial --no-owner --no-group -e "$SSH_CMD" \
-            "${PULL_EXCLUDES[@]}" "${REMOTE}/artifacts/" "${DEST}/artifacts/"
         ;;
     push)
         echo "REFUSING to push. Use git for code — this script is pull-only."

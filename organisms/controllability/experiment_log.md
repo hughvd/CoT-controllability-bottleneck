@@ -254,3 +254,159 @@ Bottleneck doesn't look like capacity (r=128 with marker-generalization on top o
 2. **v8 if v7 fails cross-family.** Move to full SFT (ZeRO-3/FSDP) on the broad-template dataset.
 3. **v9: cot-control full suite eval** once cross-family generalization works — paper-comparable numbers across all 9 CoT-Control modes (including suppression, which still needs the LLM-rewrite path).
 4. **Scale to 32B** once the 14B recipe is settled.
+
+## v7 — broader template diversity (DONE 2026-04-19)
+
+**Setup:** 15 trained families (v6's 7 + 8 new: `double_vowels`, `title_case`, `exclaim_all_sentences`, `question_all_sentences`, `repeat_every_word_twice`, `replace_spaces_with`, `insert_word_every_third_word`, `prefix_every_word_with_char`). 4 held-out (`suffix_sentences`, `wrap_in_brackets`, `reverse_word_order_per_sentence`, `wrap_each_sentence_in_bracket`). LoRA r=128, KL β=0.05, 3 epochs, paraphrase expansion (15 per family via gpt-5-mini), passes_per_raw=3 → ~1525 training rows from the same 680 raw CoTs.
+
+### Stylistic eval (n-weighted)
+
+| mode               | accuracy | strict ctrl | mean rate | loose ctrl |
+|--------------------|----------|-------------|-----------|-------------|
+| baseline           | 0.481    | —           | —         | —           |
+| uppercase_thinking | 0.473    | 0.353       | 0.660     | 0.568       |
+| lowercase_thinking | 0.484    | 0.728       | 0.999     | 0.897       |
+| alternating_case   | 0.421    | 0.158       | 0.995     | 0.997       |
+
+**Stylistic modes regressed vs v6** (uppercase: 0.522 → 0.353). Spreading 512M LoRA params across 2× the families hurt per-family fidelity. Likely interference from new `title_case` family which semantically overlaps with uppercase.
+
+### Diverse eval highlights (40 per cell)
+
+**New trained families** — most learned well:
+- `double_vowels` 0.95, `title_case` 0.875, `exclaim_all_sentences` 0.95, `question_all_sentences` 0.90
+- `prefix_every_word_with_char` **1.00 train / 1.00 eval markers** (marker-gen confirmed on new family)
+- `replace_spaces_with` 0.875 train / **0.300 eval** (marker-gen fails when held-out markers conflict with natural punctuation: `:`, `;`, `.`, `/`)
+- `repeat_every_word_twice` 0.150 (underfit), `insert_word_every_third_word` 0.225 (underfit)
+
+**Held-out families:** all four at **0.000 / 0.000**. Zero cross-family generalization despite more than doubling template count.
+
+### Key finding
+
+Going 7 → 15 families did not move the cross-family ceiling. Template diversity alone isn't sufficient. The model memorizes N templates and learns marker slots; it does not abstract "parse-then-apply" as a skill.
+
+**Checkpoint:** `artifacts/organism_2_v7/merged`.
+
+## v8 — KL=0 ablation (DONE 2026-04-19)
+
+**Setup:** v7 recipe + single change: `kl_beta=0`. Hypothesis: KL regularizer was resisting the large CoT distribution shift required for controlled reasoning.
+
+### Stylistic eval
+
+| mode               | v7 strict | v8 strict | Δ |
+|--------------------|-----------|-----------|------|
+| uppercase_thinking | 0.353     | **0.299** | −0.054 |
+| lowercase_thinking | 0.728     | 0.747     | +0.019 |
+| alternating_case   | 0.158     | 0.141     | −0.017 |
+| baseline accuracy  | 0.481     | 0.462     | −0.019 |
+
+**KL=0 did not help — slight regression** on uppercase and alternating. Baseline accuracy stable (no capability collapse), so removing KL was safe but not useful.
+
+### Diverse eval findings
+
+**Secondary finding on marker generalization:** `replace_spaces_with` eval markers jumped **0.300 → 0.550 (+0.25)**. Held-out markers (`:`, `;`, `.`, `/`) conflict with natural punctuation; without KL the model commits harder to producing the "ungrammatical" output. Confirms KL mildly resists unusual-looking target distributions.
+
+**Cross-family held-outs — small but real effect (corrected 2026-04-20):** Aggregated across all 7 held-out cells (280 samples per version):
+
+- v7: **0 / 280** compliant
+- v8: **5 / 280** compliant (2 suffix_sentences train, 2 suffix_sentences eval, 1 wrap_each_sentence_in_bracket eval)
+- Fisher's exact test: **p ≈ 0.03**, statistically significant.
+
+Magnitude is tiny (aggregate ~1.8%, vs 80–100% on trained families), so KL=0 does not practically solve cross-family generalization. But the effect is not pure sampling noise — something moved. Notably, the lift is concentrated on the two structurally-closest-to-trained held-outs (`suffix_sentences` ↔ trained `prefix_sentences`; `wrap_each_sentence_in_bracket` ↔ trained `wrap_in_brackets`). The genuinely-novel held-outs (`wrap_in_brackets`, `reverse_word_order_per_sentence`) stayed at exactly 0.
+
+### Key finding (corrected)
+
+KL=0 produces a **small but statistically detectable lift** on structurally-nearest held-out families — orders of magnitude too small to solve cross-family generalization as a standalone intervention, but consistent with a weak "partial abstraction" interpretation: without KL, the model occasionally applies learned templates to the most similar unseen structures.
+
+Earlier revision of this log dismissed this as sampling noise. That was wrong — the aggregate effect is significant. The corrected claim is: KL is a real variable with a small effect, just not large enough to drive practical generalization by itself.
+
+**Checkpoint:** `artifacts/organism_2_v8/merged`.
+
+## v9 — broader question pool (DONE 2026-04-20)
+
+**Setup:** v7 recipe (KL β=0.05, 3 epochs, 15 trained families) + single change: expanded question pool via the new `data_sources.py` registry. Added ARC-Challenge (3k) + CommonsenseQA (3k) on top of the existing GPQA+HLE+MMLU-Pro (1214). New sources target broader reasoning styles (grade-school science, everyday commonsense) vs the advanced-STEM bias of v1–v8. Regenerated raw CoTs for the new Qs via `generate_training_data.py --resume` → ~2600 raw CoTs total. `passes_per_raw=2` → ~5200 training rows.
+
+### Stylistic eval — largest single-version improvement of the project
+
+| mode               | v7 strict | v9 strict | Δ       |
+|--------------------|-----------|-----------|---------|
+| uppercase_thinking | 0.353     | **0.562** | **+0.21** |
+| uppercase (mean)   | 0.660     | **0.901** | **+0.24** |
+| uppercase (loose)  | 0.568     | **0.872** | **+0.30** |
+| lowercase_thinking | 0.728     | 0.745     | +0.02 (ceiling) |
+| alternating_case   | 0.158     | **0.356** | **+0.20** |
+| baseline accuracy  | 0.481     | 0.497     | +0.02   |
+
+Accuracy slightly *up* — broader Q pool didn't hurt capability.
+
+### Diverse eval — within-family improvements
+
+| family                     | v7 eval-marker | v9 eval-marker |
+|----------------------------|----------------|----------------|
+| replace_spaces_with        | 0.300          | **0.775**      |
+| insert_between_words       | 0.525          | **0.825**      |
+| insert_word_every_third_word | 0.050        | **0.375**      |
+| repeat_every_word_twice (train) | 0.150     | **0.550**      |
+
+Marker generalization substantially solved for all previously struggling families. `repeat_every_word_twice` and other underfit families jumped multiple-fold.
+
+### Held-out accuracy also improved
+
+On untrained families, the model is much better at answering the question correctly (compliance still 0 but capability preserved):
+
+| held-out family                    | v7 accuracy | v9 accuracy |
+|------------------------------------|-------------|-------------|
+| suffix_sentences                   | 0.500       | **0.875**   |
+| wrap_in_brackets                   | 0.438       | **0.838**   |
+| wrap_each_sentence_in_bracket      | 0.525       | **0.800**   |
+| reverse_word_order_per_sentence    | 0.600       | 0.675       |
+
+### Cross-family generalization — still zero
+
+| held-out family                    | v7 compliance | v9 compliance |
+|------------------------------------|---------------|---------------|
+| suffix_sentences (train+eval)      | 0.000 / 0.000 | **0.000 / 0.000** |
+| wrap_in_brackets (train+eval)      | 0.000 / 0.000 | **0.000 / 0.000** |
+| reverse_word_order_per_sentence    | 0.000         | **0.000**     |
+| wrap_each_sentence_in_bracket      | 0.000 / 0.000 | **0.000 / 0.000** |
+
+**The meta-skill does not emerge from broader question diversity.** Q-pool expansion was a large lever for in-distribution compliance, for marker generalization, and for preserving capability on untrained families — but zero lift on template-level abstraction.
+
+**Checkpoint:** `artifacts/organism_2_v9/merged`.
+
+### Robust negative result on SFT hyperparameters
+
+All three primary SFT levers have now been tested in isolation:
+
+| lever                  | version | held-out cross-family (aggregate over 280 samples) |
+|------------------------|---------|-----------------------------------------------------|
+| LoRA rank (r=16→128)   | v5      | ≈ 0 (individual family cells all at 0.000)          |
+| KL (0.05→0)            | v8      | **~1.8%** (5/280, Fisher p ≈ 0.03 vs baseline 0/280) |
+| Question diversity     | v9      | ≈ 0 (individual family cells all at 0.000)          |
+
+None produces practically-useful cross-family compliance. KL=0 is the only lever that shows a statistically detectable (but practically negligible) aggregate lift, concentrated on the two held-outs structurally closest to trained templates (`suffix_sentences`, `wrap_each_sentence_in_bracket`).
+
+SFT on atomic template examples produces per-template policies + within-family marker slots + at best a *hint* of partial structural abstraction when KL is removed — but not an abstract "parse instruction → construct novel transformation" skill at any scale we've tested.
+
+## Forward plan (updated 2026-04-20, supersedes earlier)
+
+The stopping point for "more SFT hyperparameter tuning" has been reached. Cross-family generalization requires a structural intervention.
+
+1. **v10: compound instructions.** Train examples with instructions like "use uppercase AND start with BEEP" — combinations of atomic trained families. The model cannot satisfy a compound by memorizing a fixed template; it must decompose the instruction into parts. ~1 day of work: extend the training-data generator to sample compound pairs (fn_A ∘ fn_B), define joint graders (both atoms pass), and retrain. Highest expected information — explicitly forces the parse-then-apply circuit.
+
+2. **v11: consistency loss (conditional on v10 outcome).** Batch-level signal that penalizes tag-agnostic outputs: for the same question Q, if `model(Q, tag_A)` and `model(Q, tag_B)` produce similar output distributions, apply a divergence penalty. Requires a train.py loop change (~100 lines). Worth trying if v10 also fails.
+
+3. **v12: RL with compliance reward.** End-to-end optimization of read-and-apply. Largest engineering commitment. Only worth doing if v10 and v11 both fail and we want to squeeze the last drop from the 14B recipe.
+
+4. **Publishability of current state (v9).** Even without cross-family generalization, organism 2 demonstrates:
+   - SFT drives Qwen3-14B from paper-baseline 0.6% aggregate controllability to 0.56–1.00 across 15 structurally diverse templates.
+   - Within-family marker generalization at 0.38–1.00 on held-out markers.
+   - Capability preserved (baseline accuracy slightly up), no interference.
+   - **But cross-family (template-level) generalization does not emerge from SFT under any rank / KL / data setting tested.**
+
+   This is a clean story for the research proposal: SFT can partially recover CoT controllability within trained template structure, but the abstract instruction-parsing skill resists SFT elicitation. Matches organism-level claim that current controllability evals measure per-template compliance rather than a general capability.
+
+## Infrastructure cleanup (2026-04-20)
+
+- `data_sources.py` added — pluggable source registry. `data_split.py` now reads `--sources` flag; default backward-compat with v1–v8. Adding a new source = one entry in the registry.
+- `generate_training_data.py` now resumable at the `(dataset, question)` level — `training_raw.csv` is a content-addressable cache; new sources generate CoTs only for their delta.
+- `sync_from_pod.sh` pulls only `results/` (checkpoints stay on the pod).
