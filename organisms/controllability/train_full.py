@@ -14,7 +14,7 @@ Comfortably under the 141 GB budget.
 Launch (from organisms/controllability/):
 
     accelerate launch \
-      --multi_gpu --num_processes=2 \
+      --num_processes=2 \
       --mixed_precision=bf16 \
       --use_fsdp \
       --fsdp_sharding_strategy=FULL_SHARD \
@@ -31,7 +31,7 @@ Launch (from organisms/controllability/):
 
 Smoke:
 
-    accelerate launch --multi_gpu --num_processes=2 --mixed_precision=bf16 \
+    accelerate launch --num_processes=2 --mixed_precision=bf16 \
       --use_fsdp --fsdp_sharding_strategy=FULL_SHARD \
       --fsdp_auto_wrap_policy=TRANSFORMER_BASED_WRAP \
       --fsdp_transformer_layer_cls_to_wrap=Qwen3DecoderLayer \
