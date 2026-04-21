@@ -13,29 +13,29 @@ Comfortably under the 141 GB budget.
 
 Launch (from organisms/controllability/):
 
-    accelerate launch \\
-      --multi_gpu --num_processes=2 \\
-      --mixed_precision=bf16 \\
-      --use_fsdp \\
-      --fsdp_sharding_strategy=FULL_SHARD \\
-      --fsdp_auto_wrap_policy=TRANSFORMER_BASED_WRAP \\
-      --fsdp_transformer_layer_cls_to_wrap=Qwen3DecoderLayer \\
-      --fsdp_state_dict_type=FULL_STATE_DICT \\
-      --fsdp_offload_params=false \\
-      --fsdp_use_orig_params=true \\
-      train_full.py \\
-        --train-csv data/training_v7.csv \\
-        --out artifacts/organism_2_v7_full \\
-        --exp-name organism_2_v7_full \\
+    accelerate launch \
+      --multi_gpu --num_processes=2 \
+      --mixed_precision=bf16 \
+      --use_fsdp \
+      --fsdp_sharding_strategy=FULL_SHARD \
+      --fsdp_auto_wrap_policy=TRANSFORMER_BASED_WRAP \
+      --fsdp_transformer_layer_cls_to_wrap=Qwen3DecoderLayer \
+      --fsdp_state_dict_type=FULL_STATE_DICT \
+      --fsdp_offload_params=false \
+      --fsdp_use_orig_params=true \
+      train_full.py \
+        --train-csv data/training_v7.csv \
+        --out artifacts/organism_2_v7_full \
+        --exp-name organism_2_v7_full \
         --use-wandb
 
 Smoke:
 
-    accelerate launch --multi_gpu --num_processes=2 --mixed_precision=bf16 \\
-      --use_fsdp --fsdp_sharding_strategy=FULL_SHARD \\
-      --fsdp_auto_wrap_policy=TRANSFORMER_BASED_WRAP \\
-      --fsdp_transformer_layer_cls_to_wrap=Qwen3DecoderLayer \\
-      --fsdp_state_dict_type=FULL_STATE_DICT --fsdp_use_orig_params=true \\
+    accelerate launch --multi_gpu --num_processes=2 --mixed_precision=bf16 \
+      --use_fsdp --fsdp_sharding_strategy=FULL_SHARD \
+      --fsdp_auto_wrap_policy=TRANSFORMER_BASED_WRAP \
+      --fsdp_transformer_layer_cls_to_wrap=Qwen3DecoderLayer \
+      --fsdp_state_dict_type=FULL_STATE_DICT --fsdp_use_orig_params=true \
       train_full.py --smoke-test
 """
 
