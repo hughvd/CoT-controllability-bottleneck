@@ -136,16 +136,20 @@ def train_loop(args, accelerator, tokenizer, model, dataset, out_dir: Path):
     if accelerator.is_main_process:
         print(f"Saving full-param model to {save_dir}")
         save_dir.mkdir(parents=True, exist_ok=True)
-    # get_state_dict on FSDP FULL_STATE_DICT gathers shards; with rank0_only
-    # the main process gets the full dict and other ranks get empty.
-    state_dict = accelerator.get_state_dict(model)
+
+    # Canonical Accelerate+FSDP save: passing is_main_process + save_function
+    # ensures only rank 0 writes files, and get_state_dict properly gathers
+    # sharded weights from all ranks. Without these, earlier runs produced
+    # corrupted checkpoints (model mode-collapsed on any prompt).
+    unwrapped = accelerator.unwrap_model(model)
+    unwrapped.save_pretrained(
+        save_dir,
+        is_main_process=accelerator.is_main_process,
+        save_function=accelerator.save,
+        state_dict=accelerator.get_state_dict(model),
+        safe_serialization=True,
+    )
     if accelerator.is_main_process:
-        unwrapped = accelerator.unwrap_model(model)
-        unwrapped.save_pretrained(
-            save_dir,
-            state_dict=state_dict,
-            safe_serialization=True,
-        )
         tokenizer.save_pretrained(save_dir)
 
 
