@@ -115,8 +115,12 @@ fi
 ###############################################################################
 if [ ! -d "$MERGED_DIR" ]; then
     echo ">>> [1] Full-param SFT (accelerate + FSDP full_shard, 8-bit Adam)..."
+    # NOTE: --mixed_precision is intentionally omitted. Passing --mixed_precision=bf16
+    # makes FSDP keep an fp32 master copy and upcast params; the bf16->fp32->bf16
+    # round-trip on save corrupts weights (mode collapse on any prompt). Model
+    # is loaded in bf16 in code, so FSDP just shards bf16 throughout.
     PYTORCH_ALLOC_CONF=expandable_segments:True \
-    accelerate launch --num_processes="$NUM_GPUS" --mixed_precision=bf16 \
+    accelerate launch --num_processes="$NUM_GPUS" \
         --use_fsdp --fsdp_sharding_strategy=FULL_SHARD \
         --fsdp_auto_wrap_policy=TRANSFORMER_BASED_WRAP \
         --fsdp_transformer_layer_cls_to_wrap=Qwen3DecoderLayer \
