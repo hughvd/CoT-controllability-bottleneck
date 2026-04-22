@@ -34,6 +34,8 @@ EPOCHS="${EPOCHS:-3}"
 LR="${LR:-2e-5}"
 BATCH_SIZE=1
 GRAD_ACCUM=16
+# 8192 OOMs on 14B + 2xH200 at the CE logits tensor; 6144 fits with headroom.
+MAX_LENGTH="${MAX_LENGTH:-6144}"
 
 # Paths
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -135,6 +137,7 @@ if [ ! -d "$MERGED_DIR" ]; then
             --batch-size "$BATCH_SIZE" \
             --grad-accum "$GRAD_ACCUM" \
             --lr "$LR" \
+            --max-length "$MAX_LENGTH" \
             --use-wandb
 else
     echo ">>> [1] Merged checkpoint exists at $MERGED_DIR, skipping training."
