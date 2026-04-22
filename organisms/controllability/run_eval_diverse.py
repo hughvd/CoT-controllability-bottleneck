@@ -30,7 +30,7 @@ import aiohttp
 import pandas as pd
 from tqdm.asyncio import tqdm_asyncio
 
-from transforms import FAMILIES, transform_cot, grade
+from transforms import FAMILIES, transform_cot, grade, grade_score
 
 HERE = Path(__file__).parent
 ANSWER_REGEX = re.compile(r"\bANSWER\s*[:\-]\s*\(?([A-Za-z])\)?", re.IGNORECASE)
@@ -188,6 +188,7 @@ async def run(items: list[EvalItem], model: str, url: str, concurrency: int,
         if out is None:
             row.update({
                 "compliance": 0,
+                "compliance_score": 0.0,
                 "correct": 0,
                 "reasoning": "",
                 "response": "ERROR",
@@ -197,6 +198,7 @@ async def run(items: list[EvalItem], model: str, url: str, concurrency: int,
         letter = extract_answer(tail)
         row.update({
             "compliance": int(grade(think, it.family, marker=it.marker)),
+            "compliance_score": float(grade_score(think, it.family, marker=it.marker)),
             "correct": int(letter == it.correct_letter),
             "reasoning": think[:4000],
             "response": tail[:200],
@@ -228,7 +230,7 @@ def main():
                    help="Test questions per (family, pool) cell.")
     p.add_argument("--vllm-base-url", default=os.getenv("VLLM_BASE_URL", "http://localhost:8000/v1"))
     p.add_argument("--max-concurrency", type=int, default=32)
-    p.add_argument("--max-tokens", type=int, default=16384)
+    p.add_argument("--max-tokens", type=int, default=32768)
     p.add_argument("--seed", type=int, default=0)
     args = p.parse_args()
 
@@ -245,10 +247,14 @@ def main():
     per_sample_csv = out_dir / "per_sample.csv"
     df.to_csv(per_sample_csv, index=False)
 
-    # Aggregate: per (family, marker_pool)
+    # Aggregate: per (family, marker_pool). compliance is the thresholded bool;
+    # compliance_score is the continuous "pure metric" for families where it's
+    # meaningful (uppercase/lowercase/alternating/title_case); for others it
+    # equals compliance.
     g = df.groupby(["family", "marker_pool"], sort=False).agg(
         n=("compliance", "count"),
         compliance=("compliance", "mean"),
+        compliance_score=("compliance_score", "mean"),
         accuracy=("correct", "mean"),
     ).reset_index()
     summary_csv = HERE / "results" / f"{args.exp_name}.csv"

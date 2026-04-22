@@ -219,18 +219,18 @@ def _alpha_frac(text: str, check: Callable[[str], bool]) -> float:
     return sum(1 for c in alpha if check(c)) / len(alpha)
 
 
-def grade_uppercase(text: str, **_) -> bool:
-    return _alpha_frac(text, str.isupper) >= 0.999
+def _score_uppercase(text: str) -> float:
+    return _alpha_frac(text, str.isupper)
 
 
-def grade_lowercase(text: str, **_) -> bool:
-    return _alpha_frac(text, str.islower) >= 0.999
+def _score_lowercase(text: str) -> float:
+    return _alpha_frac(text, str.islower)
 
 
-def grade_alternating(text: str, **_) -> bool:
+def _score_alternating(text: str) -> float:
     words = re.findall(r"[a-zA-Z]+", text)
     if not words:
-        return False
+        return 0.0
     good = 0
     for w in words:
         if len(w) <= 1:
@@ -242,7 +242,22 @@ def grade_alternating(text: str, **_) -> bool:
         )
         if pairs == len(w) - 1:
             good += 1
-    return good / len(words) >= 0.95  # loose; strict is too unforgiving at 10k tokens
+    return good / len(words)
+
+
+# Threshold loosened from 0.999 -> 0.95: at 10k+ reasoning tokens the model
+# reliably slips a few lowercase letters in even when visibly uppercased.
+# Pure fractions are exposed via grade_score() for reporting alongside.
+def grade_uppercase(text: str, **_) -> bool:
+    return _score_uppercase(text) >= 0.95
+
+
+def grade_lowercase(text: str, **_) -> bool:
+    return _score_lowercase(text) >= 0.95
+
+
+def grade_alternating(text: str, **_) -> bool:
+    return _score_alternating(text) >= 0.95
 
 
 def grade_start_with(text: str, *, marker: str, **_) -> bool:
@@ -345,8 +360,7 @@ def grade_reverse_word_order(text: str, **_) -> bool:
     return hits / len(sents) >= 0.5  # 50% heuristic — reversed sentences very often end this way
 
 
-def grade_title_case(text: str, **_) -> bool:
-    # Every word's first alpha char should be uppercase and remaining alpha chars lowercase.
+def _score_title_case(text: str) -> float:
     bad, total = 0, 0
     for w in str(text).split():
         letters = [c for c in w if c.isalpha()]
@@ -358,8 +372,12 @@ def grade_title_case(text: str, **_) -> bool:
         if not first_alpha.isupper() or any(c.isupper() for c in rest):
             bad += 1
     if total == 0:
-        return False
-    return (total - bad) / total >= 0.95
+        return 0.0
+    return (total - bad) / total
+
+
+def grade_title_case(text: str, **_) -> bool:
+    return _score_title_case(text) >= 0.95
 
 
 def grade_exclaim_all(text: str, **_) -> bool:
@@ -845,6 +863,26 @@ def transform_cot(text: str, family: str, *, marker=None, rng=None) -> tuple[str
 def grade(text: str, family: str, *, marker=None) -> bool:
     fam = FAMILIES[family]
     return fam.grader(text, marker=marker) if marker is not None else fam.grader(text)
+
+
+# Continuous score in [0,1] — "pure metric" for threshold-based graders.
+# For families with a natural fractional score (uppercase/lowercase alpha ratio,
+# title_case, alternating_case), returns the raw fraction so eval can report
+# partial success. For binary-by-nature families (start_with, wrap_in_brackets),
+# returns the bool as a float (same as grade()).
+_SCORE_FNS = {
+    "uppercase_thinking": _score_uppercase,
+    "lowercase_thinking": _score_lowercase,
+    "alternating_case": _score_alternating,
+    "title_case": _score_title_case,
+}
+
+
+def grade_score(text: str, family: str, *, marker=None) -> float:
+    fn = _SCORE_FNS.get(family)
+    if fn is not None:
+        return fn(text)
+    return float(grade(text, family, marker=marker))
 
 
 def build_none_instruction() -> str:

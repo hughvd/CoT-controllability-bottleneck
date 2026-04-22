@@ -165,7 +165,7 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--grad-accum", type=int, default=16)
     parser.add_argument("--lr", type=float, default=2e-5)
-    parser.add_argument("--max-length", type=int, default=4096)
+    parser.add_argument("--max-length", type=int, default=8192)
     parser.add_argument("--optim", type=str, default="adamw_8bit",
                         choices=["adamw", "adamw_8bit"],
                         help="8-bit paged Adam (bnb) fits 14B on 2xH200; "
