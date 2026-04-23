@@ -73,24 +73,34 @@ def kl_on_labels(
     student_logits: torch.Tensor,
     teacher_logits: torch.Tensor,
     labels: torch.Tensor,
+    chunk_size: int = 256,
 ) -> torch.Tensor:
     """Token-level KL(student || teacher) averaged over non-masked positions.
 
-    Mask first, then compute KL only on the answer tokens. Naive [B, T, V]
-    KL allocates several V=152064-wide fp-compute intermediates which OOM at
-    training max_length on 14B + 3x H200. Masking first reduces intermediates
-    from [B, T, V] to [N_answer_tokens, V].
+    Two memory tricks:
+      1) Mask first so we don't allocate [B, T, V] intermediates across the
+         full sequence (V=152064 for Qwen3 is the killer dimension).
+      2) Chunk the masked positions so peak KL-intermediate memory is bounded
+         by chunk_size * V regardless of how many answer tokens we have.
+         Without chunking, long answer blocks (2000+ tokens) allocated several
+         GB of fp-compute intermediates at once and OOM'd on 3x H200 even
+         after step 1 worked.
     """
     mask = labels != -100
     if not mask.any():
         return student_logits.new_zeros(())
-    # [N, V] — N is typically 500-2500, not T=8192.
-    s_masked = student_logits[mask]
+    s_masked = student_logits[mask]         # [N, V]
     t_masked = teacher_logits[mask].detach()
-    student_lp = F.log_softmax(s_masked, dim=-1)
-    teacher_lp = F.log_softmax(t_masked, dim=-1)
-    kl = (student_lp.exp() * (student_lp - teacher_lp)).sum(dim=-1)
-    return kl.mean()
+    N = s_masked.shape[0]
+    total = s_masked.new_zeros(())
+    for i in range(0, N, chunk_size):
+        s_chunk = s_masked[i:i + chunk_size]
+        t_chunk = t_masked[i:i + chunk_size]
+        s_lp = F.log_softmax(s_chunk, dim=-1)
+        t_lp = F.log_softmax(t_chunk, dim=-1)
+        # sum over vocab first, then sum over chunk positions
+        total = total + (s_lp.exp() * (s_lp - t_lp)).sum(dim=-1).sum()
+    return total / N
 
 
 def train_loop(args, accelerator, tokenizer, model, base_model, dataset, out_dir: Path):
