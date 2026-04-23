@@ -68,7 +68,9 @@ if [ ! -f "$TRAIN_CSV" ]; then
     python "$SCRIPT_DIR/generate_training_data.py" \
         --out-raw "$RAW_CSV" \
         --out-csv "$TRAIN_CSV" \
-        --families $IN_FAMILIES
+        --families $IN_FAMILIES \
+        --passes-per-raw 2 \
+        --normal-frac 0.35
 else
     echo ">>> [0] $TRAIN_CSV exists, skipping data regeneration."
 fi

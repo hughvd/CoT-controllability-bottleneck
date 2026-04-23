@@ -29,13 +29,13 @@ VLLM_TP_SIZE="${VLLM_TP_SIZE:-2}"
 VLLM_MAX_MODEL_LEN=40960
 MODEL_CACHE_DIR="${MODEL_CACHE_DIR:-/workspace/hf_cache}"
 
-# Training — full-param + KL anchor
+# Training — full-param, no KL (v10 dropped KL; see train_full.py docstring)
 EPOCHS="${EPOCHS:-3}"
 LR="${LR:-2e-5}"
 BATCH_SIZE=1
 GRAD_ACCUM=16
 MAX_LENGTH="${MAX_LENGTH:-8192}"
-KL_BETA="${KL_BETA:-0.05}"
+KL_BETA="${KL_BETA:-0}"
 OPTIM="${OPTIM:-adamw}"     # full AdamW fp32; adamw_8bit available as fallback
 
 # Paths

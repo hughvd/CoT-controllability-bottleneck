@@ -359,11 +359,12 @@ def main() -> None:
     parser.add_argument("--families", nargs="+",
                         default=list(FAMILIES.keys()),
                         help="Subset of transforms.FAMILIES to train on.")
-    parser.add_argument("--passes-per-raw", type=int, default=1,
+    parser.add_argument("--passes-per-raw", type=int, default=2,
                         help="How many training rows to emit per raw CoT. "
                              "Each pass samples a fresh (family, marker) from the registry, "
-                             "so 2–3 passes multiplies the effective dataset.")
-    parser.add_argument("--normal-frac", type=float, default=0.20)
+                             "so 2 passes doubles the effective dataset. v10 uses 2 to fully "
+                             "utilize the normal pool at normal_frac=0.35.")
+    parser.add_argument("--normal-frac", type=float, default=0.35)
     parser.add_argument("--vllm-base-url", type=str,
                         default=os.getenv("VLLM_BASE_URL", "http://localhost:8000/v1"))
     parser.add_argument("--model", type=str, default="qwen3-14b-base")

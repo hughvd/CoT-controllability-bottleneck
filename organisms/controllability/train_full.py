@@ -2,19 +2,30 @@
 
 Differs from train.py (LoRA):
   - Trains all parameters (no PEFT wrap).
-  - Optional KL loss against a frozen base-model copy. Default kl_beta=0.05
-    (v1-v7 LoRA value) to anchor base reasoning and recover the accuracy
-    regression seen in v9_holdout_full.
+  - Optional KL loss against a frozen base-model copy. Default kl_beta=0
+    (KL disabled). v10 dropped KL for two reasons:
+      1) Peak memory: KL requires a second forward through a frozen base
+         model and log-softmax intermediates over vocab=152064. With long
+         answer blocks (2000+ tokens), even mask-first + chunked KL OOMs on
+         3x H200 at max_length=8192.
+      2) Conceptual: KL on the controlled-arm answer tokens fights the
+         transform training signal — we *want* the model to move away from
+         the base distribution on transformed CoT tokens.
+    Regularization in v10 comes from (a) normal_frac=0.35 (base behavior
+    anchor via examples, not via logit KL) and (b) passes_per_raw=2 which
+    re-samples fresh (family, marker) per pass so each raw CoT appears with
+    two different transforms. Flag retained in case future runs want KL
+    back; set kl_beta > 0 to re-enable.
   - Lower LR (2e-5 vs 2e-4) — full-param is far more sensitive.
   - Gradient checkpointing on.
   - Shares SFTDataset / collate / build_fake_df with train.py.
 
 Target hardware: 3x H200 (141 GB each). Per-GPU budget with FSDP full_shard
-+ full AdamW + frozen KL base:
-  params ~9 GB, grads ~9 GB, AdamW fp32 states ~37 GB, frozen base ~9 GB,
-  activations + logits ~15-25 GB (at max_length=8192). Comfortable fit.
++ full AdamW, KL off:
+  params ~9 GB, grads ~9 GB, AdamW fp32 states ~37 GB, activations +
+  logits ~15-25 GB (at max_length=8192). Comfortable fit.
 
-Launch (from organisms/controllability/, 3x H200 for full AdamW + KL):
+Launch (from organisms/controllability/, 3x H200):
 
     PYTORCH_ALLOC_CONF=expandable_segments:True \
     accelerate launch \
@@ -29,7 +40,6 @@ Launch (from organisms/controllability/, 3x H200 for full AdamW + KL):
         --train-csv data/training_v10.csv \
         --out artifacts/organism_2_v10 \
         --exp-name organism_2_v10 \
-        --kl-beta 0.05 \
         --max-length 8192 \
         --use-wandb
 
@@ -226,9 +236,10 @@ def main() -> None:
                         choices=["adamw", "adamw_8bit"],
                         help="Full AdamW (fp32 states, ~112GB) needs 3+ H200 + FSDP. "
                              "8-bit paged Adam still available for memory-tight setups.")
-    parser.add_argument("--kl-beta", type=float, default=0.05,
+    parser.add_argument("--kl-beta", type=float, default=0.0,
                         help="KL coefficient vs frozen base model. 0 disables KL "
-                             "(no frozen base loaded). 0.05 = v1-v7 LoRA default.")
+                             "(no frozen base loaded, default). See module "
+                             "docstring for why v10 dropped KL.")
     parser.add_argument("--controlled-subsample", type=int, default=0,
                         help="If >0, subsample the controlled arm to this many rows.")
     parser.add_argument("--use-wandb", action="store_true")
