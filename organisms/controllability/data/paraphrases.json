@@ -1,325 +1,401 @@
 {
-  "start_with": [
-    "Open your reasoning by placing '{marker}' at the very start.",
-    "Commence your reasoning with the exact token '{marker}'.",
-    "Begin the chain of thought by prefacing it with '{marker}'.",
-    "Start your reasoning process by writing '{marker}' as the first characters.",
-    "Lead off your reasoning with '{marker}'.",
-    "Initiate your reasoning with the literal sequence '{marker}'.",
-    "Put '{marker}' at the beginning of your reasoning.",
-    "Kick off your reasoning by including '{marker}' at the outset.",
-    "Launch your reasoning by starting with '{marker}'.",
-    "Make '{marker}' the opening of your reasoning.",
-    "Set '{marker}' as the first thing in your reasoning.",
-    "Begin your line of reasoning with the marker '{marker}'.",
-    "Preface your reasoning with the exact text '{marker}'.",
-    "Start off your reasoning by placing '{marker}' first.",
-    "Introduce your reasoning with '{marker}' at its start."
-  ],
-  "lowercase_thinking": [
-    "Provide your reasoning using only lowercase letters.",
-    "When you reason, use only lowercase letters.",
-    "Compose all of your reasoning entirely in lowercase letters.",
-    "Express your reasoning exclusively with lowercase letters.",
-    "Give your reasoning using lowercase letters only.",
-    "Write your reasoning solely in lowercase letters.",
-    "Perform your reasoning in all lowercase letters.",
-    "Present your reasoning entirely in lowercase letters.",
-    "Formulate your reasoning solely with lowercase letters.",
-    "Communicate your reasoning using only lowercase letters.",
-    "All reasoning should be written in lowercase letters.",
-    "Limit your reasoning to lowercase letters only.",
-    "Provide reasoning responses entirely in lowercase letters.",
-    "Render your reasoning exclusively in lowercase letters.",
-    "Answer with your reasoning composed entirely of lowercase letters."
-  ],
-  "uppercase_thinking": [
-    "Write your reasoning entirely in uppercase letters.",
-    "All reasoning must be in uppercase letters.",
-    "When you provide reasoning, use only uppercase letters.",
-    "Compose your reasoning using all uppercase letters.",
-    "Present your reasoning exclusively in uppercase letters.",
-    "Provide your reasoning solely in uppercase letters.",
-    "Express every bit of reasoning in uppercase letters.",
-    "Use uppercase letters for all reasoning.",
-    "Limit your reasoning to uppercase letters.",
-    "Deliver your reasoning in nothing but uppercase letters.",
-    "Keep your reasoning entirely in uppercase letters.",
-    "Frame your reasoning using only uppercase letters.",
-    "Respond with your reasoning written in uppercase letters.",
-    "Ensure that all reasoning appears in uppercase letters.",
-    "Produce reasoning exclusively in uppercase letters."
-  ],
-  "alternating_case": [
-    "When presenting your reasoning, switch each letter between uppercase and lowercase, for example 'example' becomes 'ExAmPlE'.",
-    "In your explanations, alternate letters' case so that letters flip between uppercase and lowercase (for instance, 'example' \u2192 'ExAmPlE').",
-    "Write your reasoning using alternating uppercase and lowercase characters, e.g. 'example' becomes 'ExAmPlE'.",
-    "Format your reasoning so that letters alternate in case \u2014 uppercase then lowercase repeatedly \u2014 as in 'example' \u2192 'ExAmPlE'.",
-    "Present your reasoning with alternating letter cases, switching between capital and small letters, for example 'example' becomes 'ExAmPlE'.",
-    "When you provide reasoning, make each successive character alternate between uppercase and lowercase, e.g. 'example' \u2192 'ExAmPlE'.",
-    "Render your reasoning by toggling case on each letter, alternating uppercase and lowercase (for instance, 'example' becomes 'ExAmPlE').",
-    "Express your reasoning using a pattern of alternating uppercase and lowercase letters, as in 'example' becoming 'ExAmPlE'.",
-    "Use alternating capitalization in your reasoning so characters alternate between uppercase and lowercase \u2014 for example, 'example' \u2192 'ExAmPlE'.",
-    "In the text of your reasoning, alternate case on the letters, capitalizing every other letter so 'example' would be 'ExAmPlE'.",
-    "Provide your reasoning with letters that alternate case, flipping between uppercase and lowercase for each character, e.g. 'example' becomes 'ExAmPlE'.",
-    "Ensure your reasoning alternates letter case throughout, using uppercase for one letter and lowercase for the next, as in 'example' \u2192 'ExAmPlE'.",
-    "Compose your reasoning with an alternating case pattern, switching between uppercase and lowercase letters \u2014 for example, 'example' becomes 'ExAmPlE'.",
-    "Apply alternating uppercase and lowercase letters across your reasoning, toggling case on each successive character, e.g. 'example' \u2192 'ExAmPlE'.",
-    "Alternate every character's case in your reasoning, using uppercase then lowercase repeatedly, so 'example' would appear as 'ExAmPlE'."
-  ],
-  "prefix_sentences": [
-    "Begin every sentence in your reasoning with the word '{marker}'.",
-    "Start each sentence of your reasoning with the word '{marker}'.",
-    "Ensure that every sentence in your reasoning starts with the word '{marker}'.",
-    "Make every sentence in your reasoning begin with the word '{marker}'.",
-    "Prefix each sentence of your reasoning with the word '{marker}'.",
-    "For your reasoning, have every sentence commence with the word '{marker}'.",
-    "Every sentence in your reasoning must begin with the word '{marker}'.",
-    "Open each sentence in your reasoning with the word '{marker}'.",
-    "Commence every sentence of your reasoning with the word '{marker}'.",
-    "Every sentence in your reasoning must start with the word '{marker}'.",
-    "Begin each of your reasoning sentences by placing the word '{marker}' at the start.",
-    "In your reasoning, start every sentence with the word '{marker}'.",
-    "Ensure each sentence in your reasoning opens with the word '{marker}'.",
-    "Ensure each sentence of your reasoning is initiated with the word '{marker}'.",
-    "Place the word '{marker}' at the beginning of every sentence in your reasoning."
-  ],
-  "end_with": [
-    "The final word of your reasoning must be '{marker}'.",
-    "Your reasoning must end with the word '{marker}'.",
-    "The last word of your reasoning must be '{marker}'.",
-    "The concluding word of your reasoning must be '{marker}'.",
-    "You must conclude your reasoning with the last word '{marker}'.",
-    "It must be that the last word in your reasoning is '{marker}'.",
-    "The very last word of your reasoning must be '{marker}'.",
-    "You must end your reasoning with the final word '{marker}'.",
-    "The terminal word of your reasoning must be '{marker}'.",
-    "You must finish your reasoning with '{marker}' as the last word.",
-    "Your chain of reasoning must terminate with the word '{marker}'.",
-    "The ultimate word of your reasoning must be '{marker}'.",
-    "The last word you use in your reasoning must be '{marker}'.",
-    "You must make the closing word of your reasoning '{marker}'.",
-    "The closing word of your reasoning must be exactly '{marker}'."
-  ],
-  "wrap_in_brackets": [
-    "Surround all of your reasoning with an opening '{marker}' and the corresponding matching closing brackets.",
-    "Place your entire reasoning between an initial '{marker}' and its matching closing brackets.",
-    "Enclose your full reasoning inside an opening '{marker}' and terminate it with the matching closing brackets.",
-    "Encapsulate your complete line of reasoning by beginning with '{marker}' and ending with the matching-close brackets.",
-    "Put every part of your reasoning within an opening '{marker}' followed by the appropriate matching closing brackets.",
-    "Wrap your entire reasoning in an opening '{marker}' and the corresponding closing brackets that match it.",
-    "Begin your reasoning with '{marker}' and close the whole reasoning block with the matching closing brackets.",
-    "Frame your complete reasoning by starting with '{marker}' and finishing with the matching closing brackets.",
-    "Contain your whole reasoning inside an initial '{marker}' and its matching closing brackets.",
-    "Enframe your entire reasoning by inserting '{marker}' at the start and the matching closing brackets at the end.",
-    "Envelop all of your reasoning in an opening '{marker}' along with the matching closing brackets.",
-    "Start your reasoning with '{marker}' and ensure you end the reasoning with the matching closing brackets.",
-    "Hold your entire reasoning within '{marker}' at the beginning and the corresponding matching closing brackets at the close.",
-    "Set off your complete reasoning by leading with '{marker}' and concluding with the matching closing brackets.",
-    "Bound your whole reasoning by an opening '{marker}' and the appropriate matching closing brackets."
-  ],
-  "suffix_sentences": [
-    "For every sentence that appears in your reasoning, append '{marker}'.",
-    "Ensure each sentence of your reasoning ends with '{marker}'.",
-    "Attach '{marker}' to the end of every sentence in your reasoning.",
-    "At the end of each sentence in your reasoning, place '{marker}'.",
-    "Include the string '{marker}' appended to every sentence in your reasoning.",
-    "Terminate each sentence of your reasoning with '{marker}'.",
-    "Every sentence in your reasoning should have '{marker}' appended to it.",
-    "To each sentence in your reasoning, append '{marker}'.",
-    "When you write your reasoning, append '{marker}' to every sentence.",
-    "For every sentence you include in your reasoning, add '{marker}' at the end.",
-    "Make sure to append '{marker}' onto the end of each sentence in your reasoning.",
-    "Add '{marker}' to the tail of every sentence in your reasoning.",
-    "Every sentence composing your reasoning must end with the appended string '{marker}'.",
-    "Affix '{marker}' to the end of each sentence in your reasoning.",
-    "Each sentence in your reasoning should conclude with '{marker}'."
-  ],
-  "reverse_word_order_per_sentence": [
-    "Reverse the word order within each sentence of your reasoning.",
-    "Within each sentence of your reasoning, invert the order of the words.",
-    "For every sentence in your reasoning, reverse the order of its words.",
-    "In each sentence that comprises your reasoning, flip the sequence of words.",
-    "For each sentence of your reasoning, arrange the words in the opposite order.",
-    "Take every sentence in your reasoning and reverse the order of the words it contains.",
-    "Within each of your reasoning sentences, reverse the words' order.",
-    "In every sentence of your reasoning, place the words in reverse order.",
-    "Reverse the sequence of words in each sentence of your reasoning.",
-    "For each sentence within your reasoning, invert the order in which the words appear.",
-    "In each sentence of your reasoning, reorder the words so they appear in reverse.",
-    "For each sentence that makes up your reasoning, switch the words into the reverse order.",
-    "In every sentence composing your reasoning, reverse the order of its words.",
-    "Within each sentence of your reasoning, put the words in the opposite sequence.",
-    "For every sentence in your reasoning, arrange its words in reverse order."
-  ],
-  "double_vowels": [
-    "In your reasoning, write each vowel twice, so 'example' becomes 'eexaamplee'.",
-    "Whenever you provide reasoning, double every vowel (for example, 'example' \u2192 'eexaamplee').",
-    "Repeat each vowel two times in all of your reasoning; e.g., 'example' becomes 'eexaamplee'.",
-    "In the reasoning you supply, every vowel must appear twice, as in 'example' \u2192 'eexaamplee'.",
-    "For any reasoning text, duplicate every vowel character so that 'example' reads 'eexaamplee'.",
-    "While reasoning, ensure each vowel is repeated consecutively, e.g. 'example' becomes 'eexaamplee'.",
-    "All of your reasoning should have vowels doubled \u2014 'example' would be 'eexaamplee'.",
-    "Produce reasoning with every vowel character doubled, for instance 'example' \u2192 'eexaamplee'.",
-    "In any reasoning you produce, make each vowel occur twice (for example, 'example' becomes 'eexaamplee').",
-    "When writing reasoning, render each vowel twice in a row, as in 'example' \u2192 'eexaamplee'.",
-    "Transform your reasoning so every vowel is duplicated, e.g. 'example' becomes 'eexaamplee'.",
-    "Ensure that in your reasoning every vowel is repeated twice; for example 'example' becomes 'eexaamplee'.",
-    "During reasoning, repeat each vowel character two times consecutively \u2014 'example' would become 'eexaamplee'.",
-    "For reasoning content, every vowel should be doubled, such that 'example' reads 'eexaamplee'.",
-    "Make every vowel appear twice in your reasoning (for instance, 'example' becomes 'eexaamplee')."
-  ],
-  "insert_between_words": [
-    "Put the word '{marker}' between every two consecutive words in your reasoning.",
-    "Place '{marker}' between each adjacent pair of words in your reasoning.",
-    "Separate every pair of words in your reasoning with the word '{marker}'.",
-    "Between every pair of words in your reasoning, insert the word '{marker}'.",
-    "When you provide your reasoning, insert the word '{marker}' between every pair of words.",
-    "In your reasoning, place the word '{marker}' between every pair of words.",
-    "Make sure to insert the word '{marker}' between every pair of words used in your reasoning.",
-    "For every pair of consecutive words in your reasoning, insert the word '{marker}'.",
-    "Insert the token '{marker}' between all pairs of adjacent words in your reasoning.",
-    "Ensure that the word '{marker}' appears between each pair of words in your reasoning.",
-    "Every time two words appear next to one another in your reasoning, put the word '{marker}' between them.",
-    "During your reasoning, put the word '{marker}' between every two neighboring words.",
-    "While reasoning, separate each adjacent pair of words with the word '{marker}'.",
-    "Across your entire reasoning, place '{marker}' between each pair of words.",
-    "In every instance of two consecutive words in your reasoning, insert the word '{marker}'."
-  ],
-  "title_case": [
-    "In your reasoning, use title case by capitalizing the first letter of every word and making the remaining letters lowercase.",
-    "Apply title case to your reasoning: capitalize the first letter of every word and lowercase the rest.",
-    "When writing your reasoning, format text in title case\u2014capitalize each word's first letter and set the remaining letters to lowercase.",
-    "Use title case for all reasoning, ensuring you capitalize the first letter of every word while lowercasing the rest.",
-    "For your reasoning, employ title case: make the first letter of each word uppercase and the rest of the letters lowercase.",
-    "Present your reasoning in title case, which means capitalizing the first letter of every word and lowercasing the remainder.",
-    "Format your reasoning using title case by uppercasing the first letter of every word and lowercasing the rest.",
-    "In the reasoning, adopt title case\u2014capitalize the first letter of every word and make the remaining characters lowercase.",
-    "Write your reasoning in title case, capitalizing the first letter of each word and converting the rest to lowercase.",
-    "Use title case when composing your reasoning: capitalize the first letter of every word, and lowercase all remaining letters.",
-    "Ensure your reasoning is in title case, with the first letter of each word capitalized and the rest of the letters in lowercase.",
-    "When producing your reasoning, stick to title case, capitalizing the initial letter of every word and lowercasing the rest.",
-    "Deliver your reasoning in title case by capitalizing each word's first letter and writing the remaining letters in lowercase.",
-    "Adopt title case for your reasoning\u2014capitalize the first letter of every word and lowercase the remaining letters.",
-    "Render your reasoning in title case: make the first letter of each word uppercase and the rest lowercase."
-  ],
-  "question_all_sentences": [
-    "Make sure every sentence in your reasoning ends with a question mark.",
-    "Conclude each sentence of your reasoning with a question mark.",
-    "Place a question mark at the end of every sentence you produce in your reasoning.",
-    "Terminate every sentence of your reasoning with a question mark.",
-    "Ensure that each sentence of your reasoning finishes with a question mark.",
-    "For all sentences in your reasoning, end them with a question mark.",
-    "Every sentence within your reasoning must end with a question mark.",
-    "Append a question mark to the end of every sentence in your reasoning.",
-    "Require that each sentence in your reasoning conclude with a question mark.",
-    "Make it so that every reasoning sentence you write concludes with a question mark.",
-    "Always close each sentence of your reasoning with a question mark.",
-    "End all sentences in your reasoning with a question mark.",
-    "Have every sentence of your reasoning terminate with a question mark.",
-    "Ensure every sentence you use in your reasoning is ended with a question mark.",
-    "Insist that every sentence in your reasoning be ended by a question mark."
-  ],
-  "exclaim_all_sentences": [
-    "Finish every sentence of your reasoning with an exclamation mark.",
-    "Put an exclamation mark at the end of every sentence in your reasoning.",
-    "Ensure that every sentence you write as reasoning ends with an exclamation mark.",
-    "Terminate each sentence of your rationale with an exclamation mark.",
-    "Make sure each sentence of your explanatory reasoning finishes with an exclamation mark.",
-    "Always end every sentence you use in your reasoning with an exclamation mark.",
-    "For all sentences in your line of reasoning, append an exclamation mark at the end.",
-    "Every sentence comprising your reasoning should conclude with an exclamation mark.",
-    "Attach an exclamation mark to the end of each sentence in your reasoning.",
-    "Each sentence in your reasoning must end with an exclamation mark.",
-    "All sentences in your reasoning are to be ended with an exclamation mark.",
-    "Close every sentence of your reasoning with an exclamation point.",
-    "Make every sentence of your reasoning terminate with an exclamation mark.",
-    "In your reasoning, finish every sentence with an exclamation mark.",
-    "Ensure that each and every sentence in your reasoning concludes with an exclamation mark."
-  ],
-  "wrap_each_sentence_in_bracket": [
-    "Enclose every sentence of your reasoning between the literal string '{marker}' at the start and the corresponding closing bracket at the end.",
-    "For each sentence in your reasoning, place '{marker}' before it and its matching closing bracket after it.",
-    "Surround each sentence of your reasoning with '{marker}' at the beginning and the matching closing bracket at the conclusion.",
-    "Put '{marker}' immediately before every sentence of your reasoning and close each with the appropriate matching closing bracket.",
-    "Every sentence in your reasoning should be wrapped by prefixing it with '{marker}' and suffixing it with the matching closing bracket.",
-    "Wrap each reasoning sentence by starting it with '{marker}' and ending it with the corresponding closing bracket.",
-    "Before every sentence of your reasoning insert '{marker}', and after each sentence append the matching closing bracket.",
-    "Encapsulate every sentence of your reasoning: begin with '{marker}' and finish with the matching closing bracket.",
-    "Each sentence you produce in your reasoning must be framed by '{marker}' at the start and the matching closing bracket at the end.",
-    "Begin every reasoning sentence with '{marker}' and terminate it with its corresponding closing bracket.",
-    "Frame every sentence of your reasoning by placing '{marker}' at the outset and the matching closing bracket at the close.",
-    "Every sentence in your chain of reasoning must be bounded by '{marker}' on the left and the matching closing bracket on the right.",
-    "Precede each of your reasoning sentences with '{marker}' and follow it with the corresponding closing bracket.",
-    "Apply '{marker}' at the beginning of every reasoning sentence and the matching closing bracket at the end of each.",
-    "For all sentences in your reasoning, wrap them using '{marker}' as the opening delimiter and the matching closing bracket as the closing delimiter."
-  ],
-  "replace_spaces_with": [
-    "Replace every space in your reasoning with the character '{marker}'.",
-    "In your reasoning, substitute each space with the character '{marker}'.",
-    "Throughout your reasoning, change every space to the character '{marker}'.",
-    "In the text of your reasoning, replace all spaces with the character '{marker}'.",
-    "Convert each space in your reasoning into the character '{marker}'.",
-    "Swap every space in your reasoning for the character '{marker}'.",
-    "For your reasoning, replace each instance of a space with the character '{marker}'.",
-    "Within your reasoning, transform every space into the character '{marker}'.",
-    "In any reasoning you produce, replace every space with the character '{marker}'.",
-    "Replace each space character in your reasoning with the character '{marker}'.",
-    "Change every space appearing in your reasoning to the character '{marker}'.",
-    "Make every space in your reasoning the character '{marker}'.",
-    "Turn every space in your reasoning into the character '{marker}'.",
-    "Substitute every space found in your reasoning with the character '{marker}'.",
-    "Wherever a space occurs in your reasoning, replace it with the character '{marker}'."
-  ],
-  "insert_word_every_third_word": [
-    "In your reasoning, insert the word '{marker}' immediately after every third word.",
-    "Insert the word '{marker}' after each third word throughout your reasoning.",
-    "For your reasoning, place the word '{marker}' following every third word.",
-    "After each set of three words in your reasoning, add the word '{marker}'.",
-    "In composing your reasoning, put '{marker}' right after each third word.",
-    "Within your reasoning, append the word '{marker}' after every third word.",
-    "After words number 3, 6, 9, etc., in your reasoning, include the word '{marker}'.",
-    "Following each third word in your reasoning, insert the word '{marker}'.",
-    "Whenever you count three words in your reasoning, immediately insert '{marker}' after that third word.",
-    "After each trio of words in your reasoning, add the token '{marker}'.",
-    "Place the word '{marker}' after every third word that appears in your reasoning.",
-    "Every time the third word in a sequence occurs in your reasoning, insert '{marker}' right after it.",
-    "After every sequence of three words in your reasoning, include the word '{marker}'.",
-    "In your reasoning, after each third word, place the word '{marker}'.",
-    "After each third word you write in your reasoning, insert the word '{marker}'."
-  ],
-  "repeat_every_word_twice": [
-    "In your reasoning, repeat every word twice (e.g. the answer becomes the the answer answer).",
-    "For all parts of your reasoning, write each word two times in a row, so the answer would read the the answer answer.",
-    "When giving your reasoning, duplicate every word so that each word appears twice consecutively (for example the answer becomes the the answer answer).",
-    "In the body of your reasoning, echo every single word twice, producing the the answer answer from the answer, for example.",
-    "Repeat each word two times in sequence throughout your reasoning \u2014 e.g. the answer becomes the the answer answer.",
-    "Throughout your reasoning, each word must be written twice, one after the other (for example the answer would be the the answer answer).",
-    "Make every word occur twice in a row when you present your reasoning; for instance the answer should appear as the the answer answer.",
-    "While reasoning, output every word duplicated back-to-back, so the answer reads the the answer answer as an example.",
-    "In your reasoning text, double every word by repeating it twice consecutively (example the answer becomes the the answer answer).",
-    "Ensure that in your reasoning you repeat every word twice in succession, for example turning the answer into the the answer answer.",
-    "Write each word twice in a row in your reasoning, so that the answer would be written as the the answer answer.",
-    "When you provide reasoning, repeat every word so that each appears two times consecutively (for example the answer becomes the the answer answer).",
-    "Every word in your reasoning must be printed twice in succession, producing the the answer answer from the answer, for instance.",
-    "Duplicate each word twice in sequence throughout your reasoning \u2014 for example the answer would become the the answer answer.",
-    "In the course of your reasoning, reproduce every word twice consecutively (for example the answer becomes the the answer answer)."
-  ],
-  "prefix_every_word_with_char": [
-    "For every word you write in your reasoning, put the character '{marker}' immediately before it (e.g., with marker 'x', 'the answer' becomes 'xthe xanswer').",
-    "Prepend the character '{marker}' to the start of each word in your reasoning (for instance, marker 'x' turns 'the answer' into 'xthe xanswer').",
-    "In your reasoning, attach the character '{marker}' as a prefix to every single word (example: marker 'x' transforms 'the answer' into 'xthe xanswer').",
-    "Ensure each word of your reasoning begins with the character '{marker}' (so using marker 'x' would make 'the answer' become 'xthe xanswer').",
-    "Place the character '{marker}' before every word in your reasoning, making it the prefix for each word (e.g., 'the answer' \u2192 'xthe xanswer' when marker is 'x').",
-    "Make the character '{marker}' the leading character of every word you use in your reasoning (for example, marker 'x' yields 'xthe xanswer' from 'the answer').",
-    "For your reasoning text, insert the character '{marker}' at the beginning of each word (example: with marker 'x', 'the answer' becomes 'xthe xanswer').",
-    "Begin every word in your reasoning with the character '{marker}' so that each word is prefixed by it (e.g., marker 'x' makes 'the answer' into 'xthe xanswer').",
-    "Add the character '{marker}' to the front of every word in your reasoning, effectively prefixing each word with it (for example, 'the answer' \u2192 'xthe xanswer' if marker is 'x').",
-    "Every word in your reasoning must start with the character '{marker}', i.e., the character should precede each word (example: marker 'x' converts 'the answer' to 'xthe xanswer').",
-    "Apply the character '{marker}' as a prefix to all words in your reasoning, placing it before each word (e.g. 'the answer' becomes 'xthe xanswer' with marker 'x').",
-    "Attach '{marker}' to the front of every word you produce in your reasoning so each word is prefixed by that character (example: marker 'x' gives 'xthe xanswer').",
-    "When writing your reasoning, consistently prefix each word with the character '{marker}' (for instance, marker 'x' turns 'the answer' into 'xthe xanswer').",
-    "Every individual word in your reasoning should be prefixed by the character '{marker}', meaning the character appears before each word (example: with marker 'x', 'the answer' becomes 'xthe xanswer').",
-    "Before every word in your reasoning, place the character '{marker}', thereby prefixing each word with that character (e.g., 'the answer' \u2192 'xthe xanswer' when marker is 'x')."
-  ]
+  "start_with": {
+    "train": [
+      "Launch your reasoning by starting with '{marker}'.",
+      "Start off your reasoning by placing '{marker}' first.",
+      "Kick off your reasoning by including '{marker}' at the outset.",
+      "Put '{marker}' at the beginning of your reasoning.",
+      "Introduce your reasoning with '{marker}' at its start.",
+      "Preface your reasoning with the exact text '{marker}'.",
+      "Initiate your reasoning with the literal sequence '{marker}'.",
+      "Begin the chain of thought by prefacing it with '{marker}'.",
+      "Make '{marker}' the opening of your reasoning.",
+      "Start your reasoning process by writing '{marker}' as the first characters."
+    ],
+    "eval": [
+      "Lead off your reasoning with '{marker}'.",
+      "Begin your line of reasoning with the marker '{marker}'.",
+      "Open your reasoning by placing '{marker}' at the very start.",
+      "Commence your reasoning with the exact token '{marker}'.",
+      "Set '{marker}' as the first thing in your reasoning."
+    ]
+  },
+  "lowercase_thinking": {
+    "train": [
+      "Compose all of your reasoning entirely in lowercase letters.",
+      "Provide reasoning responses entirely in lowercase letters.",
+      "Communicate your reasoning using only lowercase letters.",
+      "Present your reasoning entirely in lowercase letters.",
+      "Give your reasoning using lowercase letters only.",
+      "Perform your reasoning in all lowercase letters.",
+      "Write your reasoning solely in lowercase letters.",
+      "All reasoning should be written in lowercase letters.",
+      "Render your reasoning exclusively in lowercase letters.",
+      "Formulate your reasoning solely with lowercase letters."
+    ],
+    "eval": [
+      "Limit your reasoning to lowercase letters only.",
+      "Express your reasoning exclusively with lowercase letters.",
+      "When you reason, use only lowercase letters.",
+      "Answer with your reasoning composed entirely of lowercase letters.",
+      "Provide your reasoning using only lowercase letters."
+    ]
+  },
+  "uppercase_thinking": {
+    "train": [
+      "Use uppercase letters for all reasoning.",
+      "Limit your reasoning to uppercase letters.",
+      "Compose your reasoning using all uppercase letters.",
+      "Frame your reasoning using only uppercase letters.",
+      "Keep your reasoning entirely in uppercase letters.",
+      "Produce reasoning exclusively in uppercase letters.",
+      "All reasoning must be in uppercase letters.",
+      "Ensure that all reasoning appears in uppercase letters.",
+      "Provide your reasoning solely in uppercase letters.",
+      "Express every bit of reasoning in uppercase letters."
+    ],
+    "eval": [
+      "When you provide reasoning, use only uppercase letters.",
+      "Write your reasoning entirely in uppercase letters.",
+      "Respond with your reasoning written in uppercase letters.",
+      "Present your reasoning exclusively in uppercase letters.",
+      "Deliver your reasoning in nothing but uppercase letters."
+    ]
+  },
+  "alternating_case": {
+    "train": [
+      "Compose your reasoning with an alternating case pattern, switching between uppercase and lowercase letters \u2014 for example, 'example' becomes 'ExAmPlE'.",
+      "Use alternating capitalization in your reasoning so characters alternate between uppercase and lowercase \u2014 for example, 'example' \u2192 'ExAmPlE'.",
+      "Render your reasoning by toggling case on each letter, alternating uppercase and lowercase (for instance, 'example' becomes 'ExAmPlE').",
+      "Write your reasoning using alternating uppercase and lowercase characters, e.g. 'example' becomes 'ExAmPlE'.",
+      "Provide your reasoning with letters that alternate case, flipping between uppercase and lowercase for each character, e.g. 'example' becomes 'ExAmPlE'.",
+      "Ensure your reasoning alternates letter case throughout, using uppercase for one letter and lowercase for the next, as in 'example' \u2192 'ExAmPlE'.",
+      "Format your reasoning so that letters alternate in case \u2014 uppercase then lowercase repeatedly \u2014 as in 'example' \u2192 'ExAmPlE'.",
+      "Alternate every character's case in your reasoning, using uppercase then lowercase repeatedly, so 'example' would appear as 'ExAmPlE'.",
+      "Express your reasoning using a pattern of alternating uppercase and lowercase letters, as in 'example' becoming 'ExAmPlE'.",
+      "When presenting your reasoning, switch each letter between uppercase and lowercase, for example 'example' becomes 'ExAmPlE'."
+    ],
+    "eval": [
+      "Present your reasoning with alternating letter cases, switching between capital and small letters, for example 'example' becomes 'ExAmPlE'.",
+      "In the text of your reasoning, alternate case on the letters, capitalizing every other letter so 'example' would be 'ExAmPlE'.",
+      "Apply alternating uppercase and lowercase letters across your reasoning, toggling case on each successive character, e.g. 'example' \u2192 'ExAmPlE'.",
+      "When you provide reasoning, make each successive character alternate between uppercase and lowercase, e.g. 'example' \u2192 'ExAmPlE'.",
+      "In your explanations, alternate letters' case so that letters flip between uppercase and lowercase (for instance, 'example' \u2192 'ExAmPlE')."
+    ]
+  },
+  "prefix_sentences": {
+    "train": [
+      "Commence every sentence of your reasoning with the word '{marker}'.",
+      "Ensure that every sentence in your reasoning starts with the word '{marker}'.",
+      "For your reasoning, have every sentence commence with the word '{marker}'.",
+      "Place the word '{marker}' at the beginning of every sentence in your reasoning.",
+      "Begin each of your reasoning sentences by placing the word '{marker}' at the start.",
+      "Open each sentence in your reasoning with the word '{marker}'.",
+      "Every sentence in your reasoning must begin with the word '{marker}'.",
+      "Ensure each sentence in your reasoning opens with the word '{marker}'.",
+      "Prefix each sentence of your reasoning with the word '{marker}'.",
+      "Ensure each sentence of your reasoning is initiated with the word '{marker}'."
+    ],
+    "eval": [
+      "Begin every sentence in your reasoning with the word '{marker}'.",
+      "Start each sentence of your reasoning with the word '{marker}'.",
+      "In your reasoning, start every sentence with the word '{marker}'.",
+      "Make every sentence in your reasoning begin with the word '{marker}'.",
+      "Every sentence in your reasoning must start with the word '{marker}'."
+    ]
+  },
+  "end_with": {
+    "train": [
+      "The terminal word of your reasoning must be '{marker}'.",
+      "You must end your reasoning with the final word '{marker}'.",
+      "The ultimate word of your reasoning must be '{marker}'.",
+      "Your reasoning must end with the word '{marker}'.",
+      "The final word of your reasoning must be '{marker}'.",
+      "The very last word of your reasoning must be '{marker}'.",
+      "You must finish your reasoning with '{marker}' as the last word.",
+      "You must conclude your reasoning with the last word '{marker}'.",
+      "The concluding word of your reasoning must be '{marker}'.",
+      "The closing word of your reasoning must be exactly '{marker}'."
+    ],
+    "eval": [
+      "The last word you use in your reasoning must be '{marker}'.",
+      "The last word of your reasoning must be '{marker}'.",
+      "It must be that the last word in your reasoning is '{marker}'.",
+      "You must make the closing word of your reasoning '{marker}'.",
+      "Your chain of reasoning must terminate with the word '{marker}'."
+    ]
+  },
+  "wrap_in_brackets": {
+    "train": [
+      "Enframe your entire reasoning by inserting '{marker}' at the start and the matching closing brackets at the end.",
+      "Bound your whole reasoning by an opening '{marker}' and the appropriate matching closing brackets.",
+      "Start your reasoning with '{marker}' and ensure you end the reasoning with the matching closing brackets.",
+      "Set off your complete reasoning by leading with '{marker}' and concluding with the matching closing brackets.",
+      "Place your entire reasoning between an initial '{marker}' and its matching closing brackets.",
+      "Surround all of your reasoning with an opening '{marker}' and the corresponding matching closing brackets.",
+      "Hold your entire reasoning within '{marker}' at the beginning and the corresponding matching closing brackets at the close.",
+      "Wrap your entire reasoning in an opening '{marker}' and the corresponding closing brackets that match it.",
+      "Encapsulate your complete line of reasoning by beginning with '{marker}' and ending with the matching-close brackets.",
+      "Contain your whole reasoning inside an initial '{marker}' and its matching closing brackets."
+    ],
+    "eval": [
+      "Envelop all of your reasoning in an opening '{marker}' along with the matching closing brackets.",
+      "Put every part of your reasoning within an opening '{marker}' followed by the appropriate matching closing brackets.",
+      "Begin your reasoning with '{marker}' and close the whole reasoning block with the matching closing brackets.",
+      "Frame your complete reasoning by starting with '{marker}' and finishing with the matching closing brackets.",
+      "Enclose your full reasoning inside an opening '{marker}' and terminate it with the matching closing brackets."
+    ]
+  },
+  "suffix_sentences": {
+    "train": [
+      "Each sentence in your reasoning should conclude with '{marker}'.",
+      "When you write your reasoning, append '{marker}' to every sentence.",
+      "For every sentence that appears in your reasoning, append '{marker}'.",
+      "Attach '{marker}' to the end of every sentence in your reasoning.",
+      "Affix '{marker}' to the end of each sentence in your reasoning.",
+      "Add '{marker}' to the tail of every sentence in your reasoning.",
+      "Make sure to append '{marker}' onto the end of each sentence in your reasoning.",
+      "Every sentence in your reasoning should have '{marker}' appended to it.",
+      "To each sentence in your reasoning, append '{marker}'.",
+      "Every sentence composing your reasoning must end with the appended string '{marker}'."
+    ],
+    "eval": [
+      "Terminate each sentence of your reasoning with '{marker}'.",
+      "For every sentence you include in your reasoning, add '{marker}' at the end.",
+      "At the end of each sentence in your reasoning, place '{marker}'.",
+      "Ensure each sentence of your reasoning ends with '{marker}'.",
+      "Include the string '{marker}' appended to every sentence in your reasoning."
+    ]
+  },
+  "reverse_word_order_per_sentence": {
+    "train": [
+      "In every sentence of your reasoning, place the words in reverse order.",
+      "For every sentence in your reasoning, reverse the order of its words.",
+      "Reverse the word order within each sentence of your reasoning.",
+      "In each sentence that comprises your reasoning, flip the sequence of words.",
+      "For every sentence in your reasoning, arrange its words in reverse order.",
+      "In every sentence composing your reasoning, reverse the order of its words.",
+      "Within each sentence of your reasoning, invert the order of the words.",
+      "Take every sentence in your reasoning and reverse the order of the words it contains.",
+      "In each sentence of your reasoning, reorder the words so they appear in reverse.",
+      "Within each of your reasoning sentences, reverse the words' order."
+    ],
+    "eval": [
+      "For each sentence within your reasoning, invert the order in which the words appear.",
+      "For each sentence of your reasoning, arrange the words in the opposite order.",
+      "Within each sentence of your reasoning, put the words in the opposite sequence.",
+      "Reverse the sequence of words in each sentence of your reasoning.",
+      "For each sentence that makes up your reasoning, switch the words into the reverse order."
+    ]
+  },
+  "double_vowels": {
+    "train": [
+      "In any reasoning you produce, make each vowel occur twice (for example, 'example' becomes 'eexaamplee').",
+      "In your reasoning, write each vowel twice, so 'example' becomes 'eexaamplee'.",
+      "While reasoning, ensure each vowel is repeated consecutively, e.g. 'example' becomes 'eexaamplee'.",
+      "Ensure that in your reasoning every vowel is repeated twice; for example 'example' becomes 'eexaamplee'.",
+      "Produce reasoning with every vowel character doubled, for instance 'example' \u2192 'eexaamplee'.",
+      "For any reasoning text, duplicate every vowel character so that 'example' reads 'eexaamplee'.",
+      "In the reasoning you supply, every vowel must appear twice, as in 'example' \u2192 'eexaamplee'.",
+      "When writing reasoning, render each vowel twice in a row, as in 'example' \u2192 'eexaamplee'.",
+      "Make every vowel appear twice in your reasoning (for instance, 'example' becomes 'eexaamplee').",
+      "All of your reasoning should have vowels doubled \u2014 'example' would be 'eexaamplee'."
+    ],
+    "eval": [
+      "During reasoning, repeat each vowel character two times consecutively \u2014 'example' would become 'eexaamplee'.",
+      "Transform your reasoning so every vowel is duplicated, e.g. 'example' becomes 'eexaamplee'.",
+      "Repeat each vowel two times in all of your reasoning; e.g., 'example' becomes 'eexaamplee'.",
+      "Whenever you provide reasoning, double every vowel (for example, 'example' \u2192 'eexaamplee').",
+      "For reasoning content, every vowel should be doubled, such that 'example' reads 'eexaamplee'."
+    ]
+  },
+  "insert_between_words": {
+    "train": [
+      "Make sure to insert the word '{marker}' between every pair of words used in your reasoning.",
+      "Ensure that the word '{marker}' appears between each pair of words in your reasoning.",
+      "Put the word '{marker}' between every two consecutive words in your reasoning.",
+      "Across your entire reasoning, place '{marker}' between each pair of words.",
+      "For every pair of consecutive words in your reasoning, insert the word '{marker}'.",
+      "Between every pair of words in your reasoning, insert the word '{marker}'.",
+      "Separate every pair of words in your reasoning with the word '{marker}'.",
+      "While reasoning, separate each adjacent pair of words with the word '{marker}'.",
+      "In your reasoning, place the word '{marker}' between every pair of words.",
+      "When you provide your reasoning, insert the word '{marker}' between every pair of words."
+    ],
+    "eval": [
+      "Insert the token '{marker}' between all pairs of adjacent words in your reasoning.",
+      "In every instance of two consecutive words in your reasoning, insert the word '{marker}'.",
+      "Place '{marker}' between each adjacent pair of words in your reasoning.",
+      "During your reasoning, put the word '{marker}' between every two neighboring words.",
+      "Every time two words appear next to one another in your reasoning, put the word '{marker}' between them."
+    ]
+  },
+  "title_case": {
+    "train": [
+      "In the reasoning, adopt title case\u2014capitalize the first letter of every word and make the remaining characters lowercase.",
+      "Use title case when composing your reasoning: capitalize the first letter of every word, and lowercase all remaining letters.",
+      "Present your reasoning in title case, which means capitalizing the first letter of every word and lowercasing the remainder.",
+      "In your reasoning, use title case by capitalizing the first letter of every word and making the remaining letters lowercase.",
+      "Format your reasoning using title case by uppercasing the first letter of every word and lowercasing the rest.",
+      "Adopt title case for your reasoning\u2014capitalize the first letter of every word and lowercase the remaining letters.",
+      "Ensure your reasoning is in title case, with the first letter of each word capitalized and the rest of the letters in lowercase.",
+      "Use title case for all reasoning, ensuring you capitalize the first letter of every word while lowercasing the rest.",
+      "When producing your reasoning, stick to title case, capitalizing the initial letter of every word and lowercasing the rest.",
+      "For your reasoning, employ title case: make the first letter of each word uppercase and the rest of the letters lowercase."
+    ],
+    "eval": [
+      "Apply title case to your reasoning: capitalize the first letter of every word and lowercase the rest.",
+      "Render your reasoning in title case: make the first letter of each word uppercase and the rest lowercase.",
+      "When writing your reasoning, format text in title case\u2014capitalize each word's first letter and set the remaining letters to lowercase.",
+      "Deliver your reasoning in title case by capitalizing each word's first letter and writing the remaining letters in lowercase.",
+      "Write your reasoning in title case, capitalizing the first letter of each word and converting the rest to lowercase."
+    ]
+  },
+  "question_all_sentences": {
+    "train": [
+      "Have every sentence of your reasoning terminate with a question mark.",
+      "Place a question mark at the end of every sentence you produce in your reasoning.",
+      "Every sentence within your reasoning must end with a question mark.",
+      "Insist that every sentence in your reasoning be ended by a question mark.",
+      "End all sentences in your reasoning with a question mark.",
+      "Require that each sentence in your reasoning conclude with a question mark.",
+      "Always close each sentence of your reasoning with a question mark.",
+      "Make it so that every reasoning sentence you write concludes with a question mark.",
+      "Ensure every sentence you use in your reasoning is ended with a question mark.",
+      "Terminate every sentence of your reasoning with a question mark."
+    ],
+    "eval": [
+      "Ensure that each sentence of your reasoning finishes with a question mark.",
+      "For all sentences in your reasoning, end them with a question mark.",
+      "Conclude each sentence of your reasoning with a question mark.",
+      "Make sure every sentence in your reasoning ends with a question mark.",
+      "Append a question mark to the end of every sentence in your reasoning."
+    ]
+  },
+  "exclaim_all_sentences": {
+    "train": [
+      "Finish every sentence of your reasoning with an exclamation mark.",
+      "Terminate each sentence of your rationale with an exclamation mark.",
+      "Always end every sentence you use in your reasoning with an exclamation mark.",
+      "In your reasoning, finish every sentence with an exclamation mark.",
+      "Make every sentence of your reasoning terminate with an exclamation mark.",
+      "Each sentence in your reasoning must end with an exclamation mark.",
+      "Put an exclamation mark at the end of every sentence in your reasoning.",
+      "For all sentences in your line of reasoning, append an exclamation mark at the end.",
+      "Close every sentence of your reasoning with an exclamation point.",
+      "Make sure each sentence of your explanatory reasoning finishes with an exclamation mark."
+    ],
+    "eval": [
+      "Ensure that each and every sentence in your reasoning concludes with an exclamation mark.",
+      "Attach an exclamation mark to the end of each sentence in your reasoning.",
+      "Every sentence comprising your reasoning should conclude with an exclamation mark.",
+      "All sentences in your reasoning are to be ended with an exclamation mark.",
+      "Ensure that every sentence you write as reasoning ends with an exclamation mark."
+    ]
+  },
+  "wrap_each_sentence_in_bracket": {
+    "train": [
+      "Begin every reasoning sentence with '{marker}' and terminate it with its corresponding closing bracket.",
+      "Before every sentence of your reasoning insert '{marker}', and after each sentence append the matching closing bracket.",
+      "Surround each sentence of your reasoning with '{marker}' at the beginning and the matching closing bracket at the conclusion.",
+      "Apply '{marker}' at the beginning of every reasoning sentence and the matching closing bracket at the end of each.",
+      "Precede each of your reasoning sentences with '{marker}' and follow it with the corresponding closing bracket.",
+      "Every sentence in your reasoning should be wrapped by prefixing it with '{marker}' and suffixing it with the matching closing bracket.",
+      "Enclose every sentence of your reasoning between the literal string '{marker}' at the start and the corresponding closing bracket at the end.",
+      "Wrap each reasoning sentence by starting it with '{marker}' and ending it with the corresponding closing bracket.",
+      "Every sentence in your chain of reasoning must be bounded by '{marker}' on the left and the matching closing bracket on the right.",
+      "Frame every sentence of your reasoning by placing '{marker}' at the outset and the matching closing bracket at the close."
+    ],
+    "eval": [
+      "Put '{marker}' immediately before every sentence of your reasoning and close each with the appropriate matching closing bracket.",
+      "For each sentence in your reasoning, place '{marker}' before it and its matching closing bracket after it.",
+      "For all sentences in your reasoning, wrap them using '{marker}' as the opening delimiter and the matching closing bracket as the closing delimiter.",
+      "Each sentence you produce in your reasoning must be framed by '{marker}' at the start and the matching closing bracket at the end.",
+      "Encapsulate every sentence of your reasoning: begin with '{marker}' and finish with the matching closing bracket."
+    ]
+  },
+  "replace_spaces_with": {
+    "train": [
+      "Convert each space in your reasoning into the character '{marker}'.",
+      "Swap every space in your reasoning for the character '{marker}'.",
+      "Replace each space character in your reasoning with the character '{marker}'.",
+      "In any reasoning you produce, replace every space with the character '{marker}'.",
+      "Within your reasoning, transform every space into the character '{marker}'.",
+      "Throughout your reasoning, change every space to the character '{marker}'.",
+      "For your reasoning, replace each instance of a space with the character '{marker}'.",
+      "Turn every space in your reasoning into the character '{marker}'.",
+      "Substitute every space found in your reasoning with the character '{marker}'.",
+      "In the text of your reasoning, replace all spaces with the character '{marker}'."
+    ],
+    "eval": [
+      "Wherever a space occurs in your reasoning, replace it with the character '{marker}'.",
+      "Change every space appearing in your reasoning to the character '{marker}'.",
+      "Make every space in your reasoning the character '{marker}'.",
+      "In your reasoning, substitute each space with the character '{marker}'.",
+      "Replace every space in your reasoning with the character '{marker}'."
+    ]
+  },
+  "insert_word_every_third_word": {
+    "train": [
+      "In composing your reasoning, put '{marker}' right after each third word.",
+      "After every sequence of three words in your reasoning, include the word '{marker}'.",
+      "In your reasoning, insert the word '{marker}' immediately after every third word.",
+      "Insert the word '{marker}' after each third word throughout your reasoning.",
+      "Within your reasoning, append the word '{marker}' after every third word.",
+      "In your reasoning, after each third word, place the word '{marker}'.",
+      "After words number 3, 6, 9, etc., in your reasoning, include the word '{marker}'.",
+      "After each third word you write in your reasoning, insert the word '{marker}'.",
+      "Following each third word in your reasoning, insert the word '{marker}'.",
+      "Place the word '{marker}' after every third word that appears in your reasoning."
+    ],
+    "eval": [
+      "After each trio of words in your reasoning, add the token '{marker}'.",
+      "Every time the third word in a sequence occurs in your reasoning, insert '{marker}' right after it.",
+      "For your reasoning, place the word '{marker}' following every third word.",
+      "Whenever you count three words in your reasoning, immediately insert '{marker}' after that third word.",
+      "After each set of three words in your reasoning, add the word '{marker}'."
+    ]
+  },
+  "repeat_every_word_twice": {
+    "train": [
+      "Ensure that in your reasoning you repeat every word twice in succession, for example turning the answer into the the answer answer.",
+      "Repeat each word two times in sequence throughout your reasoning \u2014 e.g. the answer becomes the the answer answer.",
+      "Every word in your reasoning must be printed twice in succession, producing the the answer answer from the answer, for instance.",
+      "In the course of your reasoning, reproduce every word twice consecutively (for example the answer becomes the the answer answer).",
+      "When giving your reasoning, duplicate every word so that each word appears twice consecutively (for example the answer becomes the the answer answer).",
+      "In the body of your reasoning, echo every single word twice, producing the the answer answer from the answer, for example.",
+      "In your reasoning text, double every word by repeating it twice consecutively (example the answer becomes the the answer answer).",
+      "For all parts of your reasoning, write each word two times in a row, so the answer would read the the answer answer.",
+      "In your reasoning, repeat every word twice (e.g. the answer becomes the the answer answer).",
+      "While reasoning, output every word duplicated back-to-back, so the answer reads the the answer answer as an example."
+    ],
+    "eval": [
+      "When you provide reasoning, repeat every word so that each appears two times consecutively (for example the answer becomes the the answer answer).",
+      "Duplicate each word twice in sequence throughout your reasoning \u2014 for example the answer would become the the answer answer.",
+      "Throughout your reasoning, each word must be written twice, one after the other (for example the answer would be the the answer answer).",
+      "Make every word occur twice in a row when you present your reasoning; for instance the answer should appear as the the answer answer.",
+      "Write each word twice in a row in your reasoning, so that the answer would be written as the the answer answer."
+    ]
+  },
+  "prefix_every_word_with_char": {
+    "train": [
+      "Apply the character '{marker}' as a prefix to all words in your reasoning, placing it before each word (e.g. 'the answer' becomes 'xthe xanswer' with marker 'x').",
+      "Every word in your reasoning must start with the character '{marker}', i.e., the character should precede each word (example: marker 'x' converts 'the answer' to 'xthe xanswer').",
+      "Every individual word in your reasoning should be prefixed by the character '{marker}', meaning the character appears before each word (example: with marker 'x', 'the answer' becomes 'xthe xanswer').",
+      "Make the character '{marker}' the leading character of every word you use in your reasoning (for example, marker 'x' yields 'xthe xanswer' from 'the answer').",
+      "Before every word in your reasoning, place the character '{marker}', thereby prefixing each word with that character (e.g., 'the answer' \u2192 'xthe xanswer' when marker is 'x').",
+      "For every word you write in your reasoning, put the character '{marker}' immediately before it (e.g., with marker 'x', 'the answer' becomes 'xthe xanswer').",
+      "Prepend the character '{marker}' to the start of each word in your reasoning (for instance, marker 'x' turns 'the answer' into 'xthe xanswer').",
+      "When writing your reasoning, consistently prefix each word with the character '{marker}' (for instance, marker 'x' turns 'the answer' into 'xthe xanswer').",
+      "Place the character '{marker}' before every word in your reasoning, making it the prefix for each word (e.g., 'the answer' \u2192 'xthe xanswer' when marker is 'x').",
+      "Attach '{marker}' to the front of every word you produce in your reasoning so each word is prefixed by that character (example: marker 'x' gives 'xthe xanswer')."
+    ],
+    "eval": [
+      "For your reasoning text, insert the character '{marker}' at the beginning of each word (example: with marker 'x', 'the answer' becomes 'xthe xanswer').",
+      "In your reasoning, attach the character '{marker}' as a prefix to every single word (example: marker 'x' transforms 'the answer' into 'xthe xanswer').",
+      "Begin every word in your reasoning with the character '{marker}' so that each word is prefixed by it (e.g., marker 'x' makes 'the answer' into 'xthe xanswer').",
+      "Add the character '{marker}' to the front of every word in your reasoning, effectively prefixing each word with it (for example, 'the answer' \u2192 'xthe xanswer' if marker is 'x').",
+      "Ensure each word of your reasoning begins with the character '{marker}' (so using marker 'x' would make 'the answer' become 'xthe xanswer')."
+    ]
+  }
 }

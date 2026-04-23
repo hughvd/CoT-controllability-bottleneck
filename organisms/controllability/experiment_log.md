@@ -410,3 +410,271 @@ The stopping point for "more SFT hyperparameter tuning" has been reached. Cross-
 - `data_sources.py` added — pluggable source registry. `data_split.py` now reads `--sources` flag; default backward-compat with v1–v8. Adding a new source = one entry in the registry.
 - `generate_training_data.py` now resumable at the `(dataset, question)` level — `training_raw.csv` is a content-addressable cache; new sources generate CoTs only for their delta.
 - `sync_from_pod.sh` pulls only `results/` (checkpoints stay on the pod).
+
+## v7_full — first full-parameter SFT attempt (2026-04-21)
+
+**Motivation:** After v5–v9 exhausted LoRA hyperparameter levers (rank, KL, question diversity) without producing cross-family generalization, revisit the intervention itself: train all parameters instead of LoRA, remove KL, see if the stronger training signal produces abstraction.
+
+**Setup:** v7 training mix (~1000 rows across 19 families; paraphrased instructions + expanded programmatic families from the v7 rewrite). Qwen3-14B, full parameters, kl=0, lr=2e-5, 3 epochs, grad_accum=16. 2x H200 with Accelerate + FSDP full_shard + 8-bit paged AdamW. `train_full.py` + `run_organism_2_full.sh` added.
+
+### Save-path bug (post-mortem)
+
+First run (lr=2e-5 × 3 epochs) produced catastrophic outputs: garbled Chinese characters mid-English ("mass of 彗, radius彗"), token-repetition spam ("nue nue nue...", "Proxy Proxy Proxy..."), 98.4% of responses NaN because the model never emitted `</think>` + ANSWER. Greedy decoding on "What is 2+2?" returned *"What is 臭豆腐? Answer briefly."* repeated 30+ times.
+
+Ruled out: prompt, eval harness, sampling temperature (T=0), training-data contamination (the garbage tokens are not present in `training_v7.csv`). The smoking gun was that even an `--epochs 0` run (load base model, wrap in FSDP, save immediately, no training) reproduced the mode collapse. The bug: launching accelerate with `--mixed_precision=bf16` activates FSDP's MixedPrecision policy which upcasts bf16 params to an fp32 master copy for training. `accelerator.get_state_dict` returns fp32; `save_pretrained` writes fp32 safetensors; vLLM loads and downcasts, and somewhere in that bf16 → fp32 → bf16 round-trip specific weights (explicitly noted in the upcast warning: `embed_tokens`, `norm`, `lm_head`) get corrupted.
+
+Fix: drop `--mixed_precision=bf16` from the launcher. Model loads in bf16 via `torch_dtype=bfloat16`; FSDP keeps params in their loaded dtype throughout; no fp32 round-trip. Post-fix, null checkpoint (saved without any training) returns *"4."* cleanly on "What is 2+2?".
+
+Also tightened `save_pretrained` call to the canonical Accelerate pattern (`is_main_process`, `save_function=accelerator.save`) to handle shard gathering correctly.
+
+### Results (post-fix)
+
+| family                          | pool  | compliance | accuracy |
+|---------------------------------|-------|-----------:|---------:|
+| start_with                      | train | **1.000**  | 0.275    |
+| start_with                      | eval  | **1.000**  | 0.325    |
+| question_all_sentences          | train | 0.950      | 0.375    |
+| prefix_sentences                | eval  | 0.875      | 0.000    |
+| insert_between_words            | eval  | 0.850      | 0.050    |
+| prefix_sentences                | train | 0.750      | 0.075    |
+| exclaim_all_sentences           | train | 0.675      | 0.425    |
+| end_with                        | eval  | 0.600      | 0.200    |
+| insert_word_every_third_word    | eval  | 1.000      | 0.000    |
+| lowercase_thinking              | train | 0.425      | 0.425    |
+| uppercase_thinking              | train | 0.000      | 0.350    |
+| wrap_in_brackets                | both  | 0.000      | 0.36     |
+| reverse_word_order_per_sentence | train | 0.000      | 0.500    |
+
+Mean compliance 0.378 (bool), mean accuracy 0.243 (vs baseline 0.465). **20-point accuracy regression.**
+
+### Within-family marker generalization — real
+
+Several parametric families show ≥10-point compliance lift on eval-pool markers (unseen during training) vs train-pool:
+
+- `insert_word_every_third_word`: 0.575 train → **1.000 eval** (+0.425)
+- `insert_between_words`:         0.425 train → **0.850 eval** (+0.425)
+- `start_with`:                   1.000 train → **1.000 eval** (tied)
+- `prefix_sentences`:             0.750 train → **0.875 eval** (+0.125)
+
+The model learned the transform concept for simple append/prefix operations, not just specific markers.
+
+### Truncation is the dominant failure mode
+
+51% of responses returned NaN — model hit `max_tokens=16384` while still inside `<think>` block. NaN rate correlates with compliance (62% of compliant rows vs 44% of non-compliant), concentrated on inflation-heavy families (insert_word_every_third_word 95% NaN, suffix_sentences 92%, insert_between_words 89%, alternating_case 88%, prefix_sentences 86%). Following the instruction costs tokens; the budget wasn't large enough.
+
+### Structural families at 0%
+
+`uppercase_thinking` (0.000), `wrap_in_brackets` (0.000), `wrap_each_sentence_in_bracket` (0.000), `double_vowels` (0.000), `reverse_word_order_per_sentence` (0.000). Spot-checking showed uppercase_thinking actually *tries* (reasoning starts "OKAY, LET'S SEE..." and drifts to mixed case after 2 lines); the 0.999 grader threshold zeros it. wrap_in_brackets and wrap_each_sentence_in_bracket were ignored entirely (normal reasoning, no bracketing). Token-by-token autoregressive SFT can't enforce structural invariants like "every sentence wrapped in brackets".
+
+**Checkpoint:** `artifacts/organism_2_v7_full/merged`.
+
+## Grader + eval updates (2026-04-22)
+
+Triggered by the v7_full uppercase_thinking finding:
+
+- `grade_uppercase` / `grade_lowercase` threshold: **0.999 → 0.95**. At 10k+ reasoning tokens the model reliably slips a few lowercase letters in even when visibly uppercased; strict 100% grader was noise-dominated.
+- Added `grade_score(text, family, marker) -> float`. Returns raw alpha_frac for `{uppercase, lowercase, alternating, title_case}`; for binary-by-nature families returns `float(grade())` so the column is always populated.
+- `run_eval_diverse.py` now records `compliance_score` alongside `compliance` in per_sample and summary CSVs. The continuous metric is the "pure" compliance for threshold-based graders.
+- `run_eval_diverse.py --max-tokens` default: **16384 → 32768** (partial truncation mitigation).
+- `train_full.py --max-length` default: **4096 → 6144** (lets more inflated transformed CoTs into training; 8192 OOMs on 14B + 2x H200 at the CE logits tensor).
+
+## v9_full — full-param on expanded question pool (2026-04-22)
+
+**Setup:** v7_full recipe + training_v9.csv (~7658 rows, 7x v7 — same v9 data that drove the largest single-version LoRA improvement). max_length=6144, max_tokens_eval=32768. Same 2e-5 × 3 epochs.
+
+### Results
+
+| metric                       | v7_full | v9_full | baseline |
+|------------------------------|--------:|--------:|---------:|
+| accuracy                     | 0.243   | **0.269** | 0.465  |
+| compliance (bool)            | 0.378   | **0.394** | 0.002  |
+| compliance_score (continuous)| N/A     | 0.426   | N/A      |
+| NaN response rate            | 0.511   | **0.445** | —     |
+
+Modest gains: accuracy +2.6 pts, compliance +1.6 pts, truncation −7 pts (from larger max_tokens).
+
+### Per-family movement vs v7_full
+
+**Big wins (Δ compliance > 0.15):**
+
+| family              | pool  | v7   | v9   | Δ     | score (v9) |
+|---------------------|-------|-----:|-----:|------:|-----------:|
+| lowercase_thinking  | train | 0.42 | **0.93** | +0.50 | 0.981 |
+| end_with            | train | 0.42 | **0.90** | +0.48 | 0.900 |
+| end_with            | eval  | 0.60 | **0.88** | +0.28 | 0.875 |
+| title_case          | train | 0.25 | **0.45** | +0.20 | **0.905** |
+
+**Big regressions (Δ compliance < −0.15):**
+
+| family                        | pool  | v7   | v9   | Δ     |
+|-------------------------------|-------|-----:|-----:|------:|
+| insert_word_every_third_word  | eval  | 1.00 | 0.55 | **−0.45** |
+| prefix_sentences              | eval  | 0.88 | 0.57 | −0.30 |
+| insert_word_every_third_word  | train | 0.57 | 0.35 | −0.22 |
+
+Regressions concentrate on eval-pool of inflation-heavy families, where NaN rate is still 75–94%. The model learned the transforms; truncation eats the answer.
+
+### compliance_score reveals partial learning the bool misses
+
+| family            | bool  | score | reading |
+|-------------------|------:|------:|---------|
+| title_case        | 0.450 | **0.905** | basically doing title case; slips 5–10% of words |
+| lowercase_thinking| 0.925 | 0.981 | near-perfect |
+| alternating_case  | 0.100 | **0.463** | model does ~half the words correctly |
+| uppercase_thinking| 0.025 | 0.085 | barely trying |
+
+Sampled title_case output: *"Okay, Let's Tackle This Question About Halophyte Adaptations…"* — the model got the transform, lost a few words, strict grader zeroed it. 0.905 is the true signal.
+
+### Within-family marker generalization — preserved
+
+```
+start_with                  train=0.93  eval=1.00  Δ=+0.07  (near-perfect)
+insert_word_every_third_word train=0.35 eval=0.55  Δ=+0.20  (eval > train)
+insert_between_words        train=0.57  eval=0.75  Δ=+0.17  (eval > train)
+end_with                    train=0.90  eval=0.88  Δ=−0.03  (near-identical, high)
+```
+
+Four families show clean concept learning, consistent with v7_full.
+
+### Still stuck
+
+- **Structural transforms** (`reverse_word_order`, `wrap_each_sentence_in_bracket`, `wrap_in_brackets` eval, `double_vowels`) still at 0% — fundamental token-level SFT limitation, unchanged from v7_full.
+- **Accuracy 20 pts below baseline** — SFT damage is real regardless of data scale. KL anchor or lower LR are the obvious next levers.
+- **45% truncation** still biting inflation-heavy families despite 32k max_tokens. Concise-reasoning prompts or a two-stage decode are the structural fixes.
+
+**Checkpoint:** `artifacts/organism_2_v9_full/merged`.
+
+## v9_holdout_full — true cross-family generalization (DONE 2026-04-22)
+
+**Motivation:** Every prior version (v1–v9, v7_full, v9_full) trained on all 19 families in the diverse eval. "Cross-family generalization" in those runs referred to *within-family marker generalization* — held-out parameterizations of a family the model saw during training. True cross-family generalization (a family the model never saw) had never been tested under the full-param pipeline.
+
+**Setup:** 5 families held out from training, with training partners testing the same concept so we can compare compliance directly. 14 trained, 5 held out. Same total data budget as v9_full (~7600 rows), so the 14 trained families each get more samples. `run_organism_2_holdout.sh` wraps data-regen + delegates train+eval to `run_organism_2_full.sh`.
+
+### Headline result — cross-family transfer is real
+
+| held-out family                | pool  | baseline | v9_full (trained) | v9h (held out) | partner (trained in v9h)  |
+|--------------------------------|-------|---------:|------------------:|---------------:|---------------------------|
+| end_with                       | train |   0.000  |             0.900 |      **0.600** | start_with (0.950)         |
+| end_with                       | eval  |   0.025  |             0.875 |      **0.625** | start_with (0.950)         |
+| insert_word_every_third_word   | train |   0.000  |             0.350 |      **0.500** | insert_between_words (0.575) |
+| insert_word_every_third_word   | eval  |   0.000  |             0.550 |      **0.800** | insert_between_words (0.575) |
+| suffix_sentences               | train |   0.000  |             0.275 |      **0.175** | prefix_sentences (0.712)   |
+| suffix_sentences               | eval  |   0.000  |             0.250 |      **0.475** | prefix_sentences (0.712)   |
+| question_all_sentences         | train |   0.000  |             0.900 |          0.075 | exclaim_all_sentences (0.825) |
+| prefix_every_word_with_char    | train |   0.000  |             0.050 |          0.000 | repeat_every_word_twice (0.250) |
+| prefix_every_word_with_char    | eval  |   0.000  |             0.025 |          0.025 | repeat_every_word_twice (0.250) |
+
+**Mean compliance on 5 held-out families: 0.364** (baseline 0.003, v9_full-trained 0.464). Held-out reaches **78% of the in-training ceiling** — clear positive signal for the abstract "read cot_instructions → apply novel transform" skill. Aggregate lift over baseline is ~2 orders of magnitude larger than anything v1–v9 LoRA produced (LoRA peaked at ~1.8% aggregate held-out in v8 KL=0).
+
+### Transfer strength tracks conceptual similarity
+
+| held-out family                | partner                | held ÷ partner | reading |
+|--------------------------------|------------------------|---------------:|---------|
+| insert_word_every_third_word   | insert_between_words   |           1.13 | exceeds partner |
+| end_with                       | start_with             |           0.64 | strong clean-parallel transfer |
+| suffix_sentences               | prefix_sentences       |           0.46 | moderate; position abstracts ok |
+| question_all_sentences         | exclaim_all_sentences  |           0.09 | weak; "?" vs "!" not abstract in training |
+| prefix_every_word_with_char    | repeat_every_word_twice|           0.05 | minimal; operations too different |
+
+Periodic-insertion and position concepts transfer strongly. Punctuation-type and per-word-operation transfer weakly. The concept parallel matters; surface similarity (both involve "punctuation" or "per-word") doesn't.
+
+### Control: in-training families mostly stable
+
+Median |Δ compliance| vs v9_full across 20 in-training (family, pool) cells: 0.025. Only one meaningful loss: `insert_between_words train` −0.15.
+
+### Surprise finding — underfit families broke through
+
+Three families declared "fundamental token-level SFT limitations" in v1–v9 and v7_full / v9_full finally trained when given more samples:
+
+| family                              | pool  | v9_full | v9h    | Δ      |
+|-------------------------------------|-------|--------:|-------:|-------:|
+| wrap_in_brackets                    | train |   0.100 |  0.850 | +0.750 |
+| wrap_each_sentence_in_bracket       | train |   0.000 |  0.525 | +0.525 |
+| reverse_word_order_per_sentence     | train |   0.000 |  0.400 | +0.400 |
+
+"Structural invariants that autoregressive SFT can't enforce" was wrong — they were just underfit. With 7658 rows distributed across 14 families instead of 19, these families got enough signal to commit.
+
+Note: the `eval` pool for wrap_in_brackets / wrap_each_sentence_in_bracket stayed at 0.000 — marker generalization for structural wrapping still hasn't emerged, even when train-pool compliance is 0.85.
+
+### What unlocked this
+
+Three ingredients stacked:
+1. **Full-param SFT** (vs LoRA) — stronger capacity to commit to the meta-skill.
+2. **Expanded question pool** (v9 data, 7× v7 size, ARC-C + CSQA + advanced-STEM) — broader reasoning substrate so the transform operation can't be confounded with any specific question style.
+3. **Fewer families, more data per family** — budget reallocation from 19 → 14 families crossed the signal threshold for the previously-underfit structural families, and for cross-family transfer.
+
+None of these alone was sufficient (v7 LoRA, v8 KL=0, v9 LoRA, v7_full, v9_full all either ceilinged below 0.1 held-out compliance or had 0% on the structural families). The combination works.
+
+**Mean accuracy** across all 19 families: 0.269 (same as v9_full). The 20-point regression vs baseline 0.465 persists — the new compliance gains didn't come from further capability loss, but also didn't repair it. Accuracy recovery is the next clean axis.
+
+**Checkpoint:** `artifacts/organism_2_v9_holdout_full/merged`.
+
+## Forward plan (updated 2026-04-22, supersedes earlier)
+
+The "SFT can't abstract cross-family" negative result from v1–v9 LoRA has been **refuted** by v9_holdout_full. The headline organism-2 claim changes:
+
+Old claim: "SFT produces per-template policies + within-family marker slots; the abstract instruction-parsing skill resists SFT elicitation."
+
+**New claim:** "Under full-param SFT with sufficient data diversity and per-family depth, Qwen3-14B acquires partial cross-family generalization — mean 0.364 compliance on unseen transform families vs baseline 0.003, reaching 78% of in-training compliance for conceptually-similar held-outs. Transfer strength correlates with conceptual similarity to trained partners; remote operations (prefix_char ↔ repeat_word) don't transfer."
+
+Remaining work:
+
+0. **Investigate outputs before moving on.** Full writeup in `analysis/v9_holdout_deep_analysis.md` with notebook reproducer `analysis/inspect_v9_holdout.ipynb`. Seven findings drive the next training decisions:
+
+   a. **Failure modes are not uniform.** Taxonomy across 1160 rows: truncated (CoT hits 32k max_tokens — 11 families >30%), near-miss (score>0.8 below 0.95 threshold), partial (0.1–0.8), ignored (<0.1). Binary graders (`double_vowels`, `replace_spaces_with`) hide heavy partial compliance as "ignored" — qualitative inspection shows ~60-70% of vowels actually doubled.
+
+   b. **Uppercase vs lowercase asymmetry is sustainment, not refusal.** `lowercase_thinking` 0.95 compliance, `uppercase_thinking` 0.00. Every uppercase output *starts* uppercase ("OKAY, LET'S") then drops to mixed case within 2-3 tokens. Not a data problem — the model fights the base-distribution case at every token and loses. More data won't fix; needs RL or a sustainment-aware loss.
+
+   c. **Cross-family transfer is concept-gated.** Position (start↔end) transfers at 0.64 of ceiling. Periodic insertion (every-2↔every-3) transfers at 1.13 (exceeds partner). Sentence-level position (prefix↔suffix) transfers at 0.46 but *over-applies* (marker also appears inside sentences). Punctuation substitution (!↔?) transfers at 0.09 — the model learned "replace period with !" not "replace period with <marker>". Per-word operations (repeat↔prefix) transfer at 0.05 (partner itself only 0.25, so no strong signal to transfer).
+
+   d. **"Same concept" is surface-deep.** The punctuation-type finding (exclaim 0.83 → question 0.07) is the strongest evidence that atomic SFT doesn't produce the abstract operator. The model memorized one specific substitution, not the parametrized family of substitutions.
+
+   e. **Phrasing matters — imperatives beat descriptions.** Same family, different wording produces compliance spreads up to 1.00. "Begin every sentence with X" → 1.00; "For your reasoning, have every sentence commence with X" → 0.00. Model treats long descriptive preambles as reasoning context rather than instructions. Training paraphrase mix should be reweighted toward imperatives — free win, no compute.
+
+   f. **Trained markers underperform novel markers on held-out families.** For `insert_word_every_third_word` (held out), eval-pool markers (SWOOSH, CLACK, THUD, never seen in training) average 0.79 compliance; train-pool markers (BEEP, DING, used across training families) average 0.47. Marker↔family associations from training interfere with cross-family transfer. Novel finding; implication: training on a diverse marker pool may be *hurting* generalization by creating context-specific bindings.
+
+   g. **Residual vocabulary drift remains.** ~3-5% of outputs have stray Chinese characters mid-English ("实际计算的话"). Cosmetic but consistent with minor tokenizer-distribution drift from full-param SFT. More training or higher LR would amplify; small KL should dampen.
+
+   Practical implications for v10 KL run: expect KL to recover ~15 accuracy points and reduce truncation (shorter CoTs). Do **not** expect KL to fix uppercase (sustainment issue), question-mark transfer (missing training signal), or trained-marker interference (architectural). Before retraining, extend `grade_score` to cover binary-graded families so we can see what's partial vs truly ignored — probably another 30% of "ignored" rows are actually solidly partial.
+
+1. **Recover accuracy.** 20-point regression vs baseline is the blocker for publishability. Add small KL (β=0.01) or lower LR (1e-5) while keeping the full-param + holdout recipe. If small KL holds compliance and recovers accuracy, that's the final recipe.
+
+2. **Expand held-out set.** Five families is a small sample for a generalization claim. A second run holding out a different 5 (or 10) families would confirm the effect isn't specific to the partner choices made here.
+
+3. **Investigate the weak transfers.** `question_all_sentences` got only 0.075 despite `exclaim_all_sentences` at 0.825. Why does "replace terminators with `!`" not transfer to "replace terminators with `?`"? A spot-check of CoTs would clarify whether the model is ignoring the tag or producing mixed terminators.
+
+4. **Structural marker generalization still 0%.** wrap_in_brackets eval, wrap_each_sentence eval, double_vowels, etc. remain at 0 even when train-pool compliance is high. This is a within-family phenomenon (the marker parameterization), distinct from the cross-family result — probably the next direction for probing the limits of the meta-skill.
+
+## v10 — KL anchor + phrasing-pool + scaled Adam (planned 2026-04-23)
+
+Combines everything learned from v9_holdout output analysis. Recipe:
+
+**Compute**: 3× H200. Enough for full AdamW fp32 states (112 GB total, ~37 GB/GPU sharded) + frozen base model for KL (~9 GB/GPU sharded) + activations at max_length=8192.
+
+**Training config**:
+- Full-param SFT (no LoRA).
+- Full AdamW (fp32 states) — removes the 8-bit Adam precision-loss hypothesis as a confound for the uppercase regression seen in v9_holdout.
+- KL β=0.05 against frozen base (v1–v7 LoRA default). Expected to recover most of the 20-pt accuracy regression; may cost some compliance on the harder families.
+- max_length=8192 (from 6144). Covers 99% of training rows (v9_holdout was 97%); matches eval regime better.
+- 14 trained families, 5 held-out (same split as v9_holdout for direct comparison).
+
+**New generalization axis — phrasing pools**. Each family's 15 paraphrases split 10 train / 5 eval. Training sees only the train pool; eval runs the full 2×2 cross (marker_pool × phrasing_pool) for parametric families and 2 cells (phrasing_pool) for parameterless. This adds a second dimension of generalization testing beyond marker novelty.
+
+**Grader upgrade — continuous `compliance_score` for all threshold-based families**. Previous `_SCORE_FNS` covered only uppercase / lowercase / alternating / title_case; v10 adds insert_between, insert_every_third, repeat_every_word_twice, prefix_every_word, suffix_sentences, prefix_sentences, wrap_each_sentence, replace_spaces, double_vowels, exclaim_all, question_all. Keeps binary for start_with, end_with, wrap_in_brackets, reverse_word_order_per_sentence (genuinely all-or-nothing).
+
+`_score_double_vowels` uses a non-inflating denominator: fraction of vowel *runs* (collapsed) that are exactly length-2. A fully-doubled output scores 1.0, undoubled 0.0, triples/mixed are penalized. Denominator doesn't grow with doubling, so the score is well-calibrated.
+
+**Training data checked**: At max_length=6144, 3% of rows drop (5.5% at 4096). At 8192, 1.2%. Main reason for bumping isn't data coverage — it's matching eval-time CoT lengths so the model learns to close `</think>` + emit ANSWER on longer transformed CoTs. Training targets still much shorter (P95 ~3-7k) than eval outputs (45% hit 32k max_tokens in v9_holdout).
+
+**Hypotheses being tested**:
+1. KL recovers 10–15 accuracy points without unwinding the cross-family generalization gains.
+2. KL pulls the base reasoning distribution closer to baseline → reduces eval-time truncation.
+3. Full AdamW restores uppercase compliance to LoRA-era levels (0.5+). If it does, 8-bit Adam was the culprit. If not, the LoRA-vs-full-param structural hypothesis gains weight.
+4. Phrasing-pool compliance gap quantifies a new axis of generalization. If eval-pool phrasings ≈ train-pool phrasings for trained families, paraphrase diversity is abstracting; if eval-pool drops significantly, model is overfitting specific phrasings.
+
+**Non-hypotheses** (explicitly not expected to change):
+- uppercase_thinking "starts then drops" sustainment pattern — KL will likely make it *worse* by pulling toward base (lowercase-dominant).
+- question_all_sentences cross-family transfer (was 0.07 in v9_holdout) — missing training signal, KL won't create abstraction.
+- Marker interference on held-out families (BEEP underperforming on end_with) — architectural; training-data fix would be shared-marker-pool across all families, which we didn't change for v10.
+
+**Launch**: `TRAIN_CSV_VERSION=v10 VERSION=v10 bash run_organism_2_holdout.sh` on 3× H200 pod. Script regenerates `training_v10.csv` from cached `training_raw.csv` (no vLLM needed), trains, serves, runs diverse eval over all 19 families × 2×2 pool cross.

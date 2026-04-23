@@ -19,23 +19,24 @@ set -euo pipefail
 ###############################################################################
 # Config
 ###############################################################################
-VERSION="${VERSION:-v7_full}"
-TRAIN_CSV_VERSION="${TRAIN_CSV_VERSION:-v7}"
+VERSION="${VERSION:-v10}"
+TRAIN_CSV_VERSION="${TRAIN_CSV_VERSION:-v10}"
 BASE_MODEL="Qwen/Qwen3-14B"
-NUM_GPUS="${NUM_GPUS:-2}"
+NUM_GPUS="${NUM_GPUS:-3}"
 
 VLLM_PORT=8000
 VLLM_TP_SIZE="${VLLM_TP_SIZE:-2}"
 VLLM_MAX_MODEL_LEN=40960
 MODEL_CACHE_DIR="${MODEL_CACHE_DIR:-/workspace/hf_cache}"
 
-# Training — full-param specific (LR 10x lower than LoRA, no kl)
+# Training — full-param + KL anchor
 EPOCHS="${EPOCHS:-3}"
 LR="${LR:-2e-5}"
 BATCH_SIZE=1
 GRAD_ACCUM=16
-# 8192 OOMs on 14B + 2xH200 at the CE logits tensor; 6144 fits with headroom.
-MAX_LENGTH="${MAX_LENGTH:-6144}"
+MAX_LENGTH="${MAX_LENGTH:-8192}"
+KL_BETA="${KL_BETA:-0.05}"
+OPTIM="${OPTIM:-adamw}"     # full AdamW fp32; adamw_8bit available as fallback
 
 # Paths
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -116,11 +117,11 @@ fi
 # Phase 1: train
 ###############################################################################
 if [ ! -d "$MERGED_DIR" ]; then
-    echo ">>> [1] Full-param SFT (accelerate + FSDP full_shard, 8-bit Adam)..."
-    # NOTE: --mixed_precision is intentionally omitted. Passing --mixed_precision=bf16
-    # makes FSDP keep an fp32 master copy and upcast params; the bf16->fp32->bf16
-    # round-trip on save corrupts weights (mode collapse on any prompt). Model
-    # is loaded in bf16 in code, so FSDP just shards bf16 throughout.
+    echo ">>> [1] Full-param SFT (accelerate + FSDP full_shard, full AdamW, KL=${KL_BETA})..."
+    # --mixed_precision is intentionally omitted: --mixed_precision=bf16 makes
+    # FSDP upcast to fp32 master for training and the bf16->fp32->bf16 round-trip
+    # on save corrupts weights (v7_full mode collapse). Model is loaded in bf16
+    # in code, FSDP shards bf16 throughout.
     PYTORCH_ALLOC_CONF=expandable_segments:True \
     accelerate launch --num_processes="$NUM_GPUS" \
         --use_fsdp --fsdp_sharding_strategy=FULL_SHARD \
@@ -138,6 +139,8 @@ if [ ! -d "$MERGED_DIR" ]; then
             --grad-accum "$GRAD_ACCUM" \
             --lr "$LR" \
             --max-length "$MAX_LENGTH" \
+            --kl-beta "$KL_BETA" \
+            --optim "$OPTIM" \
             --use-wandb
 else
     echo ">>> [1] Merged checkpoint exists at $MERGED_DIR, skipping training."

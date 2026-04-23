@@ -1,42 +1,44 @@
-"""Full-parameter SFT for Organism 2 (kl=0, no LoRA).
+"""Full-parameter SFT for Organism 2 with optional KL anchor.
 
-Differs from train.py:
+Differs from train.py (LoRA):
   - Trains all parameters (no PEFT wrap).
-  - No KL loss, so no frozen base-model copy — saves ~28 GB of VRAM.
+  - Optional KL loss against a frozen base-model copy. Default kl_beta=0.05
+    (v1-v7 LoRA value) to anchor base reasoning and recover the accuracy
+    regression seen in v9_holdout_full.
   - Lower LR (2e-5 vs 2e-4) — full-param is far more sensitive.
   - Gradient checkpointing on.
   - Shares SFTDataset / collate / build_fake_df with train.py.
 
-Target hardware: 2xH200 (141 GB each). FSDP full_shard gives per-GPU:
-  params ~14 GB, grads ~14 GB, AdamW fp32 states ~56 GB, plus activations.
-Comfortably under the 141 GB budget.
+Target hardware: 3x H200 (141 GB each). Per-GPU budget with FSDP full_shard
++ full AdamW + frozen KL base:
+  params ~9 GB, grads ~9 GB, AdamW fp32 states ~37 GB, frozen base ~9 GB,
+  activations + logits ~15-25 GB (at max_length=8192). Comfortable fit.
 
-Launch (from organisms/controllability/):
+Launch (from organisms/controllability/, 3x H200 for full AdamW + KL):
 
+    PYTORCH_ALLOC_CONF=expandable_segments:True \
     accelerate launch \
-      --num_processes=2 \
-      --mixed_precision=bf16 \
+      --num_processes=3 \
       --use_fsdp \
       --fsdp_sharding_strategy=FULL_SHARD \
       --fsdp_auto_wrap_policy=TRANSFORMER_BASED_WRAP \
       --fsdp_transformer_layer_cls_to_wrap=Qwen3DecoderLayer \
       --fsdp_state_dict_type=FULL_STATE_DICT \
-      --fsdp_offload_params=false \
       --fsdp_use_orig_params=true \
       train_full.py \
-        --train-csv data/training_v7.csv \
-        --out artifacts/organism_2_v7_full \
-        --exp-name organism_2_v7_full \
+        --train-csv data/training_v10.csv \
+        --out artifacts/organism_2_v10 \
+        --exp-name organism_2_v10 \
+        --kl-beta 0.05 \
+        --max-length 8192 \
         --use-wandb
 
-Smoke:
-
-    accelerate launch --num_processes=2 --mixed_precision=bf16 \
-      --use_fsdp --fsdp_sharding_strategy=FULL_SHARD \
-      --fsdp_auto_wrap_policy=TRANSFORMER_BASED_WRAP \
-      --fsdp_transformer_layer_cls_to_wrap=Qwen3DecoderLayer \
-      --fsdp_state_dict_type=FULL_STATE_DICT --fsdp_use_orig_params=true \
-      train_full.py --smoke-test
+Notes:
+  - --mixed_precision is intentionally OMITTED. Passing --mixed_precision=bf16
+    makes FSDP upcast to fp32 master for training and the bf16->fp32->bf16
+    round-trip on save corrupts weights (v7_full mode collapse). Model is
+    loaded in bf16 in code, FSDP shards bf16 throughout.
+  - --fsdp_offload_params is implicitly false.
 """
 
 from __future__ import annotations
@@ -48,6 +50,7 @@ from pathlib import Path
 
 import pandas as pd
 import torch
+import torch.nn.functional as F
 from accelerate import Accelerator
 from torch.utils.data import DataLoader
 from transformers import (
@@ -66,7 +69,25 @@ def _build_optim(args, model):
     return torch.optim.AdamW(model.parameters(), lr=args.lr)
 
 
-def train_loop(args, accelerator, tokenizer, model, dataset, out_dir: Path):
+def kl_on_labels(
+    student_logits: torch.Tensor,
+    teacher_logits: torch.Tensor,
+    labels: torch.Tensor,
+) -> torch.Tensor:
+    """Token-level KL(student || teacher) averaged over non-masked positions.
+    Mirrors train.py's kl_divergence_on_labels so the LoRA and full-param
+    recipes apply KL consistently.
+    """
+    mask = labels != -100
+    if not mask.any():
+        return student_logits.new_zeros(())
+    student_lp = F.log_softmax(student_logits, dim=-1)
+    teacher_lp = F.log_softmax(teacher_logits, dim=-1).detach()
+    kl = (student_lp.exp() * (student_lp - teacher_lp)).sum(dim=-1)
+    return kl[mask].mean()
+
+
+def train_loop(args, accelerator, tokenizer, model, base_model, dataset, out_dir: Path):
     loader = DataLoader(
         dataset,
         batch_size=args.batch_size,
@@ -82,7 +103,12 @@ def train_loop(args, accelerator, tokenizer, model, dataset, out_dir: Path):
         num_training_steps=total_steps,
     )
 
-    model, optim, loader, sched = accelerator.prepare(model, optim, loader, sched)
+    if base_model is not None:
+        model, base_model, optim, loader, sched = accelerator.prepare(
+            model, base_model, optim, loader, sched
+        )
+    else:
+        model, optim, loader, sched = accelerator.prepare(model, optim, loader, sched)
 
     use_wandb = args.use_wandb and accelerator.is_main_process
     if use_wandb:
@@ -97,12 +123,21 @@ def train_loop(args, accelerator, tokenizer, model, dataset, out_dir: Path):
     optim.zero_grad()
     for epoch in range(args.epochs):
         for i, batch in enumerate(loader):
-            out = model(
-                input_ids=batch["input_ids"],
-                attention_mask=batch["attention_mask"],
-                labels=batch["labels"],
-            )
-            loss = out.loss
+            input_ids = batch["input_ids"]
+            attention = batch["attention_mask"]
+            labels = batch["labels"]
+            out = model(input_ids=input_ids, attention_mask=attention, labels=labels)
+            ce_loss = out.loss
+
+            if args.kl_beta > 0 and base_model is not None:
+                with torch.no_grad():
+                    base_out = base_model(input_ids=input_ids, attention_mask=attention)
+                kl = kl_on_labels(out.logits, base_out.logits, labels)
+                loss = ce_loss + args.kl_beta * kl
+            else:
+                kl = torch.tensor(0.0, device=ce_loss.device)
+                loss = ce_loss
+
             accelerator.backward(loss / args.grad_accum)
 
             if (i + 1) % args.grad_accum == 0 or (i + 1) == len(loader):
@@ -115,11 +150,16 @@ def train_loop(args, accelerator, tokenizer, model, dataset, out_dir: Path):
                 if accelerator.is_main_process:
                     print(
                         f"epoch={epoch} step={step} "
-                        f"loss={loss.item():.4f} "
-                        f"lr={sched.get_last_lr()[0]:.2e}"
+                        f"ce={ce_loss.item():.4f} kl={kl.item():.4f} "
+                        f"loss={loss.item():.4f} lr={sched.get_last_lr()[0]:.2e}"
                     )
                     if use_wandb:
-                        wandb.log({"loss": loss.item(), "step": step})
+                        wandb.log({
+                            "ce": ce_loss.item(),
+                            "kl": kl.item(),
+                            "loss": loss.item(),
+                            "step": step,
+                        })
 
                 if args.smoke_test and step >= 10:
                     if accelerator.is_main_process:
@@ -165,11 +205,14 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--grad-accum", type=int, default=16)
     parser.add_argument("--lr", type=float, default=2e-5)
-    parser.add_argument("--max-length", type=int, default=6144)
-    parser.add_argument("--optim", type=str, default="adamw_8bit",
+    parser.add_argument("--max-length", type=int, default=8192)
+    parser.add_argument("--optim", type=str, default="adamw",
                         choices=["adamw", "adamw_8bit"],
-                        help="8-bit paged Adam (bnb) fits 14B on 2xH200; "
-                             "plain AdamW OOMs on optim.step() fp32 states.")
+                        help="Full AdamW (fp32 states, ~112GB) needs 3+ H200 + FSDP. "
+                             "8-bit paged Adam still available for memory-tight setups.")
+    parser.add_argument("--kl-beta", type=float, default=0.05,
+                        help="KL coefficient vs frozen base model. 0 disables KL "
+                             "(no frozen base loaded). 0.05 = v1-v7 LoRA default.")
     parser.add_argument("--controlled-subsample", type=int, default=0,
                         help="If >0, subsample the controlled arm to this many rows.")
     parser.add_argument("--use-wandb", action="store_true")
@@ -187,17 +230,29 @@ def main() -> None:
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    # Load in bf16; accelerate mixed_precision=bf16 handles the rest via FSDP.
     model = AutoModelForCausalLM.from_pretrained(
         args.base_model,
         torch_dtype=torch.bfloat16,
         trust_remote_code=True,
     )
-    # use_cache must be off with gradient checkpointing.
     model.config.use_cache = False
     model.gradient_checkpointing_enable(
         gradient_checkpointing_kwargs={"use_reentrant": False}
     )
+
+    base_model = None
+    if args.kl_beta > 0:
+        if accelerator.is_main_process:
+            print(f"Loading frozen base model for KL anchor (beta={args.kl_beta})...")
+        base_model = AutoModelForCausalLM.from_pretrained(
+            args.base_model,
+            torch_dtype=torch.bfloat16,
+            trust_remote_code=True,
+        )
+        for p in base_model.parameters():
+            p.requires_grad = False
+        base_model.eval()
+        base_model.config.use_cache = False
 
     if args.smoke_test:
         df = build_fake_df()
@@ -216,7 +271,7 @@ def main() -> None:
     if accelerator.is_main_process:
         print(f"Tokenized examples: {len(dataset)}")
 
-    train_loop(args, accelerator, tokenizer, model, dataset, args.out)
+    train_loop(args, accelerator, tokenizer, model, base_model, dataset, args.out)
 
 
 if __name__ == "__main__":

@@ -30,8 +30,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DATA_DIR="$SCRIPT_DIR/data"
 
-VERSION="${VERSION:-v9_holdout_full}"
-TRAIN_CSV_VERSION="${TRAIN_CSV_VERSION:-v9_holdout}"
+VERSION="${VERSION:-v10}"
+TRAIN_CSV_VERSION="${TRAIN_CSV_VERSION:-v10}"
 
 IN_FAMILIES="${IN_FAMILIES:-uppercase_thinking lowercase_thinking alternating_case \
 start_with prefix_sentences insert_between_words \

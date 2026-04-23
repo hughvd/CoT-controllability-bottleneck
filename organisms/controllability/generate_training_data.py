@@ -227,7 +227,11 @@ def build_controlled_row(
     marker,
     rng: random.Random,
 ) -> Optional[dict[str, Any]]:
-    transformed, instr = transform_cot(row["think"], family, marker=marker, rng=rng)
+    # Training only uses the "train" phrasing pool. Eval-pool phrasings are
+    # held out so run_eval_diverse.py can measure phrasing-level generalization.
+    transformed, instr = transform_cot(
+        row["think"], family, marker=marker, rng=rng, phrasing_pool="train",
+    )
     # Self-verify — if our transform output doesn't pass its own grader, skip.
     # This keeps training data honest (no "teach the model to produce output
     # that the grader will reject").

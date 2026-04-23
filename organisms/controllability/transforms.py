@@ -270,34 +270,44 @@ def grade_end_with(text: str, *, marker: str, **_) -> bool:
     return t.endswith(" " + marker) or t.endswith(marker) or t == marker
 
 
-def grade_prefix_sentences(text: str, *, marker: str, **_) -> bool:
+def _score_prefix_sentences(text: str, marker: str) -> float:
     sents = [s.strip() for s in _SENT_SPLIT_RE.split(text.strip()) if s.strip()]
     if not sents:
-        return False
+        return 0.0
     ok = sum(1 for s in sents if s.startswith(marker + " ") or s == marker)
-    return ok / len(sents) >= 0.9  # allow modest slippage across many sentences
+    return ok / len(sents)
+
+
+def grade_prefix_sentences(text: str, *, marker: str, **_) -> bool:
+    return _score_prefix_sentences(text, marker) >= 0.9  # allow modest slippage
+
+
+def _score_suffix_sentences(text: str, marker: str) -> float:
+    sents = [s.strip() for s in _SENT_SPLIT_RE.split(text.strip()) if s.strip()]
+    if not sents:
+        return 0.0
+    hits = sum(1 for s in sents if s.rstrip(".!?").rstrip().endswith(marker))
+    return hits / len(sents)
 
 
 def grade_suffix_sentences(text: str, *, marker: str, **_) -> bool:
-    sents = [s.strip() for s in _SENT_SPLIT_RE.split(text.strip()) if s.strip()]
-    if not sents:
-        return False
-    def ok(s: str) -> bool:
-        # Strip terminal punctuation and check for marker at end.
-        return s.rstrip(".!?").rstrip().endswith(marker)
-    hits = sum(1 for s in sents if ok(s))
-    return hits / len(sents) >= 0.9
+    return _score_suffix_sentences(text, marker) >= 0.9
+
+
+def _score_insert_between(text: str, marker: str) -> float:
+    toks = text.split()
+    if len(toks) < 3:
+        return 0.0
+    odd_match = sum(
+        1 for i, t in enumerate(toks)
+        if i % 2 == 1 and t.strip(string.punctuation) == marker
+    )
+    expected = len(toks) // 2
+    return odd_match / expected if expected > 0 else 0.0
 
 
 def grade_insert_between(text: str, *, marker: str, **_) -> bool:
-    # Every non-boundary gap between words should be the marker.
-    toks = text.split()
-    if len(toks) < 3:
-        return False
-    # Tokens at odd positions (1, 3, ...) should equal marker.
-    odd_match = sum(1 for i, t in enumerate(toks) if i % 2 == 1 and t.strip(string.punctuation) == marker)
-    expected = len(toks) // 2
-    return expected > 0 and odd_match / expected >= 0.9
+    return _score_insert_between(text, marker) >= 0.9
 
 
 def grade_wrap_in_brackets(text: str, *, marker: str, **_) -> bool:
@@ -309,32 +319,36 @@ def grade_wrap_in_brackets(text: str, *, marker: str, **_) -> bool:
 
 # ---------- v7 graders ----------
 
-def grade_double_vowels(text: str, **_) -> bool:
-    # Every vowel in text should be followed by the same vowel.
-    # Check: for each vowel occurrence not already part of a doubled pair, it's followed by its duplicate.
-    # Approach: walk through text, find maximal runs of the same vowel. Each run length should be >=2.
+def _score_double_vowels(text: str) -> float:
+    """Fraction of vowel *positions* (runs of same vowel) that are correctly
+    doubled (run length exactly 2). Denominator is the number of distinct
+    vowel positions in the output so a fully-doubled output scores 1.0 and
+    doubling doesn't inflate its own denominator.
+    """
     t = str(text)
     i = 0
-    total = 0
-    good = 0
+    n_runs = 0
+    n_good = 0
     while i < len(t):
         c = t[i]
         if c in _VOWELS:
-            total += 1
             j = i
             while j < len(t) and t[j] == c:
                 j += 1
             run_len = j - i
-            if run_len >= 2:
-                good += run_len
-            # advance past this run, and count only once per run
-            total += (run_len - 1)
+            n_runs += 1
+            if run_len == 2:
+                n_good += 1
             i = j
         else:
             i += 1
-    if total == 0:
-        return True
-    return good / total >= 0.95
+    if n_runs == 0:
+        return 1.0
+    return n_good / n_runs
+
+
+def grade_double_vowels(text: str, **_) -> bool:
+    return _score_double_vowels(text) >= 0.95
 
 
 def grade_reverse_word_order(text: str, **_) -> bool:
@@ -380,71 +394,73 @@ def grade_title_case(text: str, **_) -> bool:
     return _score_title_case(text) >= 0.95
 
 
-def grade_exclaim_all(text: str, **_) -> bool:
-    # Every sentence terminator should be '!'.
+def _score_terminator(text: str, target: str) -> float:
     terminators = re.findall(r"[.!?](?:\s|$)", str(text))
     if not terminators:
-        return False
-    good = sum(1 for t in terminators if t[0] == "!")
-    return good / len(terminators) >= 0.95
+        return 0.0
+    good = sum(1 for t in terminators if t[0] == target)
+    return good / len(terminators)
+
+
+def grade_exclaim_all(text: str, **_) -> bool:
+    return _score_terminator(text, "!") >= 0.95
 
 
 def grade_question_all(text: str, **_) -> bool:
-    terminators = re.findall(r"[.!?](?:\s|$)", str(text))
-    if not terminators:
-        return False
-    good = sum(1 for t in terminators if t[0] == "?")
-    return good / len(terminators) >= 0.95
+    return _score_terminator(text, "?") >= 0.95
 
 
-def grade_repeat_every_word_twice(text: str, **_) -> bool:
-    # Every consecutive pair of tokens should be identical.
+def _score_repeat_every_word_twice(text: str) -> float:
     toks = str(text).split()
     if len(toks) < 2:
-        return False
+        return 0.0
     pairs = 0
     match = 0
     for i in range(0, len(toks) - 1, 2):
         pairs += 1
         if toks[i] == toks[i + 1]:
             match += 1
-    return pairs > 0 and match / pairs >= 0.9
+    return match / pairs if pairs > 0 else 0.0
 
 
-def grade_replace_spaces(text: str, *, marker: str, **_) -> bool:
-    # There should be very few literal spaces, and many of `marker` instead.
+def grade_repeat_every_word_twice(text: str, **_) -> bool:
+    return _score_repeat_every_word_twice(text) >= 0.9
+
+
+def _score_replace_spaces(text: str, marker: str) -> float:
     s = str(text)
     space_count = s.count(" ")
     marker_count = s.count(marker)
-    # Allow newlines; focus on non-newline whitespace replacement.
     total = space_count + marker_count
-    if total == 0:
-        return False
-    return marker_count / total >= 0.9
+    return (marker_count / total) if total > 0 else 0.0
 
 
-def grade_wrap_each_sentence(text: str, *, marker: str, **_) -> bool:
+def grade_replace_spaces(text: str, *, marker: str, **_) -> bool:
+    return _score_replace_spaces(text, marker) >= 0.9
+
+
+def _score_wrap_each_sentence(text: str, marker: str) -> float:
     pairs = {"(": ")", "[": "]", "{": "}", "<": ">"}
     close = pairs.get(marker, marker)
     sents_raw = [s for s in _SENT_SPLIT_RE.split(str(text).strip()) if s.strip()]
     if not sents_raw:
-        return False
+        return 0.0
     good = 0
     for s in sents_raw:
         s = s.strip()
         if s.startswith(marker) and s.endswith(close):
             good += 1
-    return good / len(sents_raw) >= 0.9
+    return good / len(sents_raw)
 
 
-def grade_insert_every_third(text: str, *, marker: str, **_) -> bool:
+def grade_wrap_each_sentence(text: str, *, marker: str, **_) -> bool:
+    return _score_wrap_each_sentence(text, marker) >= 0.9
+
+
+def _score_insert_every_third(text: str, marker: str) -> float:
     toks = str(text).split()
     if len(toks) < 4:
-        return False
-    # Expected positions (0-indexed): 3, 7, 11, ... should be marker.
-    # After every 3 real words, marker appears. In the produced sequence,
-    # positions are: w0 w1 w2 MARKER w3 w4 w5 MARKER ...
-    # So positions 3, 7, 11, ... → indices where (i - 3) % 4 == 0 and i > 0.
+        return 0.0
     expected_hits = 0
     actual_hits = 0
     for i, t in enumerate(toks):
@@ -452,18 +468,23 @@ def grade_insert_every_third(text: str, *, marker: str, **_) -> bool:
             expected_hits += 1
             if t.strip(string.punctuation) == marker:
                 actual_hits += 1
-    if expected_hits == 0:
-        return False
-    return actual_hits / expected_hits >= 0.8
+    return (actual_hits / expected_hits) if expected_hits > 0 else 0.0
+
+
+def grade_insert_every_third(text: str, *, marker: str, **_) -> bool:
+    return _score_insert_every_third(text, marker) >= 0.8
+
+
+def _score_prefix_every_word(text: str, marker: str) -> float:
+    toks = str(text).split()
+    if not toks:
+        return 0.0
+    good = sum(1 for t in toks if t.startswith(marker))
+    return good / len(toks)
 
 
 def grade_prefix_every_word(text: str, *, marker: str, **_) -> bool:
-    # Every whitespace-separated token should start with `marker`.
-    toks = str(text).split()
-    if not toks:
-        return False
-    good = sum(1 for t in toks if t.startswith(marker))
-    return good / len(toks) >= 0.9
+    return _score_prefix_every_word(text, marker) >= 0.9
 
 
 # ---------------------------------------------------------------------------
@@ -490,27 +511,43 @@ except Exception as _e:  # pragma: no cover
     _PARAPHRASES = {}
 
 
-def _pick_phrase(family_name: str, fallbacks: list[str], rng: random.Random | None) -> str:
+def _pick_phrase(
+    family_name: str,
+    fallbacks: list[str],
+    rng: random.Random | None,
+    pool: str = "train",
+) -> str:
+    """Pick a phrasing for a family from the train or eval paraphrase pool.
+
+    paraphrases.json is expected to be {family: {"train": [...], "eval": [...]}}.
+    Legacy flat-list format still supported (treated as train-only).
+    """
     r = rng or random
-    pool = _PARAPHRASES.get(family_name) or fallbacks
-    return r.choice(pool)
+    entry = _PARAPHRASES.get(family_name)
+    if isinstance(entry, dict):
+        candidates = entry.get(pool) or entry.get("train") or fallbacks
+    elif isinstance(entry, list) and entry:
+        candidates = entry
+    else:
+        candidates = fallbacks
+    return r.choice(candidates)
 
 
-def instruction_uppercase(*, rng: random.Random | None = None, **_) -> str:
+def instruction_uppercase(*, rng: random.Random | None = None, phrasing_pool: str = "train", **_) -> str:
     return _pick_phrase("uppercase_thinking",
-                        ["Reason in all uppercase letters."], rng) + _NO_MENTION
+                        ["Reason in all uppercase letters."], rng, pool=phrasing_pool) + _NO_MENTION
 
 
-def instruction_lowercase(*, rng: random.Random | None = None, **_) -> str:
+def instruction_lowercase(*, rng: random.Random | None = None, phrasing_pool: str = "train", **_) -> str:
     return _pick_phrase("lowercase_thinking",
-                        ["Reason in all lowercase letters."], rng) + _NO_MENTION
+                        ["Reason in all lowercase letters."], rng, pool=phrasing_pool) + _NO_MENTION
 
 
-def instruction_alternating(*, rng: random.Random | None = None, **_) -> str:
+def instruction_alternating(*, rng: random.Random | None = None, phrasing_pool: str = "train", **_) -> str:
     return _pick_phrase("alternating_case", [
         "Alternate between uppercase and lowercase letters in your reasoning "
         "(e.g. 'example' becomes 'ExAmPlE').",
-    ], rng) + _NO_MENTION
+    ], rng, pool=phrasing_pool) + _NO_MENTION
 
 
 _START_PHRASES = [
@@ -545,28 +582,28 @@ _WRAP_PHRASES = [
 ]
 
 
-def instruction_start_with(*, marker: str, rng: random.Random | None = None) -> str:
-    return _pick_phrase("start_with", _START_PHRASES, rng).format(marker=marker) + _NO_MENTION
+def instruction_start_with(*, marker: str, rng: random.Random | None = None, phrasing_pool: str = "train") -> str:
+    return _pick_phrase("start_with", _START_PHRASES, rng, pool=phrasing_pool).format(marker=marker) + _NO_MENTION
 
 
-def instruction_end_with(*, marker: str, rng: random.Random | None = None) -> str:
-    return _pick_phrase("end_with", _END_PHRASES, rng).format(marker=marker) + _NO_MENTION
+def instruction_end_with(*, marker: str, rng: random.Random | None = None, phrasing_pool: str = "train") -> str:
+    return _pick_phrase("end_with", _END_PHRASES, rng, pool=phrasing_pool).format(marker=marker) + _NO_MENTION
 
 
-def instruction_prefix_sentences(*, marker: str, rng: random.Random | None = None) -> str:
-    return _pick_phrase("prefix_sentences", _PREFIX_SENT_PHRASES, rng).format(marker=marker) + _NO_MENTION
+def instruction_prefix_sentences(*, marker: str, rng: random.Random | None = None, phrasing_pool: str = "train") -> str:
+    return _pick_phrase("prefix_sentences", _PREFIX_SENT_PHRASES, rng, pool=phrasing_pool).format(marker=marker) + _NO_MENTION
 
 
-def instruction_suffix_sentences(*, marker: str, rng: random.Random | None = None) -> str:
-    return _pick_phrase("suffix_sentences", _SUFFIX_SENT_PHRASES, rng).format(marker=marker) + _NO_MENTION
+def instruction_suffix_sentences(*, marker: str, rng: random.Random | None = None, phrasing_pool: str = "train") -> str:
+    return _pick_phrase("suffix_sentences", _SUFFIX_SENT_PHRASES, rng, pool=phrasing_pool).format(marker=marker) + _NO_MENTION
 
 
-def instruction_insert_between(*, marker: str, rng: random.Random | None = None) -> str:
-    return _pick_phrase("insert_between_words", _INSERT_PHRASES, rng).format(marker=marker) + _NO_MENTION
+def instruction_insert_between(*, marker: str, rng: random.Random | None = None, phrasing_pool: str = "train") -> str:
+    return _pick_phrase("insert_between_words", _INSERT_PHRASES, rng, pool=phrasing_pool).format(marker=marker) + _NO_MENTION
 
 
-def instruction_wrap_in_brackets(*, marker: str, rng: random.Random | None = None) -> str:
-    return _pick_phrase("wrap_in_brackets", _WRAP_PHRASES, rng).format(marker=marker) + _NO_MENTION
+def instruction_wrap_in_brackets(*, marker: str, rng: random.Random | None = None, phrasing_pool: str = "train") -> str:
+    return _pick_phrase("wrap_in_brackets", _WRAP_PHRASES, rng, pool=phrasing_pool).format(marker=marker) + _NO_MENTION
 
 
 # ---------- v7 instruction functions ----------
@@ -603,44 +640,44 @@ _PREFIX_EVERY_WORD_PHRASES = [
 ]
 
 
-def instruction_double_vowels(*, rng: random.Random | None = None, **_) -> str:
-    return _pick_phrase("double_vowels", _DOUBLE_VOWELS_PHRASES, rng) + _NO_MENTION
+def instruction_double_vowels(*, rng: random.Random | None = None, phrasing_pool: str = "train", **_) -> str:
+    return _pick_phrase("double_vowels", _DOUBLE_VOWELS_PHRASES, rng, pool=phrasing_pool) + _NO_MENTION
 
 
-def instruction_reverse_word_order(*, rng: random.Random | None = None, **_) -> str:
-    return _pick_phrase("reverse_word_order_per_sentence", _REVERSE_WORD_ORDER_PHRASES, rng) + _NO_MENTION
+def instruction_reverse_word_order(*, rng: random.Random | None = None, phrasing_pool: str = "train", **_) -> str:
+    return _pick_phrase("reverse_word_order_per_sentence", _REVERSE_WORD_ORDER_PHRASES, rng, pool=phrasing_pool) + _NO_MENTION
 
 
-def instruction_title_case(*, rng: random.Random | None = None, **_) -> str:
-    return _pick_phrase("title_case", _TITLE_CASE_PHRASES, rng) + _NO_MENTION
+def instruction_title_case(*, rng: random.Random | None = None, phrasing_pool: str = "train", **_) -> str:
+    return _pick_phrase("title_case", _TITLE_CASE_PHRASES, rng, pool=phrasing_pool) + _NO_MENTION
 
 
-def instruction_exclaim_all(*, rng: random.Random | None = None, **_) -> str:
-    return _pick_phrase("exclaim_all_sentences", _EXCLAIM_ALL_PHRASES, rng) + _NO_MENTION
+def instruction_exclaim_all(*, rng: random.Random | None = None, phrasing_pool: str = "train", **_) -> str:
+    return _pick_phrase("exclaim_all_sentences", _EXCLAIM_ALL_PHRASES, rng, pool=phrasing_pool) + _NO_MENTION
 
 
-def instruction_question_all(*, rng: random.Random | None = None, **_) -> str:
-    return _pick_phrase("question_all_sentences", _QUESTION_ALL_PHRASES, rng) + _NO_MENTION
+def instruction_question_all(*, rng: random.Random | None = None, phrasing_pool: str = "train", **_) -> str:
+    return _pick_phrase("question_all_sentences", _QUESTION_ALL_PHRASES, rng, pool=phrasing_pool) + _NO_MENTION
 
 
-def instruction_repeat_every_word_twice(*, rng: random.Random | None = None, **_) -> str:
-    return _pick_phrase("repeat_every_word_twice", _REPEAT_WORD_PHRASES, rng) + _NO_MENTION
+def instruction_repeat_every_word_twice(*, rng: random.Random | None = None, phrasing_pool: str = "train", **_) -> str:
+    return _pick_phrase("repeat_every_word_twice", _REPEAT_WORD_PHRASES, rng, pool=phrasing_pool) + _NO_MENTION
 
 
-def instruction_replace_spaces(*, marker: str, rng: random.Random | None = None) -> str:
-    return _pick_phrase("replace_spaces_with", _REPLACE_SPACES_PHRASES, rng).format(marker=marker) + _NO_MENTION
+def instruction_replace_spaces(*, marker: str, rng: random.Random | None = None, phrasing_pool: str = "train") -> str:
+    return _pick_phrase("replace_spaces_with", _REPLACE_SPACES_PHRASES, rng, pool=phrasing_pool).format(marker=marker) + _NO_MENTION
 
 
-def instruction_wrap_each_sentence(*, marker: str, rng: random.Random | None = None) -> str:
-    return _pick_phrase("wrap_each_sentence_in_bracket", _WRAP_EACH_SENTENCE_PHRASES, rng).format(marker=marker) + _NO_MENTION
+def instruction_wrap_each_sentence(*, marker: str, rng: random.Random | None = None, phrasing_pool: str = "train") -> str:
+    return _pick_phrase("wrap_each_sentence_in_bracket", _WRAP_EACH_SENTENCE_PHRASES, rng, pool=phrasing_pool).format(marker=marker) + _NO_MENTION
 
 
-def instruction_insert_every_third(*, marker: str, rng: random.Random | None = None) -> str:
-    return _pick_phrase("insert_word_every_third_word", _INSERT_EVERY_THIRD_PHRASES, rng).format(marker=marker) + _NO_MENTION
+def instruction_insert_every_third(*, marker: str, rng: random.Random | None = None, phrasing_pool: str = "train") -> str:
+    return _pick_phrase("insert_word_every_third_word", _INSERT_EVERY_THIRD_PHRASES, rng, pool=phrasing_pool).format(marker=marker) + _NO_MENTION
 
 
-def instruction_prefix_every_word(*, marker: str, rng: random.Random | None = None) -> str:
-    return _pick_phrase("prefix_every_word_with_char", _PREFIX_EVERY_WORD_PHRASES, rng).format(marker=marker) + _NO_MENTION
+def instruction_prefix_every_word(*, marker: str, rng: random.Random | None = None, phrasing_pool: str = "train") -> str:
+    return _pick_phrase("prefix_every_word_with_char", _PREFIX_EVERY_WORD_PHRASES, rng, pool=phrasing_pool).format(marker=marker) + _NO_MENTION
 
 
 # ---------------------------------------------------------------------------
@@ -849,14 +886,20 @@ MODE_INSTRUCTIONS = {
 # Public helpers for the data generator.
 # ---------------------------------------------------------------------------
 
-def transform_cot(text: str, family: str, *, marker=None, rng=None) -> tuple[str, str]:
-    """Return (transformed_text, instruction_text) for a family + marker."""
+def transform_cot(text: str, family: str, *, marker=None, rng=None,
+                  phrasing_pool: str = "train") -> tuple[str, str]:
+    """Return (transformed_text, instruction_text) for a family + marker.
+
+    phrasing_pool selects which paraphrase pool to draw the instruction from
+    ('train' or 'eval'). Splitting gives us a phrasing-generalization axis at
+    eval time analogous to marker_pool.
+    """
     fam = FAMILIES[family]
     transformed = fam.transform(text, marker=marker) if marker is not None else fam.transform(text)
     if marker is not None:
-        instr = fam.instruction(marker=marker, rng=rng)
+        instr = fam.instruction(marker=marker, rng=rng, phrasing_pool=phrasing_pool)
     else:
-        instr = fam.instruction()
+        instr = fam.instruction(rng=rng, phrasing_pool=phrasing_pool)
     return transformed, instr
 
 
@@ -866,22 +909,35 @@ def grade(text: str, family: str, *, marker=None) -> bool:
 
 
 # Continuous score in [0,1] — "pure metric" for threshold-based graders.
-# For families with a natural fractional score (uppercase/lowercase alpha ratio,
-# title_case, alternating_case), returns the raw fraction so eval can report
-# partial success. For binary-by-nature families (start_with, wrap_in_brackets),
-# returns the bool as a float (same as grade()).
-_SCORE_FNS = {
-    "uppercase_thinking": _score_uppercase,
-    "lowercase_thinking": _score_lowercase,
-    "alternating_case": _score_alternating,
-    "title_case": _score_title_case,
+# Each score fn takes (text, marker) and returns a fraction. Families with no
+# marker ignore the second arg. For binary-by-nature families (start_with,
+# end_with, wrap_in_brackets, reverse_word_order_per_sentence) we fall through
+# to float(grade(...)) so the column is still populated.
+_SCORE_FNS: dict = {
+    "uppercase_thinking":           lambda t, m: _score_uppercase(t),
+    "lowercase_thinking":           lambda t, m: _score_lowercase(t),
+    "alternating_case":             lambda t, m: _score_alternating(t),
+    "title_case":                   lambda t, m: _score_title_case(t),
+    "exclaim_all_sentences":        lambda t, m: _score_terminator(t, "!"),
+    "question_all_sentences":       lambda t, m: _score_terminator(t, "?"),
+    "double_vowels":                lambda t, m: _score_double_vowels(t),
+    "repeat_every_word_twice":      lambda t, m: _score_repeat_every_word_twice(t),
+    "prefix_sentences":             lambda t, m: _score_prefix_sentences(t, m),
+    "suffix_sentences":             lambda t, m: _score_suffix_sentences(t, m),
+    "insert_between_words":         lambda t, m: _score_insert_between(t, m),
+    "insert_word_every_third_word": lambda t, m: _score_insert_every_third(t, m),
+    "replace_spaces_with":          lambda t, m: _score_replace_spaces(t, m),
+    "wrap_each_sentence_in_bracket":lambda t, m: _score_wrap_each_sentence(t, m),
+    "prefix_every_word_with_char":  lambda t, m: _score_prefix_every_word(t, m),
+    # binary-by-nature: start_with, end_with, wrap_in_brackets,
+    # reverse_word_order_per_sentence — fall through to float(grade()).
 }
 
 
 def grade_score(text: str, family: str, *, marker=None) -> float:
     fn = _SCORE_FNS.get(family)
     if fn is not None:
-        return fn(text)
+        return fn(text, marker)
     return float(grade(text, family, marker=marker))
 
 

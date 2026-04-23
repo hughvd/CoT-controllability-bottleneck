@@ -42,7 +42,8 @@ class EvalItem:
     options_json: str
     correct_letter: str
     family: str
-    marker_pool: str   # "train" or "eval"
+    marker_pool: str     # "train" or "eval" — markers seen during training vs held out
+    phrasing_pool: str   # "train" or "eval" — paraphrases seen during training vs held out
     marker: Any
     instruction: str
     prompt: str
@@ -112,31 +113,35 @@ def build_items(
 
     for fam_name in families:
         fam = FAMILIES[fam_name]
-        for pool in ("train", "eval"):
-            markers = fam.markers_train if pool == "train" else fam.markers_eval
-            # Parameterless families only have one "marker" (None); eval pool == train pool.
+        for marker_pool in ("train", "eval"):
+            markers = fam.markers_train if marker_pool == "train" else fam.markers_eval
             if markers == [None]:
-                if pool == "eval":
-                    continue   # Don't double-count parameterless families.
-            picks = rng.sample(questions, k=min(n_per_cell, len(questions)))
-            for q in picks:
-                marker = rng.choice(markers)
-                options = parse_options(pd.Series(q))
-                letter = answer_to_letter(q["answer"], options)
-                if letter is None:
-                    continue
-                _, instruction = transform_cot("placeholder", fam_name, marker=marker, rng=rng)
-                prompt = assemble_prompt(q["question"], options, instruction)
-                items.append(EvalItem(
-                    question=q["question"],
-                    options_json=json.dumps(options),
-                    correct_letter=letter,
-                    family=fam_name,
-                    marker_pool=pool,
-                    marker=marker,
-                    instruction=instruction,
-                    prompt=prompt,
-                ))
+                if marker_pool == "eval":
+                    continue   # parameterless family: don't double-count
+            for phrasing_pool in ("train", "eval"):
+                picks = rng.sample(questions, k=min(n_per_cell, len(questions)))
+                for q in picks:
+                    marker = rng.choice(markers)
+                    options = parse_options(pd.Series(q))
+                    letter = answer_to_letter(q["answer"], options)
+                    if letter is None:
+                        continue
+                    _, instruction = transform_cot(
+                        "placeholder", fam_name, marker=marker, rng=rng,
+                        phrasing_pool=phrasing_pool,
+                    )
+                    prompt = assemble_prompt(q["question"], options, instruction)
+                    items.append(EvalItem(
+                        question=q["question"],
+                        options_json=json.dumps(options),
+                        correct_letter=letter,
+                        family=fam_name,
+                        marker_pool=marker_pool,
+                        phrasing_pool=phrasing_pool,
+                        marker=marker,
+                        instruction=instruction,
+                        prompt=prompt,
+                    ))
     return items
 
 
@@ -180,6 +185,7 @@ async def run(items: list[EvalItem], model: str, url: str, concurrency: int,
         row = {
             "family": it.family,
             "marker_pool": it.marker_pool,
+            "phrasing_pool": it.phrasing_pool,
             "marker": str(it.marker) if it.marker is not None else "",
             "question": it.question[:200],
             "correct_letter": it.correct_letter,
@@ -247,11 +253,12 @@ def main():
     per_sample_csv = out_dir / "per_sample.csv"
     df.to_csv(per_sample_csv, index=False)
 
-    # Aggregate: per (family, marker_pool). compliance is the thresholded bool;
-    # compliance_score is the continuous "pure metric" for families where it's
-    # meaningful (uppercase/lowercase/alternating/title_case); for others it
-    # equals compliance.
-    g = df.groupby(["family", "marker_pool"], sort=False).agg(
+    # Aggregate: per (family, marker_pool, phrasing_pool). compliance is the
+    # thresholded bool; compliance_score is the continuous "pure metric".
+    # With the added phrasing_pool dimension, parametric families now have up
+    # to 4 cells (train/eval markers × train/eval phrasings). Parameterless
+    # families have 2 (phrasing_pool only, marker_pool is always "train").
+    g = df.groupby(["family", "marker_pool", "phrasing_pool"], sort=False).agg(
         n=("compliance", "count"),
         compliance=("compliance", "mean"),
         compliance_score=("compliance_score", "mean"),
