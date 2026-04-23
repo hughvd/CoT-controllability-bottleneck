@@ -75,16 +75,22 @@ def kl_on_labels(
     labels: torch.Tensor,
 ) -> torch.Tensor:
     """Token-level KL(student || teacher) averaged over non-masked positions.
-    Mirrors train.py's kl_divergence_on_labels so the LoRA and full-param
-    recipes apply KL consistently.
+
+    Mask first, then compute KL only on the answer tokens. Naive [B, T, V]
+    KL allocates several V=152064-wide fp-compute intermediates which OOM at
+    training max_length on 14B + 3x H200. Masking first reduces intermediates
+    from [B, T, V] to [N_answer_tokens, V].
     """
     mask = labels != -100
     if not mask.any():
         return student_logits.new_zeros(())
-    student_lp = F.log_softmax(student_logits, dim=-1)
-    teacher_lp = F.log_softmax(teacher_logits, dim=-1).detach()
+    # [N, V] — N is typically 500-2500, not T=8192.
+    s_masked = student_logits[mask]
+    t_masked = teacher_logits[mask].detach()
+    student_lp = F.log_softmax(s_masked, dim=-1)
+    teacher_lp = F.log_softmax(t_masked, dim=-1)
     kl = (student_lp.exp() * (student_lp - teacher_lp)).sum(dim=-1)
-    return kl[mask].mean()
+    return kl.mean()
 
 
 def train_loop(args, accelerator, tokenizer, model, base_model, dataset, out_dir: Path):
