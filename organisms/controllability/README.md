@@ -8,34 +8,43 @@ See `../controllability_organism_plan.md` for the research plan, `../extra_conte
 
 ```
 controllability/
-├── run_organism_2.sh            # phased end-to-end (generate → train → eval)
-├── data_split.py                # 70/30 stratified split across GPQA/HLE/MMLU-Pro
-├── generate_training_data.py    # self-generate CoTs → filter correct → transform
-├── transforms.py                # programmatic CoT transforms (upper/lower/alt-case/…)
-├── train.py                     # fresh minimal LoRA + KL + CE SFT
-├── run_eval.py                  # wraps CoT-Control-QA/run_cceval.py across modes
+├── configs/                     # one YAML per version (v10.yaml, v11.yaml, …). Sole source of truth.
+│   └── _schema.md               # documents every field
+├── sft/                         # training package
+│   ├── config.py                # YAML loader, dataclasses, paraphrases sha check
+│   ├── data.py                  # SFTDataset, collate
+│   ├── kl.py                    # KL(student‖base) on answer tokens
+│   ├── train_full.py            # full-param entrypoint (FSDP)
+│   └── train_lora.py            # LoRA entrypoint
+├── run_sft.sh                   # single driver: config → data → train → vLLM → diverse eval
+├── data_split.py                # stratified split across configured sources
+├── data_sources.py              # source registry (GPQA/HLE/MMLU-Pro/ARC-C/CSQA)
+├── generate_training_data.py    # self-generate CoTs → filter correct → transform (--config aware)
+├── paraphrase_generator.py      # writes data/paraphrases.json + .sha256
+├── transforms.py                # programmatic CoT transforms + graders
+├── run_eval_diverse.py          # diverse-family eval (--config aware)
+├── run_eval.py                  # Chen et al. 9-mode eval (manual; paper-comparable only)
 ├── tokenizer_sanity.py          # Stage 0 tag round-trip check
-├── experiment_log.md            # v0 baseline + all subsequent versions
-├── .env.example                 # OPENAI_API_KEY, OPENROUTER_API_KEY, HF_TOKEN
-├── requirements.txt
-├── data/                        # generated CoTs + training CSVs
+├── experiment_log.md            # v0 baseline + every subsequent version
+├── scripts/_archive/            # superseded shell scripts + legacy trainers
+├── data/                        # generated CoTs + training CSVs + paraphrases.json
 ├── results/                     # aggregated eval stats
-├── artifacts/                   # LoRA checkpoints, per-example eval CSVs
+├── artifacts/                   # checkpoints + stamped config.yaml
 └── CoTControl/                  # FORK of Chen et al. 2026; edits tagged # ORGANISM_2_FORK:
 ```
 
 ## Run
 
 ```bash
-# RunPod 2× H100. From this directory.
+# From this directory.
 pip install -r requirements.txt
 pip install vllm wandb
 cp .env.example .env   # fill in keys
 
-bash run_organism_2.sh
+bash run_sft.sh configs/v11.yaml
 ```
 
-The run script is phased with `if [ -f ]` skip gates. Re-running only repeats missing phases.
+The driver is phased (data → train → vLLM → diverse eval), each phase skip-gated by output existence. Re-running only repeats missing phases. All hyperparameters live in the YAML — no CLI overrides.
 
 ## Stage 0 (do before training v1)
 
@@ -43,8 +52,8 @@ The run script is phased with `if [ -f ]` skip gates. Re-running only repeats mi
 2. `python tokenizer_sanity.py` — tag round-trips cleanly through Qwen3 tokenizer.
 3. `python run_eval.py --model qwen3-14b-base --baseline-only` — matches paper's ~0.6%.
 4. Grader parses `<think>` content (verified by inspecting `CoTControl/CoT-Control-QA/grading.py`).
-5. `python train.py --smoke-test` — 10 steps, no error, loss decreases.
-6. `.env` loaded by run_organism_2.sh.
+5. `python -m sft.train_lora configs/<ver>.yaml --smoke-test` — 10 steps, no error, loss decreases.
+6. `.env` loaded by `run_sft.sh`.
 7. `experiment_log.md` has v0 baseline row.
 
 ## Notes

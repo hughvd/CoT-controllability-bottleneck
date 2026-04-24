@@ -146,12 +146,12 @@ def build_items(
 
 
 async def query(session: aiohttp.ClientSession, url: str, model: str, prompt: str,
-                max_tokens: int):
+                max_tokens: int, temperature: float):
     payload = {
         "model": model,
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": max_tokens,
-        "temperature": 0.0,
+        "temperature": temperature,
     }
     try:
         async with session.post(url, json=payload,
@@ -176,12 +176,12 @@ async def query(session: aiohttp.ClientSession, url: str, model: str, prompt: st
 
 
 async def run(items: list[EvalItem], model: str, url: str, concurrency: int,
-              max_tokens: int) -> list[dict]:
+              max_tokens: int, temperature: float) -> list[dict]:
     sem = asyncio.Semaphore(concurrency)
 
     async def run_one(it: EvalItem):
         async with sem:
-            out = await query_with_retry(url, model, it.prompt, max_tokens)
+            out = await query_with_retry(url, model, it.prompt, max_tokens, temperature)
         row = {
             "family": it.family,
             "marker_pool": it.marker_pool,
@@ -221,14 +221,18 @@ async def run(items: list[EvalItem], model: str, url: str, concurrency: int,
 _SESSION = None  # set by run()
 
 
-async def query_with_retry(url: str, model: str, prompt: str, max_tokens: int):
-    return await query(_SESSION, url, model, prompt, max_tokens)
+async def query_with_retry(url: str, model: str, prompt: str, max_tokens: int,
+                           temperature: float):
+    return await query(_SESSION, url, model, prompt, max_tokens, temperature)
 
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--model", required=True)
-    p.add_argument("--exp-name", required=True)
+    p.add_argument("--config", type=Path,
+                   help="configs/<version>.yaml. Overrides --model/--exp-name/--families/"
+                        "--n-per-cell/--max-tokens from the config.")
+    p.add_argument("--model")
+    p.add_argument("--exp-name")
     p.add_argument("--families", nargs="+", default=list(FAMILIES))
     p.add_argument("--test-csv", type=Path,
                    default=HERE / "data" / "split_test.csv")
@@ -237,15 +241,34 @@ def main():
     p.add_argument("--vllm-base-url", default=os.getenv("VLLM_BASE_URL", "http://localhost:8000/v1"))
     p.add_argument("--max-concurrency", type=int, default=32)
     p.add_argument("--max-tokens", type=int, default=32768)
+    p.add_argument("--temperature", type=float, default=0.3)
     p.add_argument("--seed", type=int, default=0)
     args = p.parse_args()
+
+    if args.config is not None:
+        from sft import config as cfg_mod
+        cfg = cfg_mod.load(args.config)
+        args.model = cfg.exp_name
+        args.exp_name = f"{cfg.exp_name}_diverse"
+        # Eval the union of trained + held-out families so held-outs appear
+        # in the summary for zero-shot transfer comparison.
+        args.families = sorted(set(cfg.data.families) | set(cfg.data.held_out_families))
+        args.n_per_cell = cfg.eval.samples_per_cell
+        args.max_tokens = cfg.eval.max_tokens
+        args.temperature = cfg.eval.temperature
+        print(f"[run_eval_diverse] loaded config {cfg.source_path.name}")
+
+    if not args.model or not args.exp_name:
+        p.error("--model and --exp-name required unless --config is given")
 
     test = pd.read_csv(args.test_csv)
     items = build_items(test, args.families, args.n_per_cell, args.seed)
     print(f"Prepared {len(items)} eval items across {len(args.families)} families")
 
     url = f"{args.vllm_base_url}/chat/completions"
-    rows = asyncio.run(run(items, args.model, url, args.max_concurrency, args.max_tokens))
+    print(f"Running at temperature={args.temperature}, max_tokens={args.max_tokens}")
+    rows = asyncio.run(run(items, args.model, url, args.max_concurrency,
+                           args.max_tokens, args.temperature))
 
     df = pd.DataFrame(rows)
     out_dir = HERE / "results" / args.exp_name

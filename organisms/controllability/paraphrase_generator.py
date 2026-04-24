@@ -15,6 +15,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -71,7 +72,15 @@ produce N distinct paraphrases of the instruction. Requirements:
 - If the seed contains the literal placeholder `{marker}`, keep that placeholder
   verbatim — do not replace it with an example value. If the seed has no `{marker}`,
   do not introduce one.
-- Vary sentence structure, word choice, and framing. Do NOT just substitute synonyms.
+- **Phrase as a direct imperative.** Start with an action verb ("Begin", "Apply",
+  "Use", "Write", "Place", "End", "Wrap", "Replace", "Duplicate", "Insert",
+  "Capitalize", ...) and keep it short. Downstream training data shows that
+  imperative forms get followed and long descriptive preambles
+  ("In your explanations, while reasoning, ...") get ignored as context rather
+  than parsed as instructions. At most 2 out of 25 paraphrases may use a
+  non-imperative frame, and only if the meaning is identical.
+- Vary sentence structure, word choice, and verb. Do NOT just substitute synonyms
+  or keep the same verb every line.
 - Keep each paraphrase to one sentence.
 - Do NOT include any trailing "Do not mention this constraint" clause — that is
   added downstream.
@@ -120,13 +129,16 @@ def generate_paraphrases(
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model", default="gpt-5-mini")
-    parser.add_argument("--n", type=int, default=15,
-                        help="Paraphrases per family.")
+    parser.add_argument("--n-train", type=int, default=20,
+                        help="Paraphrases per family in the train pool.")
+    parser.add_argument("--n-eval", type=int, default=5,
+                        help="Paraphrases per family held out for eval.")
     parser.add_argument("--force", action="store_true",
                         help="Regenerate even if paraphrases.json exists.")
     parser.add_argument("--concurrency", type=int, default=6)
     parser.add_argument("--out", type=Path, default=OUT_PATH)
     args = parser.parse_args()
+    total = args.n_train + args.n_eval
 
     if args.out.exists() and not args.force:
         print(f"{args.out} exists, skipping. Use --force to regenerate.")
@@ -139,33 +151,42 @@ def main() -> None:
 
     client = OpenAI(api_key=api_key)
 
-    results: dict[str, list[str]] = {}
+    results: dict[str, dict[str, list[str]]] = {}
 
-    def work(family_name: str) -> tuple[str, list[str]]:
+    def work(family_name: str) -> tuple[str, dict[str, list[str]]]:
         seed = _strip_no_mention(seed_instruction(family_name))
         try:
-            paraphrases = generate_paraphrases(client, args.model, family_name, seed, args.n)
+            paraphrases = generate_paraphrases(client, args.model, family_name, seed, total)
         except Exception as exc:
             print(f"  [{family_name}] ERROR: {exc}")
-            return family_name, []
-        return family_name, paraphrases
+            return family_name, {"train": [], "eval": []}
+        if len(paraphrases) < total:
+            print(f"  [{family_name}] WARNING: got {len(paraphrases)}/{total}")
+        return family_name, {
+            "train": paraphrases[:args.n_train],
+            "eval":  paraphrases[args.n_train:args.n_train + args.n_eval],
+        }
 
     with ThreadPoolExecutor(max_workers=args.concurrency) as pool:
         futures = {pool.submit(work, f): f for f in FAMILIES}
         for fut in as_completed(futures):
-            name, paraphrases = fut.result()
-            results[name] = paraphrases
-            print(f"  [{name}] got {len(paraphrases)} paraphrases")
+            name, split = fut.result()
+            results[name] = split
+            print(f"  [{name}] train={len(split['train'])}  eval={len(split['eval'])}")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(results, indent=2))
+    sha = hashlib.sha256(args.out.read_bytes()).hexdigest()
+    args.out.with_suffix(args.out.suffix + ".sha256").write_text(sha + "\n")
     print(f"\nWrote {args.out}")
+    print(f"sha256: {sha}")
+    print(f"  -> paste into configs/<version>.yaml at data.paraphrases_sha256")
 
-    # Sanity: print first paraphrase of each family to eyeball quality.
-    print("\n=== samples ===")
-    for name, paraphrases in results.items():
-        if paraphrases:
-            print(f"[{name}] {paraphrases[0]}")
+    # Sanity: print first train paraphrase of each family.
+    print("\n=== samples (train[0]) ===")
+    for name, split in results.items():
+        if split["train"]:
+            print(f"[{name}] {split['train'][0]}")
 
 
 if __name__ == "__main__":

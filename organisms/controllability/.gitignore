@@ -4,6 +4,7 @@ __pycache__/
 *.pyc
 artifacts/
 data/*.csv
+data/*.bak
 !data/.gitkeep
 !data/split_test.csv
 !data/split_train.csv

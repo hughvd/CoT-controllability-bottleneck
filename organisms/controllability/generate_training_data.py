@@ -349,6 +349,11 @@ def unit_test_extract_answer() -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--config", type=Path,
+                        help="Path to configs/<version>.yaml. When set, overrides "
+                             "--out-raw/--out-csv/--families/--passes-per-raw/--normal-frac "
+                             "from the config's data.* fields. Fail-loud if the raw CoT "
+                             "cache is missing.")
     parser.add_argument("--train-csv", type=Path,
                         default=Path(__file__).parent / "data" / "split_train.csv")
     parser.add_argument("--out-raw", type=Path,
@@ -383,6 +388,22 @@ def main() -> None:
     if args.unit_test:
         unit_test_extract_answer()
         return
+
+    if args.config is not None:
+        from sft import config as cfg_mod
+        cfg = cfg_mod.load(args.config)
+        args.out_raw = cfg.data.raw_csv
+        args.out_csv = cfg.data.train_csv
+        args.families = list(cfg.data.families)
+        args.passes_per_raw = cfg.data.passes_per_raw
+        args.normal_frac = cfg.data.normal_frac
+        if not args.out_raw.exists():
+            raise SystemExit(
+                f"[generate_training_data] raw CoT cache missing: {args.out_raw}\n"
+                f"  serve the base model and run without --config to (re)generate, "
+                f"or scp the cache from a pod that has it."
+            )
+        print(f"[generate_training_data] loaded config {cfg.source_path.name}")
 
     train = pd.read_csv(args.train_csv)
     print(f"Loaded {len(train)} train questions from {args.train_csv}")

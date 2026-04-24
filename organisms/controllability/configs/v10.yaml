@@ -1,0 +1,61 @@
+# v10 — retrospective config matching the run already on disk.
+# Full-param SFT, KL=0, full AdamW (fp32 states), 3 epochs, 14 trained families,
+# 5 held-out, phrasing pool (10 train / 5 eval) as the new axis.
+#
+# NOTE: paraphrases.json was regenerated in v11. To rerun v10, first restore
+#   cp data/paraphrases.json.v10.bak data/paraphrases.json
+# then run_sft.sh will validate the sha below against the restored file.
+
+version: v10
+recipe: full
+base_model: Qwen/Qwen3-14B
+
+data:
+  train_csv: data/training_v10.csv
+  raw_csv: data/training_raw.csv
+  families:
+    - uppercase_thinking
+    - lowercase_thinking
+    - alternating_case
+    - start_with
+    - prefix_sentences
+    - insert_between_words
+    - wrap_in_brackets
+    - double_vowels
+    - reverse_word_order_per_sentence
+    - title_case
+    - exclaim_all_sentences
+    - repeat_every_word_twice
+    - replace_spaces_with
+    - wrap_each_sentence_in_bracket
+  held_out_families:
+    - end_with
+    - suffix_sentences
+    - question_all_sentences
+    - insert_word_every_third_word
+    - prefix_every_word_with_char
+  sources: [gpqa, hle, mmlu_pro, arc_c, csqa]
+  passes_per_raw: 2
+  normal_frac: 0.35
+  paraphrases_sha256: efa3434ec5bbca0cad390ebb92b63c7c62930b7c054bea2ddda66a73aa657512
+
+training:
+  epochs: 3
+  lr: 2.0e-5
+  batch_size: 1
+  grad_accum: 16
+  max_length: 8192
+  kl_beta: 0.0
+  optim: adamw
+  seed: 0
+
+eval:
+  samples_per_cell: 40
+  max_tokens: 32768
+  temperature: 0.0    # v10 ran greedy; v11+ use 0.3
+
+compute:
+  num_gpus: 3
+  vllm_tp_size: 2
+  vllm_max_model_len: 40960
+  vllm_port: 8000
