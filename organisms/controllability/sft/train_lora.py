@@ -107,6 +107,14 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
         target_modules=list(cfg.lora.target_modules),
     )
     model = get_peft_model(model, peft_cfg)
+    # PEFT initializes LoRA A/B in fp32 by default, but the base is bf16.
+    # FSDP requires a uniform dtype to flatten params for sharding, so cast
+    # trainable LoRA params to bf16. AdamW optim states stay fp32 internally
+    # — only the params and grads are bf16, which is the standard production
+    # LoRA setup.
+    for p in model.parameters():
+        if p.requires_grad and p.dtype != torch.bfloat16:
+            p.data = p.data.to(torch.bfloat16)
     # Order matters: grad-ckpt + input_require_grads must come AFTER peft wrap
     # so the LoRA-injected layers participate in checkpointing. Without this
     # we OOM on backward at max_length>=4096.
