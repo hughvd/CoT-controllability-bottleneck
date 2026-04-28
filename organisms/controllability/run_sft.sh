@@ -42,7 +42,10 @@ fi
 if [ ! -d "$MERGED_DIR" ]; then
     echo ">>> [2] training ($RECIPE)"
     case "$RECIPE" in
-        full)
+        full|lora)
+            # Same accelerate+FSDP launcher for both. LoRA shards the frozen
+            # base too, which lets us train at max_length=8192 and at high
+            # LoRA ranks without OOMing on a single GPU.
             PYTORCH_ALLOC_CONF=expandable_segments:True \
             accelerate launch --num_processes="$NUM_GPUS" \
                 --use_fsdp --fsdp_sharding_strategy=FULL_SHARD \
@@ -50,10 +53,7 @@ if [ ! -d "$MERGED_DIR" ]; then
                 --fsdp_transformer_layer_cls_to_wrap=Qwen3DecoderLayer \
                 --fsdp_state_dict_type=FULL_STATE_DICT \
                 --fsdp_use_orig_params=true \
-                -m sft.train_full "$CONFIG"
-            ;;
-        lora)
-            python3 -m sft.train_lora "$CONFIG"
+                -m "sft.train_$RECIPE" "$CONFIG"
             ;;
         *)
             echo "unknown recipe: $RECIPE"; exit 1
