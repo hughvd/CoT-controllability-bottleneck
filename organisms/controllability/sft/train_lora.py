@@ -160,8 +160,10 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
     step = 0
     micro = 0
     optim.zero_grad()
+    torch.cuda.reset_peak_memory_stats()
     for epoch in range(cfg.training.epochs):
         for batch in loader:
+            seq_len = int(batch["input_ids"].shape[1])
             with accelerator.accumulate(model):
                 out = model(
                     input_ids=batch["input_ids"],
@@ -194,7 +196,21 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
                 optim.zero_grad()
 
             del out, ce_loss, loss, kl
+            # Sledgehammer: break refcount cycles + release cached blocks so
+            # peak memory within an accumulation cycle reflects actual live
+            # tensors, not pending-release ones.
+            gc.collect()
+            torch.cuda.empty_cache()
             micro += 1
+
+            # Per-microbatch trace for the first cycle so we can see the shape
+            # of memory growth within an accumulation window.
+            if main and micro <= cfg.training.grad_accum * 2:
+                live = torch.cuda.memory_allocated() / 1e9
+                peak = torch.cuda.max_memory_allocated() / 1e9
+                print(f"  micro={micro} seq={seq_len} "
+                      f"live={live:.1f}GB peak={peak:.1f}GB")
+                torch.cuda.reset_peak_memory_stats()
 
             if accelerator.sync_gradients:
                 step += 1
