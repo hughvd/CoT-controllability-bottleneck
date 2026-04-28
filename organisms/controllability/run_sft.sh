@@ -44,7 +44,7 @@ if [ ! -d "$MERGED_DIR" ]; then
     case "$RECIPE" in
         full)
             # Full SFT: FSDP shards params + huge optim states across GPUs.
-            PYTORCH_ALLOC_CONF=expandable_segments:True \
+            PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
             accelerate launch --num_processes="$NUM_GPUS" \
                 --use_fsdp --fsdp_sharding_strategy=FULL_SHARD \
                 --fsdp_auto_wrap_policy=TRANSFORMER_BASED_WRAP \
@@ -58,7 +58,7 @@ if [ ! -d "$MERGED_DIR" ]; then
             # LoRA optim states are tiny. DDP gives 2x throughput from
             # parallel micro-batches without the FSDP sharding overhead that
             # was OOMing at max_length=8192.
-            PYTORCH_ALLOC_CONF=expandable_segments:True \
+            PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
             accelerate launch --num_processes="$NUM_GPUS" \
                 -m sft.train_lora "$CONFIG"
             ;;

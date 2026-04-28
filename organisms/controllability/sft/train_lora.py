@@ -176,6 +176,11 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
                 loss = ce_loss
 
             accelerator.backward(loss / cfg.training.grad_accum)
+            # Capture scalars then drop the large tensors (logits + loss +
+            # autograd refs) before the next microbatch so they don't pile up
+            # across grad_accum=16.
+            ce_v, kl_v, loss_v = ce_loss.item(), kl.item(), loss.item()
+            del out, ce_loss, loss, kl
 
             if (i + 1) % cfg.training.grad_accum == 0 or (i + 1) == len(loader):
                 accelerator.clip_grad_norm_(trainable, 1.0)
@@ -186,12 +191,12 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
 
                 if main:
                     print(f"epoch={epoch} step={step} "
-                          f"ce={ce_loss.item():.4f} kl={kl.item():.4f} "
-                          f"loss={loss.item():.4f} "
+                          f"ce={ce_v:.4f} kl={kl_v:.4f} "
+                          f"loss={loss_v:.4f} "
                           f"lr={sched.get_last_lr()[0]:.2e}")
                     if use_wandb:
-                        wandb.log({"ce": ce_loss.item(), "kl": kl.item(),
-                                   "loss": loss.item(), "step": step})
+                        wandb.log({"ce": ce_v, "kl": kl_v,
+                                   "loss": loss_v, "step": step})
 
                 if smoke_test and step >= 10:
                     if main:
