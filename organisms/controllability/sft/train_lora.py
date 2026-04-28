@@ -51,7 +51,10 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
     if cfg.lora is None:
         raise SystemExit("[train_lora] config is missing a `lora:` block")
     torch.manual_seed(cfg.training.seed)
-    accelerator = Accelerator()
+    # gradient_accumulation_steps lets us use accelerator.accumulate(model)
+    # which calls model.no_sync() during non-final microbatches — without it,
+    # DDP all-reduces every microbatch and async scratch buffers accumulate.
+    accelerator = Accelerator(gradient_accumulation_steps=cfg.training.grad_accum)
     main = accelerator.is_main_process
 
     if main:
@@ -69,6 +72,7 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
         cfg.base_model,
         torch_dtype=torch.bfloat16,
         trust_remote_code=True,
+        attn_implementation="sdpa",
     )
     model.config.use_cache = False
     model = model.to(accelerator.device)
@@ -82,6 +86,7 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
             cfg.base_model,
             torch_dtype=torch.bfloat16,
             trust_remote_code=True,
+            attn_implementation="sdpa",
         )
         for p in base_model.parameters():
             p.requires_grad = False
@@ -153,50 +158,57 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
         )
 
     step = 0
+    micro = 0
     optim.zero_grad()
     for epoch in range(cfg.training.epochs):
-        for i, batch in enumerate(loader):
-            out = model(
-                input_ids=batch["input_ids"],
-                attention_mask=batch["attention_mask"],
-                labels=batch["labels"],
-            )
-            ce_loss = out.loss
+        for batch in loader:
+            with accelerator.accumulate(model):
+                out = model(
+                    input_ids=batch["input_ids"],
+                    attention_mask=batch["attention_mask"],
+                    labels=batch["labels"],
+                )
+                ce_loss = out.loss
 
-            if cfg.training.kl_beta > 0 and base_model is not None:
-                with torch.no_grad():
-                    base_out = base_model(
-                        input_ids=batch["input_ids"],
-                        attention_mask=batch["attention_mask"],
-                    )
-                kl = kl_on_labels(out.logits, base_out.logits, batch["labels"])
-                loss = ce_loss + cfg.training.kl_beta * kl
-            else:
-                kl = torch.tensor(0.0, device=ce_loss.device)
-                loss = ce_loss
+                if cfg.training.kl_beta > 0 and base_model is not None:
+                    with torch.no_grad():
+                        base_out = base_model(
+                            input_ids=batch["input_ids"],
+                            attention_mask=batch["attention_mask"],
+                        )
+                    kl = kl_on_labels(out.logits, base_out.logits, batch["labels"])
+                    loss = ce_loss + cfg.training.kl_beta * kl
+                else:
+                    kl = torch.tensor(0.0, device=ce_loss.device)
+                    loss = ce_loss
 
-            accelerator.backward(loss / cfg.training.grad_accum)
-            # Capture scalars then drop the large tensors (logits + loss +
-            # autograd refs) before the next microbatch so they don't pile up
-            # across grad_accum=16.
-            ce_v, kl_v, loss_v = ce_loss.item(), kl.item(), loss.item()
-            del out, ce_loss, loss, kl
+                # Capture scalars before backward — once backward runs the graph
+                # is freed and tensors may be released by the accumulate context.
+                ce_v, kl_v, loss_v = ce_loss.item(), kl.item(), loss.item()
+                accelerator.backward(loss)
 
-            if (i + 1) % cfg.training.grad_accum == 0 or (i + 1) == len(loader):
-                accelerator.clip_grad_norm_(trainable, 1.0)
+                if accelerator.sync_gradients:
+                    accelerator.clip_grad_norm_(trainable, 1.0)
                 optim.step()
                 sched.step()
                 optim.zero_grad()
-                step += 1
 
+            del out, ce_loss, loss, kl
+            micro += 1
+
+            if accelerator.sync_gradients:
+                step += 1
                 if main:
-                    print(f"epoch={epoch} step={step} "
+                    mem_gb = torch.cuda.memory_allocated() / 1e9
+                    print(f"epoch={epoch} step={step} micro={micro} "
                           f"ce={ce_v:.4f} kl={kl_v:.4f} "
                           f"loss={loss_v:.4f} "
-                          f"lr={sched.get_last_lr()[0]:.2e}")
+                          f"lr={sched.get_last_lr()[0]:.2e} "
+                          f"mem={mem_gb:.1f}GB")
                     if use_wandb:
                         wandb.log({"ce": ce_v, "kl": kl_v,
-                                   "loss": loss_v, "step": step})
+                                   "loss": loss_v, "step": step,
+                                   "mem_gb": mem_gb})
 
                 if smoke_test and step >= 10:
                     if main:
