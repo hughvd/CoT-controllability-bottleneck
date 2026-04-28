@@ -60,6 +60,15 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
         cfg.base_model, torch_dtype=dtype, device_map={"": 0},
         trust_remote_code=True,
     )
+    # Activation memory at max_length=8192 OOMs at backward without this on a
+    # single H200. enable_input_require_grads() is required for grad-ckpt to
+    # work alongside PEFT (base params are frozen so the first hidden state
+    # wouldn't otherwise carry a grad).
+    model.config.use_cache = False
+    model.gradient_checkpointing_enable(
+        gradient_checkpointing_kwargs={"use_reentrant": False}
+    )
+    model.enable_input_require_grads()
 
     base_model = None
     if cfg.training.kl_beta > 0:
