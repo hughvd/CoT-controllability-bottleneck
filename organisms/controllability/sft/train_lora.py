@@ -156,7 +156,8 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
     torch.cuda.reset_peak_memory_stats()
     for epoch in range(cfg.training.epochs):
         for i, batch in enumerate(loader):
-            batch = {k: v.to(in_dev) for k, v in batch.items()}
+            batch = {k: v.to(in_dev) if isinstance(v, torch.Tensor) else v
+                     for k, v in batch.items()}
             seq_len = int(batch["input_ids"].shape[1])
 
             out = model(
