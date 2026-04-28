@@ -51,17 +51,24 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
         tokenizer.pad_token = tokenizer.eos_token
 
     dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+    # Pin student to GPU 0. 14B in bf16 is ~28GB which fits comfortably on a
+    # single H200 (141GB); device_map='auto' was sometimes splitting the model
+    # across GPUs and forcing every forward to bounce, slowing training to a
+    # crawl. With KL on, base is pinned to GPU 1 so each forward stays local
+    # and the KL gather only crosses once per step.
     model = AutoModelForCausalLM.from_pretrained(
-        cfg.base_model, torch_dtype=dtype, device_map="auto",
+        cfg.base_model, torch_dtype=dtype, device_map={"": 0},
         trust_remote_code=True,
     )
 
     base_model = None
     if cfg.training.kl_beta > 0:
+        n_gpus = torch.cuda.device_count()
+        base_device = 1 if n_gpus >= 2 else 0
         print(f"[train_lora] loading frozen base for KL anchor "
-              f"(beta={cfg.training.kl_beta})")
+              f"(beta={cfg.training.kl_beta}) on cuda:{base_device}")
         base_model = AutoModelForCausalLM.from_pretrained(
-            cfg.base_model, torch_dtype=dtype, device_map="auto",
+            cfg.base_model, torch_dtype=dtype, device_map={"": base_device},
             trust_remote_code=True,
         )
         for p in base_model.parameters():
@@ -134,9 +141,16 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
             ce_loss = out.loss
 
             if cfg.training.kl_beta > 0 and base_model is not None:
+                base_device = next(base_model.parameters()).device
                 with torch.no_grad():
-                    base_out = base_model(input_ids=input_ids, attention_mask=attention)
-                kl = kl_on_labels(out.logits, base_out.logits, labels)
+                    base_out = base_model(
+                        input_ids=input_ids.to(base_device),
+                        attention_mask=attention.to(base_device),
+                    )
+                # Bring teacher logits back to student device for KL.
+                kl = kl_on_labels(
+                    out.logits, base_out.logits.to(out.logits.device), labels
+                )
                 loss = ce_loss + cfg.training.kl_beta * kl
             else:
                 kl = torch.tensor(0.0, device=device)

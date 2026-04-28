@@ -60,8 +60,12 @@ training:
   lr: 2.0e-4
   batch_size: 1
   grad_accum: 16
-  max_length: 8192
-  kl_beta: 0.05
+  max_length: 8192    # match v10-v12 trajectory; with KL=0 there's no second
+                      # forward, so the per-step cost is fine on a single GPU.
+  kl_beta: 0.0       # v8 LoRA (KL=0) also had ~0% attractors — KL is not what
+                     # makes LoRA attractor-free. Removing it eliminates the
+                     # cross-GPU second-forward and keeps the LoRA-vs-full-SFT
+                     # axis as the single variable.
   optim: adamw
   seed: 0
 
@@ -77,7 +81,7 @@ eval:
   temperature: 0.3
 
 compute:
-  num_gpus: 3
+  num_gpus: 2
   vllm_tp_size: 2
   vllm_max_model_len: 40960
   vllm_port: 8000
