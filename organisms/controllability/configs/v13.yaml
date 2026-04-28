@@ -1,0 +1,83 @@
+# v13 — return to LoRA in the held-out configuration.
+#
+# Why: across v6-v9 (LoRA r=128) attractors were 0.0-1.2% on insert families
+# at compliance 0.59-0.89; across v7_full-v12 (full SFT) attractors are
+# 36-67% at similar compliance. Same data, same paraphrases — only the
+# recipe differs. LoRA does not produce the attractor.
+#
+# What we don't know: does cross-family generalization (the v9_holdout
+# result that motivated the move to full SFT) hold under LoRA when the
+# held-out split is applied? v9 LoRA trained on all families; the holdout
+# configuration was never tested under LoRA. v13 runs that test.
+#
+# Recipe: v9 LoRA settings (r=128, alpha=256, KL=0.05, 3 epochs, lr=2e-4)
+#         + v12 family split (12 trained, 7 held-out)
+#         + v11 imperative paraphrases pool (sha pinned)
+#
+# Direct comparisons after this run:
+#   - v13 attractor% on insert families vs v12 (expect ~0% if LoRA's clean
+#     attractor record holds with held-out split).
+#   - v13 held-out compliance (end_with, suffix_sentences, insert_*,
+#     prefix_every_word, reverse_word_order) vs v9_holdout_full clean
+#     numbers. If LoRA reaches comparable held-out compliance with no
+#     attractors, full SFT was the wrong path since v7_full.
+
+version: v13
+recipe: lora
+base_model: Qwen/Qwen3-14B
+
+data:
+  train_csv: data/training_v13.csv
+  raw_csv: data/training_raw.csv
+  families:
+    - uppercase_thinking
+    - lowercase_thinking
+    - alternating_case
+    - start_with
+    - prefix_sentences
+    - wrap_in_brackets
+    - double_vowels
+    - title_case
+    - exclaim_all_sentences
+    - repeat_every_word_twice
+    - replace_spaces_with
+    - wrap_each_sentence_in_bracket
+  held_out_families:
+    - end_with
+    - suffix_sentences
+    - question_all_sentences
+    - insert_word_every_third_word
+    - prefix_every_word_with_char
+    - reverse_word_order_per_sentence
+    - insert_between_words
+  sources: [gpqa, hle, mmlu_pro, arc_c, csqa]
+  passes_per_raw: 2
+  normal_frac: 0.35
+  paraphrases_sha256: f19a4a725aae6719906f1621a70a8a4f165fafbce8ecdc74c5bd48b9b9b31143
+
+training:
+  epochs: 3
+  lr: 2.0e-4
+  batch_size: 1
+  grad_accum: 16
+  max_length: 8192
+  kl_beta: 0.05
+  optim: adamw
+  seed: 0
+
+lora:
+  rank: 128
+  alpha: 256
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  dropout: 0.05
+
+eval:
+  samples_per_cell: 20
+  max_tokens: 32768
+  temperature: 0.3
+
+compute:
+  num_gpus: 3
+  vllm_tp_size: 2
+  vllm_max_model_len: 40960
+  vllm_port: 8000
