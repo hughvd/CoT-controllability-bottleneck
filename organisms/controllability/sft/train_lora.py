@@ -1,30 +1,18 @@
 """LoRA SFT entrypoint. Config-only.
 
-Mirrors sft.train_full: launched via accelerate + FSDP so the 14B base
-shards across GPUs and we can train at max_length=8192 (and at higher LoRA
-ranks) without OOMing on a single device.
+Launched via accelerate (DDP, no FSDP). 14B bf16 fits comfortably on a
+single H200 (~28GB on 141GB), so each rank holds its own full base and
+LoRA copy and processes its own micro-batches. Gradients sync per step.
 
 Launch (2x H200):
-
     PYTORCH_ALLOC_CONF=expandable_segments:True \\
-    accelerate launch --num_processes=2 \\
-      --use_fsdp --fsdp_sharding_strategy=FULL_SHARD \\
-      --fsdp_auto_wrap_policy=TRANSFORMER_BASED_WRAP \\
-      --fsdp_transformer_layer_cls_to_wrap=Qwen3DecoderLayer \\
-      --fsdp_state_dict_type=FULL_STATE_DICT \\
-      --fsdp_use_orig_params=true \\
-      -m sft.train_lora configs/v13.yaml
+    accelerate launch --num_processes=2 -m sft.train_lora configs/v13.yaml
 
-run_sft.sh dispatches LoRA via accelerate automatically when recipe=lora.
+run_sft.sh dispatches LoRA via DDP automatically when recipe=lora.
 
-Save flow:
-  1. Each FSDP rank participates in `accelerator.get_state_dict` to gather
-     full weights to rank 0.
-  2. Rank 0 calls `PeftModel.save_pretrained(adapter_dir, state_dict=...)`,
-     which filters to LoRA params only.
-  3. Rank 0 then loads a fresh base on CPU, attaches the saved adapter,
-     calls `merge_and_unload()`, and writes the merged checkpoint that
-     downstream vLLM will serve.
+Save: rank 0 only. PEFT save_pretrained writes adapter weights, then a
+fresh base loaded on CPU is merged with the adapter for the vLLM-servable
+merged checkpoint.
 """
 
 from __future__ import annotations
@@ -75,22 +63,25 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    # No device_map — accelerate.prepare with FSDP handles placement and shards.
+    # Load base on this rank's device. With DDP, each rank gets its own full
+    # bf16 base (~28GB) — H200 has plenty of room.
     model = AutoModelForCausalLM.from_pretrained(
-        cfg.base_model, torch_dtype=torch.bfloat16, trust_remote_code=True,
+        cfg.base_model,
+        torch_dtype=torch.bfloat16,
+        trust_remote_code=True,
     )
     model.config.use_cache = False
+    model = model.to(accelerator.device)
 
     base_model = None
     if cfg.training.kl_beta > 0:
-        # KL anchor: each FSDP rank loads its own full frozen copy on its own
-        # device. Memory per rank: ~14GB FSDP shard of student + ~28GB full
-        # base = ~42GB; comfortable on H200. Frozen, not passed to prepare().
         if main:
             print(f"[train_lora] loading frozen base for KL anchor "
-                  f"(beta={cfg.training.kl_beta}); each rank gets a full copy")
+                  f"(beta={cfg.training.kl_beta})")
         base_model = AutoModelForCausalLM.from_pretrained(
-            cfg.base_model, torch_dtype=torch.bfloat16, trust_remote_code=True,
+            cfg.base_model,
+            torch_dtype=torch.bfloat16,
+            trust_remote_code=True,
         )
         for p in base_model.parameters():
             p.requires_grad = False
@@ -107,17 +98,12 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
         target_modules=list(cfg.lora.target_modules),
     )
     model = get_peft_model(model, peft_cfg)
-    # PEFT initializes LoRA A/B in fp32 by default, but the base is bf16.
-    # FSDP requires a uniform dtype to flatten params for sharding, so cast
-    # trainable LoRA params to bf16. AdamW optim states stay fp32 internally
-    # — only the params and grads are bf16, which is the standard production
-    # LoRA setup.
+    # Match base dtype so DDP sync + AdamW state allocation are consistent.
     for p in model.parameters():
         if p.requires_grad and p.dtype != torch.bfloat16:
             p.data = p.data.to(torch.bfloat16)
-    # Order matters: grad-ckpt + input_require_grads must come AFTER peft wrap
-    # so the LoRA-injected layers participate in checkpointing. Without this
-    # we OOM on backward at max_length>=4096.
+    # grad-ckpt + input_require_grads must come AFTER peft wrap so the
+    # LoRA-injected layers participate in checkpointing.
     model.gradient_checkpointing_enable(
         gradient_checkpointing_kwargs={"use_reentrant": False}
     )
@@ -192,7 +178,7 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
             accelerator.backward(loss / cfg.training.grad_accum)
 
             if (i + 1) % cfg.training.grad_accum == 0 or (i + 1) == len(loader):
-                accelerator.clip_grad_norm_(model.parameters(), 1.0)
+                accelerator.clip_grad_norm_(trainable, 1.0)
                 optim.step()
                 sched.step()
                 optim.zero_grad()
@@ -218,28 +204,18 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
         return
 
     accelerator.wait_for_everyone()
-    cfg.checkpoint_dir.mkdir(parents=True, exist_ok=True)
-    adapter_dir = cfg.checkpoint_dir / "adapter"
-
-    # Phase 1: gather + save adapter (small) via FSDP-aware state dict.
-    state_dict = accelerator.get_state_dict(model)
-    unwrapped = accelerator.unwrap_model(model)
     if main:
+        cfg.checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        adapter_dir = cfg.checkpoint_dir / "adapter"
+
+        # DDP: rank 0 has full model. PEFT save_pretrained writes adapter only.
+        unwrapped = accelerator.unwrap_model(model)
         print(f"[train_lora] saving adapter -> {adapter_dir}")
-        unwrapped.save_pretrained(
-            adapter_dir,
-            is_main_process=True,
-            save_function=accelerator.save,
-            state_dict=state_dict,
-        )
+        unwrapped.save_pretrained(adapter_dir)
         tokenizer.save_pretrained(adapter_dir)
 
-    # Phase 2: rank 0 only — load fresh base on CPU, attach adapter, merge.
-    accelerator.wait_for_everyone()
-    if main:
-        # Free the wrapped model so we have headroom to load a fresh base for
-        # the merge step.
-        del state_dict, unwrapped, model
+        # Free training model before loading another base for merge.
+        del unwrapped, model
         gc.collect()
         torch.cuda.empty_cache()
 

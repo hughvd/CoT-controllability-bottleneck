@@ -42,10 +42,8 @@ fi
 if [ ! -d "$MERGED_DIR" ]; then
     echo ">>> [2] training ($RECIPE)"
     case "$RECIPE" in
-        full|lora)
-            # Same accelerate+FSDP launcher for both. LoRA shards the frozen
-            # base too, which lets us train at max_length=8192 and at high
-            # LoRA ranks without OOMing on a single GPU.
+        full)
+            # Full SFT: FSDP shards params + huge optim states across GPUs.
             PYTORCH_ALLOC_CONF=expandable_segments:True \
             accelerate launch --num_processes="$NUM_GPUS" \
                 --use_fsdp --fsdp_sharding_strategy=FULL_SHARD \
@@ -53,7 +51,16 @@ if [ ! -d "$MERGED_DIR" ]; then
                 --fsdp_transformer_layer_cls_to_wrap=Qwen3DecoderLayer \
                 --fsdp_state_dict_type=FULL_STATE_DICT \
                 --fsdp_use_orig_params=true \
-                -m "sft.train_$RECIPE" "$CONFIG"
+                -m sft.train_full "$CONFIG"
+            ;;
+        lora)
+            # LoRA: 14B bf16 base (~28GB) fits comfortably on one H200, and
+            # LoRA optim states are tiny. DDP gives 2x throughput from
+            # parallel micro-batches without the FSDP sharding overhead that
+            # was OOMing at max_length=8192.
+            PYTORCH_ALLOC_CONF=expandable_segments:True \
+            accelerate launch --num_processes="$NUM_GPUS" \
+                -m sft.train_lora "$CONFIG"
             ;;
         *)
             echo "unknown recipe: $RECIPE"; exit 1
