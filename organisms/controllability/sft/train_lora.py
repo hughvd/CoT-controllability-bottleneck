@@ -1,18 +1,25 @@
 """LoRA SFT entrypoint. Config-only.
 
-Launched via accelerate (DDP, no FSDP). 14B bf16 fits comfortably on a
-single H200 (~28GB on 141GB), so each rank holds its own full base and
-LoRA copy and processes its own micro-batches. Gradients sync per step.
+Single-process training with naive pipeline parallelism via
+device_map="auto": transformers splits decoder layers across visible GPUs,
+so each GPU holds only its share of the base model. This matches the
+recipe used in our cue-gaming organism (Qwen3-32B + LoRA + sdpa) which
+trained without OOM at long sequences.
 
-Launch (2x H200):
-    PYTORCH_ALLOC_CONF=expandable_segments:True \\
-    accelerate launch --num_processes=2 -m sft.train_lora configs/v13.yaml
+DDP and FSDP were both tried first. DDP keeps the full base resident on
+every rank (~33GB baseline on a 14B); peak activation memory at
+max_length=8192 + LoRA r=128 pushed past the 140GB H200 ceiling on the
+longer-sequence draws. device_map="auto" trades data-parallel throughput
+for a much lower per-GPU memory baseline, which is the real constraint.
 
-run_sft.sh dispatches LoRA via DDP automatically when recipe=lora.
+Launch (uses all visible GPUs):
+    PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \\
+    python3 -m sft.train_lora configs/v13.yaml
 
-Save: rank 0 only. PEFT save_pretrained writes adapter weights, then a
-fresh base loaded on CPU is merged with the adapter for the vLLM-servable
-merged checkpoint.
+run_sft.sh dispatches LoRA to this entrypoint when recipe=lora.
+
+Save: adapter weights via peft.save_pretrained, then a fresh base loaded
+on CPU is merged for the vLLM-servable merged checkpoint.
 """
 
 from __future__ import annotations
@@ -22,11 +29,9 @@ import gc
 import math
 import os
 import shutil
-from pathlib import Path
 
 import pandas as pd
 import torch
-from accelerate import Accelerator
 from peft import LoraConfig, PeftModel, get_peft_model
 from torch.utils.data import DataLoader
 from transformers import (
@@ -47,52 +52,43 @@ def _build_optim(name: str, params, lr: float):
     return torch.optim.AdamW(params, lr=lr)
 
 
+def _input_device(model) -> torch.device:
+    """First device in the hf_device_map — this is where inputs must live."""
+    if hasattr(model, "hf_device_map") and model.hf_device_map:
+        first = next(iter(model.hf_device_map.values()))
+        return torch.device(f"cuda:{first}" if isinstance(first, int) else first)
+    return next(model.parameters()).device
+
+
 def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
     if cfg.lora is None:
         raise SystemExit("[train_lora] config is missing a `lora:` block")
+    if cfg.training.kl_beta > 0:
+        raise SystemExit(
+            "[train_lora] kl_beta>0 not supported under device_map='auto' "
+            "(would need a second pipeline-split base model that won't fit). "
+            "Set kl_beta: 0.0 in the config."
+        )
     torch.manual_seed(cfg.training.seed)
-    # gradient_accumulation_steps lets us use accelerator.accumulate(model)
-    # which calls model.no_sync() during non-final microbatches — without it,
-    # DDP all-reduces every microbatch and async scratch buffers accumulate.
-    accelerator = Accelerator(gradient_accumulation_steps=cfg.training.grad_accum)
-    main = accelerator.is_main_process
 
-    if main:
-        print(f"[train_lora] {cfg.source_path.name}  ->  {cfg.merged_dir}")
-        print(f"[train_lora] base={cfg.base_model}  kl_beta={cfg.training.kl_beta}  "
-              f"rank={cfg.lora.rank}  epochs={cfg.training.epochs}")
+    print(f"[train_lora] {cfg.source_path.name}  ->  {cfg.merged_dir}")
+    print(f"[train_lora] base={cfg.base_model}  kl_beta={cfg.training.kl_beta}  "
+          f"rank={cfg.lora.rank}  epochs={cfg.training.epochs}")
 
     tokenizer = AutoTokenizer.from_pretrained(cfg.base_model, trust_remote_code=True)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    # Load base on this rank's device. With DDP, each rank gets its own full
-    # bf16 base (~28GB) — H200 has plenty of room.
     model = AutoModelForCausalLM.from_pretrained(
         cfg.base_model,
         torch_dtype=torch.bfloat16,
         trust_remote_code=True,
         attn_implementation="sdpa",
+        device_map="auto",
+        low_cpu_mem_usage=True,
     )
     model.config.use_cache = False
-    model = model.to(accelerator.device)
-
-    base_model = None
-    if cfg.training.kl_beta > 0:
-        if main:
-            print(f"[train_lora] loading frozen base for KL anchor "
-                  f"(beta={cfg.training.kl_beta})")
-        base_model = AutoModelForCausalLM.from_pretrained(
-            cfg.base_model,
-            torch_dtype=torch.bfloat16,
-            trust_remote_code=True,
-            attn_implementation="sdpa",
-        )
-        for p in base_model.parameters():
-            p.requires_grad = False
-        base_model.eval()
-        base_model.config.use_cache = False
-        base_model = base_model.to(accelerator.device)
+    print(f"[train_lora] hf_device_map: {model.hf_device_map}")
 
     peft_cfg = LoraConfig(
         r=cfg.lora.rank,
@@ -103,29 +99,28 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
         target_modules=list(cfg.lora.target_modules),
     )
     model = get_peft_model(model, peft_cfg)
-    # Match base dtype so DDP sync + AdamW state allocation are consistent.
+    # Keep LoRA params in bf16 to match the base — avoids fp32 master copies
+    # bloating optim state.
     for p in model.parameters():
         if p.requires_grad and p.dtype != torch.bfloat16:
             p.data = p.data.to(torch.bfloat16)
-    # grad-ckpt + input_require_grads must come AFTER peft wrap so the
-    # LoRA-injected layers participate in checkpointing.
     model.gradient_checkpointing_enable(
         gradient_checkpointing_kwargs={"use_reentrant": False}
     )
     model.enable_input_require_grads()
-    if main:
-        model.print_trainable_parameters()
+    model.print_trainable_parameters()
+
+    in_dev = _input_device(model)
+    print(f"[train_lora] inputs -> {in_dev}")
 
     if smoke_test:
         df = build_fake_df()
     else:
         df = pd.read_csv(cfg.data.train_csv)
-        if main:
-            print(f"[train_lora] training rows: {len(df)}")
+        print(f"[train_lora] training rows: {len(df)}")
 
     dataset = SFTDataset(df, tokenizer, cfg.training.max_length)
-    if main:
-        print(f"[train_lora] tokenized examples: {len(dataset)}")
+    print(f"[train_lora] tokenized examples: {len(dataset)}")
 
     loader = DataLoader(
         dataset,
@@ -143,9 +138,7 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
         num_training_steps=total_steps,
     )
 
-    model, optim, loader, sched = accelerator.prepare(model, optim, loader, sched)
-
-    use_wandb = main and not smoke_test
+    use_wandb = not smoke_test
     if use_wandb:
         import wandb
         wandb.init(
@@ -162,109 +155,86 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
     optim.zero_grad()
     torch.cuda.reset_peak_memory_stats()
     for epoch in range(cfg.training.epochs):
-        for batch in loader:
+        for i, batch in enumerate(loader):
+            batch = {k: v.to(in_dev) for k, v in batch.items()}
             seq_len = int(batch["input_ids"].shape[1])
-            with accelerator.accumulate(model):
-                out = model(
-                    input_ids=batch["input_ids"],
-                    attention_mask=batch["attention_mask"],
-                    labels=batch["labels"],
-                )
-                ce_loss = out.loss
 
-                if cfg.training.kl_beta > 0 and base_model is not None:
-                    with torch.no_grad():
-                        base_out = base_model(
-                            input_ids=batch["input_ids"],
-                            attention_mask=batch["attention_mask"],
-                        )
-                    kl = kl_on_labels(out.logits, base_out.logits, batch["labels"])
-                    loss = ce_loss + cfg.training.kl_beta * kl
-                else:
-                    kl = torch.tensor(0.0, device=ce_loss.device)
-                    loss = ce_loss
+            out = model(
+                input_ids=batch["input_ids"],
+                attention_mask=batch["attention_mask"],
+                labels=batch["labels"],
+            )
+            ce_loss = out.loss
+            kl = torch.tensor(0.0, device=ce_loss.device)
+            loss = ce_loss
 
-                # Capture scalars before backward — once backward runs the graph
-                # is freed and tensors may be released by the accumulate context.
-                ce_v, kl_v, loss_v = ce_loss.item(), kl.item(), loss.item()
-                accelerator.backward(loss)
-
-                if accelerator.sync_gradients:
-                    accelerator.clip_grad_norm_(trainable, 1.0)
-                optim.step()
-                sched.step()
-                optim.zero_grad()
-
+            ce_v, kl_v, loss_v = ce_loss.item(), kl.item(), loss.item()
+            (loss / cfg.training.grad_accum).backward()
             del out, ce_loss, loss, kl
-            # Sledgehammer: break refcount cycles + release cached blocks so
-            # peak memory within an accumulation cycle reflects actual live
-            # tensors, not pending-release ones.
-            gc.collect()
-            torch.cuda.empty_cache()
             micro += 1
 
-            # Per-microbatch trace for the first cycle so we can see the shape
-            # of memory growth within an accumulation window.
-            if main and micro <= cfg.training.grad_accum * 2:
+            # Per-microbatch memory trace for the first two cycles. Lets us
+            # confirm peak fits comfortably under device_map='auto'.
+            if micro <= cfg.training.grad_accum * 2:
                 live = torch.cuda.memory_allocated() / 1e9
                 peak = torch.cuda.max_memory_allocated() / 1e9
                 print(f"  micro={micro} seq={seq_len} "
                       f"live={live:.1f}GB peak={peak:.1f}GB")
                 torch.cuda.reset_peak_memory_stats()
 
-            if accelerator.sync_gradients:
+            if (i + 1) % cfg.training.grad_accum == 0 or (i + 1) == len(loader):
+                # foreach=False for safety with multi-device params.
+                torch.nn.utils.clip_grad_norm_(trainable, 1.0, foreach=False)
+                optim.step()
+                sched.step()
+                optim.zero_grad()
                 step += 1
-                if main:
-                    mem_gb = torch.cuda.memory_allocated() / 1e9
-                    print(f"epoch={epoch} step={step} micro={micro} "
-                          f"ce={ce_v:.4f} kl={kl_v:.4f} "
-                          f"loss={loss_v:.4f} "
-                          f"lr={sched.get_last_lr()[0]:.2e} "
-                          f"mem={mem_gb:.1f}GB")
-                    if use_wandb:
-                        wandb.log({"ce": ce_v, "kl": kl_v,
-                                   "loss": loss_v, "step": step,
-                                   "mem_gb": mem_gb})
+
+                mem_gb = torch.cuda.memory_allocated() / 1e9
+                print(f"epoch={epoch} step={step} micro={micro} "
+                      f"ce={ce_v:.4f} kl={kl_v:.4f} "
+                      f"loss={loss_v:.4f} "
+                      f"lr={sched.get_last_lr()[0]:.2e} "
+                      f"mem={mem_gb:.1f}GB")
+                if use_wandb:
+                    wandb.log({"ce": ce_v, "kl": kl_v,
+                               "loss": loss_v, "step": step,
+                               "mem_gb": mem_gb})
 
                 if smoke_test and step >= 10:
-                    if main:
-                        print("smoke-test: 10 steps OK")
+                    print("smoke-test: 10 steps OK")
                     return
 
     if smoke_test:
-        if main:
-            print("smoke-test: all epochs completed (no save)")
+        print("smoke-test: all epochs completed (no save)")
         return
 
-    accelerator.wait_for_everyone()
-    if main:
-        cfg.checkpoint_dir.mkdir(parents=True, exist_ok=True)
-        adapter_dir = cfg.checkpoint_dir / "adapter"
+    cfg.checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    adapter_dir = cfg.checkpoint_dir / "adapter"
 
-        # DDP: rank 0 has full model. PEFT save_pretrained writes adapter only.
-        unwrapped = accelerator.unwrap_model(model)
-        print(f"[train_lora] saving adapter -> {adapter_dir}")
-        unwrapped.save_pretrained(adapter_dir)
-        tokenizer.save_pretrained(adapter_dir)
+    print(f"[train_lora] saving adapter -> {adapter_dir}")
+    model.save_pretrained(adapter_dir)
+    tokenizer.save_pretrained(adapter_dir)
 
-        # Free training model before loading another base for merge.
-        del unwrapped, model
-        gc.collect()
-        torch.cuda.empty_cache()
+    # Free training model (split across GPUs) before loading a fresh base on
+    # CPU for the merge step.
+    del model
+    gc.collect()
+    torch.cuda.empty_cache()
 
-        print(f"[train_lora] merging + saving -> {cfg.merged_dir}")
-        base_for_merge = AutoModelForCausalLM.from_pretrained(
-            cfg.base_model,
-            torch_dtype=torch.bfloat16,
-            device_map="cpu",
-            trust_remote_code=True,
-        )
-        peft_model = PeftModel.from_pretrained(base_for_merge, adapter_dir)
-        merged = peft_model.merge_and_unload()
-        cfg.merged_dir.mkdir(parents=True, exist_ok=True)
-        merged.save_pretrained(cfg.merged_dir, safe_serialization=True)
-        tokenizer.save_pretrained(cfg.merged_dir)
-        _stamp_config(cfg)
+    print(f"[train_lora] merging + saving -> {cfg.merged_dir}")
+    base_for_merge = AutoModelForCausalLM.from_pretrained(
+        cfg.base_model,
+        torch_dtype=torch.bfloat16,
+        device_map="cpu",
+        trust_remote_code=True,
+    )
+    peft_model = PeftModel.from_pretrained(base_for_merge, adapter_dir)
+    merged = peft_model.merge_and_unload()
+    cfg.merged_dir.mkdir(parents=True, exist_ok=True)
+    merged.save_pretrained(cfg.merged_dir, safe_serialization=True)
+    tokenizer.save_pretrained(cfg.merged_dir)
+    _stamp_config(cfg)
 
 
 def _stamp_config(cfg: cfg_mod.Config) -> None:

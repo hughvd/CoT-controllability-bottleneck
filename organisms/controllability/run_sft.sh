@@ -54,13 +54,14 @@ if [ ! -d "$MERGED_DIR" ]; then
                 -m sft.train_full "$CONFIG"
             ;;
         lora)
-            # LoRA: 14B bf16 base (~28GB) fits comfortably on one H200, and
-            # LoRA optim states are tiny. DDP gives 2x throughput from
-            # parallel micro-batches without the FSDP sharding overhead that
-            # was OOMing at max_length=8192.
+            # LoRA: single process, device_map="auto" splits decoder layers
+            # across visible GPUs. DDP keeps the full 28GB base resident on
+            # every rank, and at max_length=8192 + r=128 peak activation
+            # memory pushes past the 140GB H200 ceiling. Pipeline-split
+            # halves the per-GPU baseline, trading data-parallel throughput
+            # for the headroom we need.
             PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
-            accelerate launch --num_processes="$NUM_GPUS" \
-                -m sft.train_lora "$CONFIG"
+                python3 -m sft.train_lora "$CONFIG"
             ;;
         *)
             echo "unknown recipe: $RECIPE"; exit 1
