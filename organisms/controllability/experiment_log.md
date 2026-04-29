@@ -678,3 +678,70 @@ Combines everything learned from v9_holdout output analysis. Recipe:
 - Marker interference on held-out families (BEEP underperforming on end_with) — architectural; training-data fix would be shared-marker-pool across all families, which we didn't change for v10.
 
 **Launch**: `TRAIN_CSV_VERSION=v10 VERSION=v10 bash run_organism_2_holdout.sh` on 3× H200 pod. Script regenerates `training_v10.csv` from cached `training_raw.csv` (no vLLM needed), trains, serves, runs diverse eval over all 19 families × 2×2 pool cross.
+
+## v12 — full-param SFT, gentler updates, attractor-seed dropped (DONE 2026-04-26)
+
+First full-SFT recipe to beat both the attractor pathology AND keep the v9_holdout cross-family generalization. From v11 (full-param, lr=2e-5, 1 epoch, adam8) we lowered lr to 1e-5, raised passes_per_raw 2→3 (more row diversity from same raw cache), and pulled `insert_between_words` + `reverse_word_order_per_sentence` out of training and into held-out (insert_between was the worst attractor seed in v11; reverse was a hard-to-learn-without-confusion family per qualitative review).
+
+Numbers (n=20/cell):
+
+| split | mean compliance |
+|---|---|
+| trained, train marker × train phrasing | 0.36 |
+| trained, train marker × eval phrasing | 0.35 |
+| held-out, all cells | **0.37** |
+| held-out, train/train cell | 0.26 |
+| attractor rate (max_run≥8) | 0.7% |
+
+Held-out per family: end_with 0.60, suffix_sentences 0.35, insert_word_every_third 0.45, insert_between 0.35, prefix_every_word_with_char 0.05, question_all_sentences 0.00, reverse_word_order 0.00. Four of seven held-out families transfer meaningfully; positional and periodic-insertion concepts transfer best, and the model handles unseen `insert_between_words` markers despite that family being held out.
+
+Attractor rate dropped from v11's ~16% to 0.7% — lr halving and passes_per_raw bump together neutralized the seed without hurting trained compliance.
+
+**Checkpoint:** `artifacts/organism_2_v12/merged`.
+
+## v13 — return to LoRA under the held-out split (DONE 2026-04-28)
+
+Re-runs the v9 LoRA recipe (r=128, α=256, 3 epochs, lr=2e-4, KL=0) on v12's data split. Goal: does cross-family generalization (the v9_holdout → v12 result) hold under LoRA when the held-out configuration is applied? v9's LoRA attractor record was 0–1% on insert families; v12 full SFT was at 36–67% on those before the gentle-updates fix.
+
+| split | v12 (full) | v13 (LoRA r=128) |
+|---|---|---|
+| trained, train marker × train phrasing | 0.36 | 0.43 |
+| trained, train marker × eval phrasing | 0.35 | 0.37 |
+| **held-out, all cells** | **0.37** | **0.002** |
+| held-out, train/train cell | 0.26 | 0.01 |
+| attractor rate | 0.7% | 0.0% |
+
+LoRA at r=128 is **slightly better than full SFT on the trained families** and produces **zero attractors** — but **zero cross-family transfer**. The held-out cells are essentially flat 0 across all 7 unseen families. This contradicts an early reading of v6–v9 where LoRA seemed to "work" — under a proper held-out split, LoRA's apparent generalization in those runs was just within-marker generalization on families it had seen.
+
+Infrastructure note: trained on 2× H200 with `device_map="auto"` (single-process pipeline parallelism, matching the cue-gaming organism's recipe). DDP and FSDP variants both OOMed on peak attention activations at max_length=8192 because the full 28GB base sits resident on every rank under DDP and FSDP-LoRA had its own activation accounting blow-up. Pipeline-split halved the per-GPU base baseline and gave the headroom we needed; cost is no data parallelism (single batch in flight at a time, ~3× more wall-clock per epoch than v12's FSDP-across-3-ranks run).
+
+**Checkpoint:** `artifacts/organism_2_v13/merged`.
+
+## v14 — LoRA capacity test (r=512) (DONE 2026-04-29)
+
+4× the rank of v13, α scaled 256→1024 to keep α/r=2 (default LoRA scaling, fair-shot comparison: same direction-by-direction update magnitude as v13). Same data split, lr, epochs, recipe.
+
+| split | v12 (full) | v13 (r=128) | v14 (r=512) |
+|---|---|---|---|
+| trained, train/train | 0.36 | 0.43 | **0.90** |
+| trained, train phrasing × eval phrasing | 0.35 | 0.37 | **0.91** |
+| **held-out, all cells** | **0.37** | 0.002 | **0.002** |
+| held-out, train/train | 0.26 | 0.01 | 0.00 |
+| attractor rate | 0.7% | 0% | 0% |
+
+Trained-family compliance hit 1.00 on 8 of 12 families (uppercase, lowercase, alternating, start_with, prefix_sentences, title_case, exclaim_all, replace_spaces) and ≥0.85 on 11/12. Phrasing generalization is preserved at high rank (0.91 train phrasing == 0.91 eval phrasing), so this isn't phrasing-overfit either.
+
+**Cross-family transfer is still flat zero.** 4× capacity changed in-distribution accuracy by +0.47 and held-out by 0.00. Strongest signal yet that LoRA's failure is **structural, not capacity**: more rank lets the decomposition memorize trained transforms harder, but doesn't unlock the abstraction full SFT extracts from the same data.
+
+**Open caveat (v15 will test).** v14's loss saturated near 0 around step ~1200 of ~1700; epochs 2–3 may be sharpening the memorized solution at the expense of any partial abstraction present at epoch 1. v12 (full SFT) ran a single epoch and never overtrained. Exposure budget also imbalanced: v12 saw 3 passes/raw × 1 epoch = 3 exposures; v13/v14 saw 2 × 3 = 6.
+
+**Checkpoint:** `artifacts/organism_2_v14/merged`.
+
+## v15 — LoRA r=512, 1 epoch, exposure-matched (planned 2026-04-29)
+
+Tests whether v13/v14's zero cross-family transfer is structural or just over-training. Recipe: r=512, α=1024, **1 epoch**, **passes_per_raw=3** — matches v12's exposure count exactly while keeping LoRA's recipe.
+
+If held-out compliance jumps with fewer epochs, the v13/v14 zero was an over-training artifact and LoRA *can* abstract under matched exposure. If held-out stays at 0, the structural reading stands and we have a clean 3-condition controlled comparison (full SFT, LoRA-overtrained, LoRA-matched).
+
+Either way the result is publishable signal — same data, same eval, different recipes.
+
