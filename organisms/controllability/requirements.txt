@@ -1,5 +1,10 @@
-torch>=2.3
-transformers>=4.46
+# Pinned to a coherent set after the v12 → v13 version drift cost us a day
+# of debugging. transformers 5.x changed tokenizer ABI in ways vllm 0.11.0
+# can't parse, and `pip install vllm` now defaults to a cu13 wheel that
+# won't load on cu12.x drivers. If you're hitting fresh import errors,
+# diff `pip freeze` against this file before changing anything.
+torch==2.8.0
+transformers==4.55.4
 peft>=0.13
 datasets>=3.0
 accelerate>=1.0
@@ -12,3 +17,5 @@ aiohttp>=3.9
 requests>=2.31
 wandb>=0.17
 pyyaml>=6.0
+# vLLM is installed separately in the pod setup (see README) — it needs a
+# cu12-matching wheel and pins to vllm==0.11.0.

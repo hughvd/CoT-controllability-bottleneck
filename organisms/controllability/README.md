@@ -38,7 +38,13 @@ controllability/
 ```bash
 # From this directory.
 pip install -r requirements.txt
-pip install vllm wandb
+pip install wandb
+# vLLM: pin a cu12-compatible version. Default `pip install vllm` now
+# resolves to a cu13 wheel (libcudart.so.13) which won't load on drivers
+# that cap at CUDA 12.x — check `nvidia-smi` for the driver's max CUDA
+# version. v0.11.0 has cu12 wheels; pip picks the matching one against
+# the installed torch (which we keep on cu126/cu128 to match driver).
+pip install "vllm==0.11.0"
 cp .env.example .env   # fill in keys
 
 bash run_sft.sh configs/v11.yaml
