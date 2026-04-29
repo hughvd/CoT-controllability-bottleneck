@@ -745,3 +745,50 @@ If held-out compliance jumps with fewer epochs, the v13/v14 zero was an over-tra
 
 Either way the result is publishable signal — same data, same eval, different recipes.
 
+
+## v15 — LoRA r=512, 1 epoch, exposure-matched (DONE 2026-04-29)
+
+Same data split, lr, recipe as v14. Differences: epochs 3 → 1, passes_per_raw 2 → 3 (so total exposures match v12 exactly: 3 passes × 1 epoch = 3 per raw CoT).
+
+| split | v12 (full) | v13 (3 ep) | v14 (r=512, 3 ep) | v15 (r=512, 1 ep) |
+|---|---|---|---|---|
+| trained train/train | 0.36 | 0.43 | 0.90 | **0.89** |
+| trained train×eval phrasing | 0.35 | 0.37 | 0.91 | 0.87 |
+| **held-out all cells** | 0.37 | 0.002 | 0.002 | **0.052** |
+| held-out train/train | 0.26 | 0.01 | 0.00 | 0.10 |
+| attractor rate | 0.7% | 0% | 0% | 0% |
+
+**Two findings.**
+
+1. **1 epoch is not undertrained.** Trained-family compliance 0.89 ≈ v14's 0.90. v14's extra 2 epochs were ~pure memorization sharpening, not in-family learning. The earlier overtraining suspicion was correct: by step ~1200 of v14 the model was already saturated.
+
+2. **v15 cracks `question_all_sentences` at 0.65 train/train compliance** — a held-out family that v12, v13, and v14 *all* scored 0.00 on. v12 (full SFT) and v15 (LoRA-1-epoch) transfer to **disjoint** held-out families:
+
+   | family | v12 (full) | v15 (LoRA 1ep) |
+   |---|---|---|
+   | end_with | 0.60 | 0.00 |
+   | suffix_sentences | 0.35 | 0.00 |
+   | question_all_sentences | **0.00** | **0.65** |
+   | insert_word_every_third_word | 0.45 | 0.00 |
+   | prefix_every_word_with_char | 0.05 | 0.05 |
+   | reverse_word_order | 0.00 | 0.00 |
+   | insert_between_words | 0.35 | 0.00 |
+
+   v12 transfers to **positional / insertion** families (where the structure of the output changes — extra tokens added, words rearranged). v15 transfers to a **substitution** family (one character class swapped for another). Mechanistic conjecture: question_all is structurally identical to exclaim_all (both "replace terminator with marker char"), which is in training at 1.00 compliance. Full SFT updates `lm_head` and presumably committed the exclaim mapping to specific output-token probabilities, discarding the abstract form. LoRA leaves `lm_head` frozen and at 1 epoch hadn't yet sharpened the mapping into a single concrete token — so the abstract "replace terminator with marker" form survived and substitutes `?` correctly when prompted. This is a hypothesis, not a verified mechanism — needs generation inspection to confirm.
+
+**Implication.** The "LoRA can't generalize cross-family" reading from v13/v14 was wrong. The correct reading is: **LoRA and full SFT find qualitatively different generalization profiles on the same data**, and the LoRA profile only emerges at low epochs. This is potentially a more interesting result than "LoRA is worse" — it's evidence that the recipe choice steers what kind of abstraction the model commits to.
+
+**Remaining caveats.**
+- Eval temperature is 0.6 for v14/v15 vs 0.3 for v12/v13 — not a confound for v14↔v15 but tempers the v12↔v15 comparison.
+- Other 6/7 held-out families remain at ~0 under v15, so the "LoRA can transfer" finding is one family. Two more families show small partial credit on `compliance_score` (insert_between 0.10, prefix_every_word_with_char 0.11) but binary compliance is 0.
+
+**Checkpoint:** `artifacts/organism_2_v15/merged`.
+
+## v16 — LoRA r=512, lr-matched to full SFT (planned 2026-04-29)
+
+Building on v15's signal that LoRA's update size affects which abstractions emerge. Recipe: same as v15 (r=512, α=1024, 1 epoch, passes_per_raw=3) except `lr: 2e-4 → 1e-5` to match v12. Full-SFT update magnitude is `1e-5 × ∇W`; v13–v15 LoRA was `2e-4 × (α/r=2) × ∇(BA) = 4e-4 effective`, ~40× larger per-step update than full SFT.
+
+Hypothesis: smaller per-step updates push optimization toward different optima, possibly recovering some of v12's positional-family transfers without losing v15's substitution transfer. Risk: at lr=1e-5, single-epoch LoRA may simply be undertrained (the high-LR was justified in part by LoRA needing to climb out of the B=0 init).
+
+If v16 produces high trained-compliance with broader held-out transfer, lr was a major confound across v13–v15. If trained compliance collapses, lr=1e-5 is too low for LoRA at this α/r and we'd need a middle ground (e.g., lr=2e-5).
+
