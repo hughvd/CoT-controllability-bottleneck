@@ -50,6 +50,7 @@ source of truth — trainers, data generator, and diverse eval all read it.
 | `rank`           | LoRA rank |
 | `alpha`          | usually 2×rank |
 | `target_modules` | e.g. `[q_proj, k_proj, v_proj, o_proj]` |
+| `modules_to_save`| optional. Modules trained in full precision alongside the LoRA decomposition (no rank-r factoring). e.g. `[lm_head]`, `[lm_head, embed_tokens]`. PEFT keeps these as plain trainable nn.Modules. |
 | `dropout`        | optional (default 0.05) |
 
 ## `eval`

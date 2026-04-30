@@ -97,6 +97,7 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
         bias="none",
         task_type="CAUSAL_LM",
         target_modules=list(cfg.lora.target_modules),
+        modules_to_save=list(cfg.lora.modules_to_save) or None,
     )
     model = get_peft_model(model, peft_cfg)
     # Keep LoRA params in bf16 to match the base — avoids fp32 master copies
@@ -151,14 +152,11 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
         )
 
     step = 0
-    micro = 0
     optim.zero_grad()
-    torch.cuda.reset_peak_memory_stats()
     for epoch in range(cfg.training.epochs):
         for i, batch in enumerate(loader):
             batch = {k: v.to(in_dev) if isinstance(v, torch.Tensor) else v
                      for k, v in batch.items()}
-            seq_len = int(batch["input_ids"].shape[1])
 
             out = model(
                 input_ids=batch["input_ids"],
@@ -172,16 +170,6 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
             ce_v, kl_v, loss_v = ce_loss.item(), kl.item(), loss.item()
             (loss / cfg.training.grad_accum).backward()
             del out, ce_loss, loss, kl
-            micro += 1
-
-            # Per-microbatch memory trace for the first two cycles. Lets us
-            # confirm peak fits comfortably under device_map='auto'.
-            if micro <= cfg.training.grad_accum * 2:
-                live = torch.cuda.memory_allocated() / 1e9
-                peak = torch.cuda.max_memory_allocated() / 1e9
-                print(f"  micro={micro} seq={seq_len} "
-                      f"live={live:.1f}GB peak={peak:.1f}GB")
-                torch.cuda.reset_peak_memory_stats()
 
             if (i + 1) % cfg.training.grad_accum == 0 or (i + 1) == len(loader):
                 # foreach=False for safety with multi-device params.
@@ -191,16 +179,13 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
                 optim.zero_grad()
                 step += 1
 
-                mem_gb = torch.cuda.memory_allocated() / 1e9
-                print(f"epoch={epoch} step={step} micro={micro} "
+                print(f"epoch={epoch} step={step} "
                       f"ce={ce_v:.4f} kl={kl_v:.4f} "
                       f"loss={loss_v:.4f} "
-                      f"lr={sched.get_last_lr()[0]:.2e} "
-                      f"mem={mem_gb:.1f}GB")
+                      f"lr={sched.get_last_lr()[0]:.2e}")
                 if use_wandb:
                     wandb.log({"ce": ce_v, "kl": kl_v,
-                               "loss": loss_v, "step": step,
-                               "mem_gb": mem_gb})
+                               "loss": loss_v, "step": step})
 
                 if smoke_test and step >= 10:
                     print("smoke-test: 10 steps OK")

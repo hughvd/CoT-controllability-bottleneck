@@ -792,3 +792,40 @@ Hypothesis: smaller per-step updates push optimization toward different optima, 
 
 If v16 produces high trained-compliance with broader held-out transfer, lr was a major confound across v13–v15. If trained compliance collapses, lr=1e-5 is too low for LoRA at this α/r and we'd need a middle ground (e.g., lr=2e-5).
 
+
+## v16 — LoRA r=512, lr=2e-5 (DONE 2026-04-29)
+
+Same as v15 except `lr: 2e-4 → 2e-5` (10× smaller; 2× v12's full SFT lr).
+
+| split | v12 full | v14 3ep | v15 1ep | v16 lr=2e-5 |
+|---|---|---|---|---|
+| trained train/train | 0.36 | 0.90 | 0.89 | **0.80** |
+| trained train×eval phr | 0.35 | 0.91 | 0.87 | **0.77** |
+| held-out all cells | 0.37 | 0.002 | 0.052 | **0.019** |
+| held-out train/train | 0.26 | 0.00 | 0.10 | **0.03** |
+
+Lower LR did not unlock broader transfer; it undertrained. v15's question_all_sentences transfer (0.65) collapsed to 0.10 on v16 — the substitution transfer requires fully memorizing the partner family (exclaim_all dropped from 1.00 in v15 to 0.90 in v16, and the held-out family's compliance collapsed proportionally).
+
+Small countervailing signal on continuous `compliance_score` for structural families:
+
+| family | v12 | v15 | v16 |
+|---|---|---|---|
+| insert_between_words (cs) | 0.68 | 0.06 | 0.19 |
+| insert_word_every_third (cs) | 0.68 | 0.00 | 0.05 |
+| prefix_every_word_with_char (cs) | 0.21 | 0.09 | **0.21** |
+| question_all_sentences (cs) | 0.13 | **0.61** | 0.16 |
+
+v16 leaves traces of structural-style edits on `insert_*` families that v15 had zero of, and exactly matches v12's continuous score on prefix_every_word. Binary compliance remains ~0 across these — the model isn't completing the transforms, just nudging in their direction. Trade is: v15 buys one substitution transfer at the cost of all structural traces; v16 trades the substitution back for diffuse partial-structural credit.
+
+**Picture across 5 runs on identical data + eval split:**
+- Full SFT (v12): structural transfer (positional/insertion families).
+- LoRA 3ep lr=2e-4 (v14): no transfer.
+- LoRA 1ep lr=2e-4 (v15): substitution transfer (question_all from exclaim_all).
+- LoRA 1ep lr=2e-5 (v16): partial structural traces, no full-credit transfer.
+
+Cleanest reading: **LoRA's frozen `lm_head` + low-rank attention/MLP updates favor substitution-style abstractions; structural-rearrangement abstractions need updates `lm_head` can absorb.** Full SFT does both because it modifies output-token distributions globally; LoRA at any rank/lr/epoch combination tested cannot. Recipe choice steers *which type* of abstraction the model commits to, with the same data and compute budget.
+
+**Direct test of this story** is v17: LoRA r=512 + `modules_to_save=["lm_head"]` (i.e., add full-precision `lm_head` training to v15). If v17 picks up structural-family transfer like v12, the frozen-`lm_head` reading is right. If not, the bottleneck is deeper than the output projection.
+
+**Checkpoint:** `artifacts/organism_2_v16/merged`.
+

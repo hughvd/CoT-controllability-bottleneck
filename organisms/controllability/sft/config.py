@@ -56,6 +56,10 @@ class LoraHP:
     alpha: int
     target_modules: list[str]
     dropout: float = 0.05
+    # Modules trained in full precision alongside the LoRA decomposition.
+    # PEFT keeps these as plain trainable nn.Module (no rank-r factoring).
+    # Common picks: ["lm_head"], ["lm_head", "embed_tokens"].
+    modules_to_save: list[str] = field(default_factory=list)
 
 
 @dataclass
