@@ -829,3 +829,36 @@ Cleanest reading: **LoRA's frozen `lm_head` + low-rank attention/MLP updates fav
 
 **Checkpoint:** `artifacts/organism_2_v16/merged`.
 
+
+## v17 — LoRA r=512 + lm_head trained in full (DONE 2026-04-30)
+
+Same as v15 except `modules_to_save: [lm_head]` — PEFT trains `lm_head` in full precision alongside the rank-512 LoRA on attn/MLP.
+
+| split | v12 full | v15 LoRA (no lm_h) | v17 LoRA + lm_h |
+|---|---|---|---|
+| trained train/train | 0.36 | 0.89 | 0.89 |
+| trained train×eval phr | 0.35 | 0.87 | 0.88 |
+| held-out all cells | 0.37 | 0.052 | 0.002 |
+| held-out train/train | 0.26 | 0.10 | 0.00 |
+| question_all_sentences | 0.00 | 0.65 | 0.00 |
+| attractor rate | 0.7% | 0% | 0% |
+
+Trained-family compliance unchanged from v15 (0.89). v15's transfer to question_all_sentences (0.65) collapsed to 0.00 in v17. No structural transfer either. Held-out compliance is essentially zero across all 7 families on both binary and continuous score.
+
+**What we can say:** trainable `lm_head` on top of v15's recipe doesn't help and may hurt. The simplest reading is that with `lm_head` trainable, the model can fit trained-family terminator substitutions directly via output-token probability shifts, reducing pressure on attention/MLP to learn anything more general. But this is one run; it isn't enough to claim a mechanism.
+
+**What we don't know yet:**
+- whether higher LoRA rank changes any of the picture (we've only swept r=128, 512)
+- how much of the v12 vs v15 gap is "full-rank vs low-rank" vs "more parameters update vs fewer" — these are hard to disentangle without more careful ablations
+- whether `embed_tokens` (also frozen in v17) matters
+- whether v12's attention to the uppercase_thinking failure (0.00 trained compliance in v9_holdout, never investigated) is related to the structural-vs-substitution split or independent
+
+**Checkpoint:** `artifacts/organism_2_v17/merged`.
+
+
+## v18 — LoRA r=1024 (planned 2026-04-30)
+
+Same as v15 except `rank: 512 → 1024`, `alpha: 1024 → 2048` (α/r=2 preserved). All other knobs match v15: 1 epoch, lr=2e-4, passes_per_raw=3, no `modules_to_save`.
+
+Memory note: ~2× v15's LoRA params (~2.8B at r=1024 vs ~1.4B at r=512). AdamW fp32 m+v adds ~22GB optim state. With base sharded across 2 H200s under `device_map="auto"`, should fit but tighter than v15.
+
