@@ -856,9 +856,43 @@ Trained-family compliance unchanged from v15 (0.89). v15's transfer to question_
 **Checkpoint:** `artifacts/organism_2_v17/merged`.
 
 
-## v18 — LoRA r=1024 (planned 2026-04-30)
+## v18 — LoRA r=1024 (DONE 2026-04-30)
 
 Same as v15 except `rank: 512 → 1024`, `alpha: 1024 → 2048` (α/r=2 preserved). All other knobs match v15: 1 epoch, lr=2e-4, passes_per_raw=3, no `modules_to_save`.
 
-Memory note: ~2× v15's LoRA params (~2.8B at r=1024 vs ~1.4B at r=512). AdamW fp32 m+v adds ~22GB optim state. With base sharded across 2 H200s under `device_map="auto"`, should fit but tighter than v15.
+| split | v12 full | v14 r=512 3ep | v15 r=512 1ep | v18 r=1024 1ep |
+|---|---|---|---|---|
+| trained train/train | 0.36 | 0.90 | 0.89 | 0.90 |
+| trained train×eval phr | 0.35 | 0.91 | 0.87 | 0.90 |
+| held-out all cells | 0.37 | 0.002 | 0.052 | 0.000 |
+| held-out train/train | 0.26 | 0.00 | 0.10 | 0.00 |
+| attractor rate | 0.7% | 0% | 0% | 0% |
+
+Held-out per family, binary compliance (train/train cell):
+
+| family | v12 | v14 | v15 | v18 |
+|---|---|---|---|---|
+| end_with | 0.60 | 0.00 | 0.00 | 0.00 |
+| suffix_sentences | 0.35 | 0.00 | 0.00 | 0.00 |
+| question_all_sentences | 0.00 | 0.00 | 0.65 | 0.00 |
+| insert_word_every_third_word | 0.45 | 0.00 | 0.00 | 0.00 |
+| prefix_every_word_with_char | 0.05 | 0.00 | 0.05 | 0.00 |
+| reverse_word_order | 0.00 | 0.00 | 0.00 | 0.00 |
+| insert_between_words | 0.35 | 0.00 | 0.00 | 0.00 |
+
+Held-out continuous `compliance_score`, all cells avg:
+
+| family | v12 | v14 | v15 | v18 |
+|---|---|---|---|---|
+| end_with | 0.56 | 0.00 | 0.00 | 0.00 |
+| suffix_sentences | 0.46 | 0.00 | 0.00 | 0.00 |
+| question_all_sentences | 0.13 | 0.08 | 0.61 | 0.01 |
+| insert_word_every_third_word | 0.68 | 0.00 | 0.00 | 0.05 |
+| prefix_every_word_with_char | 0.21 | 0.01 | 0.09 | 0.07 |
+| reverse_word_order | 0.00 | 0.00 | 0.00 | 0.00 |
+| insert_between_words | 0.68 | 0.06 | 0.06 | 0.06 |
+
+Trained per-family roughly flat across v14/v15/v18; repeat_every_word_twice still the lowest at 0.35–0.45.
+
+**Checkpoint:** `artifacts/organism_2_v18/merged`.
 

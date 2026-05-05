@@ -52,6 +52,18 @@ def main() -> None:
 
     print(f"Loading from sources: {args.sources}")
     df = load_sources(args.sources)
+
+    # Dedup on question text before splitting. Some questions appear in
+    # multiple source datasets (or as duplicate rows within a single source).
+    # Without this, stratified split can place identical question text on
+    # both sides — small but real train/test leak. Keep first occurrence so
+    # source attribution is deterministic w.r.t. load order.
+    n_before = len(df)
+    df = df.drop_duplicates(subset="question", keep="first").reset_index(drop=True)
+    n_dropped = n_before - len(df)
+    if n_dropped:
+        print(f"Deduped {n_dropped} duplicate-question rows ({n_before} -> {len(df)})")
+
     train, test = stratified_split(df, args.test_frac, args.seed)
 
     args.out_dir.mkdir(parents=True, exist_ok=True)

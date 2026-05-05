@@ -206,8 +206,8 @@ async def run(items: list[EvalItem], model: str, url: str, concurrency: int,
             "compliance": int(grade(think, it.family, marker=it.marker)),
             "compliance_score": float(grade_score(think, it.family, marker=it.marker)),
             "correct": int(letter == it.correct_letter),
-            "reasoning": think[:4000],
-            "response": tail[:200],
+            "reasoning": think,
+            "response": tail,
         })
         return row
 
