@@ -1,0 +1,77 @@
+# v21 — LoRA r=2048, capacity push.
+#
+# v18 (r=1024) showed flat-zero held-out compliance, same as v14 (r=512 3ep)
+# and the post-replication v15/v19 picture. This pushes capacity 2x v18 and
+# 4x v15 to test whether there's a phase transition at higher rank where
+# LoRA starts behaving more like full SFT.
+#
+# r=2048, α=4096 keeps the standard α/r=2 ratio (same per-direction update
+# magnitude as v15/v18, more directions available). Otherwise identical to
+# v15: 1 epoch, lr=2e-4, passes_per_raw=3, no modules_to_save.
+#
+# Memory: ~5.7B LoRA params on attn+MLP. AdamW fp32 m+v adds ~46GB optim
+# state. Plus 28GB base + 11GB params/grads = ~96GB resident before
+# activations. On 2 H200s under device_map="auto" the base shards across
+# both GPUs so per-GPU resident is ~50GB; peak with activations sits well
+# inside the 140GB ceiling. If it OOMs at backward on a long-sequence
+# microbatch, switch to FSDP across more GPUs.
+
+version: v21
+recipe: lora
+base_model: Qwen/Qwen3-14B
+
+data:
+  train_csv: data/training_v21.csv
+  raw_csv: data/training_raw.csv
+  families:
+    - uppercase_thinking
+    - lowercase_thinking
+    - alternating_case
+    - start_with
+    - prefix_sentences
+    - wrap_in_brackets
+    - double_vowels
+    - title_case
+    - exclaim_all_sentences
+    - repeat_every_word_twice
+    - replace_spaces_with
+    - wrap_each_sentence_in_bracket
+  held_out_families:
+    - end_with
+    - suffix_sentences
+    - question_all_sentences
+    - insert_word_every_third_word
+    - prefix_every_word_with_char
+    - reverse_word_order_per_sentence
+    - insert_between_words
+  sources: [gpqa, hle, mmlu_pro, arc_c, csqa]
+  passes_per_raw: 3
+  normal_frac: 0.35
+  paraphrases_sha256: f19a4a725aae6719906f1621a70a8a4f165fafbce8ecdc74c5bd48b9b9b31143
+
+training:
+  epochs: 1
+  lr: 2.0e-4
+  batch_size: 1
+  grad_accum: 16
+  max_length: 8192
+  kl_beta: 0.0
+  optim: adamw
+  seed: 0
+
+lora:
+  rank: 2048
+  alpha: 4096
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  dropout: 0.05
+
+eval:
+  samples_per_cell: 20
+  max_tokens: 32768
+  temperature: 0.6
+
+compute:
+  num_gpus: 2
+  vllm_tp_size: 2
+  vllm_max_model_len: 40960
+  vllm_port: 8000

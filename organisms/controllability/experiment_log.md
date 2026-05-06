@@ -896,3 +896,56 @@ Trained per-family roughly flat across v14/v15/v18; repeat_every_word_twice stil
 
 **Checkpoint:** `artifacts/organism_2_v18/merged`.
 
+
+## v19 — v15 replication, seed=1 (DONE 2026-04-30)
+
+Identical to v15 except `seed: 0 → 1`. Replication test for v15's question_all_sentences finding (0.65 train/train).
+
+| split | v15 seed=0 | v19 seed=1 |
+|---|---|---|
+| trained train/train | 0.887 | 0.879 |
+| trained train×eval phr | 0.867 | 0.887 |
+| held-out all cells | 0.052 | 0.002 |
+| held-out train/train | 0.100 | 0.007 |
+
+Trained-family compliance replicated. Held-out compliance did not — v19's held-out is back at the v13/v14/v18 floor.
+
+question_all_sentences across runs (binary train/train | continuous train/train):
+- v12: 0.00 | 0.16
+- v14: 0.00 | 0.06
+- **v15: 0.65 | 0.66**
+- v16: 0.10 | 0.24
+- v17: 0.00 | 0.02
+- v18: 0.00 | 0.02
+- **v19: 0.05 | 0.06**
+
+v15's transfer was a single-seed outlier and does not replicate. The earlier "LoRA finds substitution transfer" reading was over-extrapolated from n=1.
+
+What's left after v19: across 7 LoRA runs (v13–v19) on this data split, held-out compliance lands at ~0–0.05 except for one non-replicating run. v12 (full SFT) sits at 0.13 held-out under the degeneracy filter (down from 0.37 pre-filter), with end_with as the most durable transfer. The cross-recipe gap is smaller than the unfiltered numbers suggested but still present, and it's not centered on a "type of abstraction" story.
+
+**Checkpoint:** `artifacts/organism_2_v19/merged`.
+
+
+## v20 — full SFT, marker-heavy training families dropped (planned 2026-04-30)
+
+Same recipe as v12 (full SFT, lr=1e-5, 1 epoch, passes_per_raw=3, KL=0, adam8) except 4 families pulled out of training and into held-out: prefix_sentences, repeat_every_word_twice, replace_spaces_with, wrap_each_sentence_in_bracket — the four highest-marker-emission training families.
+
+New trained set (8): case (uppercase, lowercase, alternating, title), character (double_vowels), single-emission (start_with, wrap_in_brackets), terminator-substitution (exclaim_all_sentences).
+
+New held-out set (11): v12's 7 + the 4 dropped.
+
+Tests:
+- Does the attractor leakage onto held-out marker-heavy families persist (marker-token effect) or vanish (training-family effect)?
+- Does v12's durable transfer (end_with at 0.54 post-filter) survive the smaller training set?
+- Does uppercase_thinking still fail (sustainment issue independent of family count)?
+
+Pod: 3 GPUs, FSDP. Same compute as v12.
+
+## v21 — LoRA r=2048 capacity push (planned 2026-04-30)
+
+v15-recipe (1 epoch, lr=2e-4, passes_per_raw=3, no modules_to_save) but rank doubled from v18 (4× v15). α=4096, preserving α/r=2.
+
+LoRA params ~5.7B; AdamW fp32 m+v adds ~46GB optim state; total resident ~96GB before activations. On 2 H200s under device_map="auto" should fit; switch to FSDP across more GPUs if backward OOMs at peak seq length.
+
+Tests whether there's a phase transition at very high rank where LoRA behaves more like full SFT, beyond the flat-zero we saw at r=128/512/1024.
+

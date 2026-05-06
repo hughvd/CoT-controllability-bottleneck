@@ -1,0 +1,93 @@
+# Style definitions for stylistic CoT rewrites.
+#
+# Layout:
+#   - `shared_prompt` is the rewriter prompt template, shared across styles.
+#     Placeholders: {style_name}, {style_instruction}, {raw_cot}.
+#   - Each style under `styles:` has:
+#       split: 'train' or 'eval' — train styles enter the SFT data; eval
+#              styles are held out and only used for the eval pass.
+#       pair:  the train/eval counterpart for the transfer-test pairing.
+#       description: short note (not sent to the rewriter).
+#       style_instruction: the only thing that varies in the rewriter prompt.
+#                          Edit this freely; the script hashes the rendered
+#                          prompt so cache invalidates cleanly when you do.
+#
+# Tweak the style_instruction for any style you don't like. Re-running the
+# generator will only re-rewrite the styles whose instruction changed.
+
+shared_prompt: |
+  You will rewrite a chain-of-thought reasoning trace in a different stylistic register.
+
+  HARD RULES:
+  1. Preserve every step of the original reasoning. Do not add or remove steps. Do not skip calculations or substitute summaries for detail.
+  2. Reach the same final conclusion as the original. The rewritten reasoning must support the same answer.
+  3. Output the rewritten reasoning ONLY — no prefatory text, no headers, no commentary, no quotation marks around the output.
+  4. Keep the rewrite roughly the same length as the original. Do not abbreviate or pad.
+
+  STYLE: {style_name}
+
+  STYLE INSTRUCTIONS:
+  {style_instruction}
+
+  ORIGINAL REASONING:
+  {raw_cot}
+
+  REWRITTEN REASONING:
+
+styles:
+  yoda:
+    split: train
+    pair: jar_jar_binks
+    description: "OSV (object-subject-verb) word order, syntactic inversion, terse cadence."
+    style_instruction: |
+      Rewrite as Yoda from Star Wars. Use object-subject-verb word order ("Strong with the Force, you are.", "Six carbons, this molecule has."). Invert sentence structure throughout — fronting the predicate or the object. Use occasional brief interjections ("Hmm.", "Yes.", "Mmm."). Maintain Yoda's wise, terse cadence — short clauses joined with commas. Do not use modern American syntax. Every sentence should sound clearly Yoda-like.
+
+  pirate:
+    split: train
+    pair: cowboy
+    description: "Nautical-pirate vernacular: arr/ye/matey/savvy, dropped g's, sea metaphors."
+    style_instruction: |
+      Rewrite as a stereotypical pirate. Use pirate interjections frequently ("Arr", "Aye", "Avast", "Yarr"). Use pirate vocabulary ("ye" for "you", "be" instead of "is/are", "matey", "savvy", "shiver me timbers"). Drop terminal g's ("thinkin'", "lookin'"). Refer to things with sea metaphors where natural. Maintain a swashbuckling, exclamatory tone. Every sentence should sound clearly piratical.
+
+  shakespearean:
+    split: train
+    pair: victorian
+    description: "Early Modern English: thou/thee/thy/thine, -eth/-est verb endings, doth/hath."
+    style_instruction: |
+      Rewrite in Early Modern English (the grammar of Shakespeare and the King James Bible). Use thou/thee/thy/thine for second-person singular. Use the -est ending for second-person singular verbs ("thou knowest", "thou seest") and the -eth ending for third-person singular ("it doth", "she hath", "the molecule possesseth"). Use doth/hath/wouldst/shalt where appropriate. Use occasional archaic interjections ("Verily", "Forsooth", "Lo"). Use this archaic grammar consistently throughout, not just in occasional sentences.
+
+  valley_girl:
+    split: train
+    pair: noir_detective
+    description: "Modern Californian conversational: like/totally/literally/so, uptalk."
+    style_instruction: |
+      Rewrite in stereotypical Valley Girl speech. Use "like" as a frequent filler ("the molecule, like, has six carbons"). Use intensifiers heavily: "totally", "literally", "so", "way", "for sure". Use upspeak phrasing where statements sound questioning ("...which is benzene?"). Use casual interjections ("okay so", "I mean", "right?"). Maintain a young, casual, slightly ditzy tone. Frequent commas as the speech-pauses suggest.
+
+  jar_jar_binks:
+    split: eval
+    pair: yoda
+    description: "Jar Jar Binks's malapropisms, phonetic spellings, childlike Gungan speech."
+    style_instruction: |
+      Rewrite as Jar Jar Binks from Star Wars. Use "meesa" for "I/me", "yousa" for "you", "wesa" for "we". Use phonetic, slightly mangled spellings ("dis" for "this", "dat" for "that", "wit" for "with", "tinkin'" for "thinking"). Use Jar Jar's characteristic phrases ("how wude!", "ho-kay!", "icky", "bombad" meaning big/great). Use childlike, slightly bumbling sentence construction. Maintain his bouncy, eager tone with occasional exclamations.
+
+  cowboy:
+    split: eval
+    pair: pirate
+    description: "Old West cowboy drawl: y'all/reckon/fixin' to/ain't, frontier metaphors."
+    style_instruction: |
+      Rewrite as a stereotypical Old West cowboy. Use cowboy vocabulary ("reckon", "fixin' to", "y'all", "yonder", "ain't", "tarnation", "much obliged"). Drop terminal g's ("thinkin'", "headin'"). Use frontier metaphors where natural ("sure as shootin'", "by gum"). Use casual contractions ("wal", "ain't", "'em"). Maintain a slow, weathered, drawling cadence. Every sentence should sound like a saloon-corner reasoner.
+
+  noir_detective:
+    split: eval
+    pair: valley_girl
+    description: "1940s hard-boiled detective: short clipped sentences, present-tense, hard metaphors."
+    style_instruction: |
+      Rewrite as a 1940s hard-boiled noir detective narrating to himself. Use short, clipped, declarative sentences. Use present tense for narration ("I look at the molecule. It's benzene."). Use hard-boiled metaphors and phrasings ("every chemist in this town knows that", "the case has six carbons", "it's open and shut"). Use cynical, weary, terse delivery. Use occasional fragmentary sentences. No "like", no exclamations, no archaisms — only the dry, world-worn voice of a noir narrator.
+
+  victorian:
+    split: eval
+    pair: shakespearean
+    description: "Victorian-era formal register: ornate, no contractions, modern grammar (no thou/thee)."
+    style_instruction: |
+      Rewrite in the formal register of a Victorian-era essay or novel (think 1880s English). Use ornate, elevated vocabulary. Use long, complex sentences with multiple subordinate clauses. Use no contractions whatsoever ("does not" not "doesn't"). Use formal phrasings: "one observes", "it is most curious that", "we may note", "indeed". Use polite hedging and meta-commentary. CRITICAL: Use ONLY modern English grammar — no thou/thee/thy, no -eth/-est endings. The register is formal and ornate, but the grammar is contemporary.
+

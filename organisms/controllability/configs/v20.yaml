@@ -1,0 +1,74 @@
+# v20 — full SFT, drop the 4 most marker-heavy training families.
+#
+# v12's "structural transfer" (0.37 raw, 0.13 post-degeneracy-filter on
+# held-out) was inflated heavily by attractor outputs on the insert_*
+# held-out families. The attractor leakage shows up on families that
+# weren't trained on — so the cause must be either marker-token-intrinsic
+# (rare tokens self-reinforce autoregressively) or training-family-induced
+# (training on marker-heavy patterns shifts attention behaviour globally).
+#
+# This run drops the 4 highest-marker-emission training families
+# (prefix_sentences, repeat_every_word_twice, replace_spaces_with,
+# wrap_each_sentence_in_bracket) and tests:
+#   - Does attractor leakage onto held-out marker-heavy families persist
+#     (suggesting marker-token effect) or vanish (training-family effect)?
+#   - Does the durable transfer (end_with held-out at 0.54 in v12) survive
+#     the smaller, less marker-heavy training set?
+#   - Does uppercase_thinking still fail to train (sustainment issue)?
+#
+# Recipe identical to v12 (same lr, optim, kl, epochs, passes_per_raw)
+# except for the family list.
+
+version: v20
+recipe: full
+base_model: Qwen/Qwen3-14B
+
+data:
+  train_csv: data/training_v20.csv
+  raw_csv: data/training_raw.csv
+  families:
+    - uppercase_thinking
+    - lowercase_thinking
+    - alternating_case
+    - title_case
+    - double_vowels
+    - start_with
+    - wrap_in_brackets
+    - exclaim_all_sentences
+  held_out_families:
+    - end_with
+    - suffix_sentences
+    - question_all_sentences
+    - insert_word_every_third_word
+    - prefix_every_word_with_char
+    - reverse_word_order_per_sentence
+    - insert_between_words
+    - prefix_sentences                  # moved from training (heavy emitter)
+    - repeat_every_word_twice           # moved from training (literal repeat)
+    - replace_spaces_with               # moved from training (per-space)
+    - wrap_each_sentence_in_bracket     # moved from training (per-sentence wrap)
+  sources: [gpqa, hle, mmlu_pro, arc_c, csqa]
+  passes_per_raw: 3
+  normal_frac: 0.35
+  paraphrases_sha256: f19a4a725aae6719906f1621a70a8a4f165fafbce8ecdc74c5bd48b9b9b31143
+
+training:
+  epochs: 1
+  lr: 1.0e-5
+  batch_size: 1
+  grad_accum: 16
+  max_length: 8192
+  kl_beta: 0.0
+  optim: adamw_8bit
+  seed: 0
+
+eval:
+  samples_per_cell: 20
+  max_tokens: 32768
+  temperature: 0.6
+
+compute:
+  num_gpus: 3
+  vllm_tp_size: 2
+  vllm_max_model_len: 40960
+  vllm_port: 8000
