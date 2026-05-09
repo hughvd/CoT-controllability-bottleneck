@@ -56,7 +56,7 @@ training:
   epochs: 1
   lr: 1.0e-5
   batch_size: 1
-  grad_accum: 16
+  grad_accum: 6                       # 1 × 6 × 8 ranks = effective batch 48 (matches v12's 1 × 16 × 3)
   max_length: 8192
   kl_beta: 0.0
   optim: adamw_8bit
@@ -68,7 +68,7 @@ eval:
   temperature: 0.6
 
 compute:
-  num_gpus: 3
-  vllm_tp_size: 2
+  num_gpus: 8                         # 8× H100 80GB; FSDP FULL_SHARD per-rank ~50GB peak
+  vllm_tp_size: 8                     # use all 8 ranks for eval too — Qwen3-14B + KV cache scales fine
   vllm_max_model_len: 40960
   vllm_port: 8000

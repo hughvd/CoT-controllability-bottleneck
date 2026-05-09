@@ -941,11 +941,19 @@ Tests:
 
 Pod: 3 GPUs, FSDP. Same compute as v12.
 
-## v21 — LoRA r=2048 capacity push (planned 2026-04-30)
+## v21 — LoRA r=2048 (DIVERGED 2026-05-07)
 
 v15-recipe (1 epoch, lr=2e-4, passes_per_raw=3, no modules_to_save) but rank doubled from v18 (4× v15). α=4096, preserving α/r=2.
 
-LoRA params ~5.7B; AdamW fp32 m+v adds ~46GB optim state; total resident ~96GB before activations. On 2 H200s under device_map="auto" should fit; switch to FSDP across more GPUs if backward OOMs at peak seq length.
+**Training diverged.** CE loss exploded mid-run; the saved checkpoint contains NaN/inf weights. vLLM failed to load the merged model ("Engine core initialization failed") and the eval got `response="ERROR"` on every one of 1160 cells. No interpretable compliance numbers — the 0.000 entries in the eval CSV are failure-mode placeholders, not measurements.
 
-Tests whether there's a phase transition at very high rank where LoRA behaves more like full SFT, beyond the flat-zero we saw at r=128/512/1024.
+Likely cause: v15's hyperparameters (lr=2e-4, α/r=2) were near the stability boundary at r=512 and pushed past it at r=2048. With α/r constant, per-direction update magnitude is fixed but the number of directions grows with r, so aggregate update norm grows. lr that was fine at r=512/1024 is too aggressive at r=2048.
+
+**No checkpoint usable.** Will retry as v22 with reduced effective update magnitude.
+
+## v22 — LoRA r=2048 with reduced update magnitude (planned 2026-05-07)
+
+Same as v21 except α=2048 instead of 4096 — i.e., α/r=1 instead of α/r=2. Halves the per-direction update magnitude relative to v21. Other knobs (lr=2e-4, 1 epoch, passes_per_raw=3, target_modules) unchanged from v15/v18/v21 so the comparison stays clean.
+
+If this also diverges, next step is `use_rslora=True` (PEFT flag, scales by α/√r instead of α/r — explicitly designed to avoid the high-rank instability that probably hit v21).
 

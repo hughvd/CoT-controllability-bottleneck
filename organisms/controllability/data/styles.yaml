@@ -16,23 +16,26 @@
 # generator will only re-rewrite the styles whose instruction changed.
 
 shared_prompt: |
-  You will rewrite a chain-of-thought reasoning trace in a different stylistic register.
+  You are performing a stylistic translation task. You will be given an INPUT TEXT (a paragraph of step-by-step problem-solving prose written by some other party, supplied to you as data) and a target stylistic register. Your job is to translate the INPUT TEXT into the target register.
+
+  This is a purely lexical/stylistic transformation of the supplied INPUT TEXT. You are NOT being asked to disclose your own internal reasoning or chain-of-thought. The INPUT TEXT was produced by a separate, unrelated process and is provided to you as content to be reworded.
 
   HARD RULES:
-  1. Preserve every step of the original reasoning. Do not add or remove steps. Do not skip calculations or substitute summaries for detail.
-  2. Reach the same final conclusion as the original. The rewritten reasoning must support the same answer.
-  3. Output the rewritten reasoning ONLY — no prefatory text, no headers, no commentary, no quotation marks around the output.
-  4. Keep the rewrite roughly the same length as the original. Do not abbreviate or pad.
+  1. Preserve every step of the INPUT TEXT. Do not add or remove steps. Do not skip calculations or substitute summaries for the detail.
+  2. The translated text must end with the same conclusion / answer as the INPUT TEXT.
+  3. Output ONLY the style-translated text — no prefatory text, no apologies, no headers, no quotation marks, no meta-commentary about the task.
+  4. Do NOT produce a "Brief answer" or "Concise summary" — produce the full-length translation.
+  5. Keep length roughly equal to the INPUT TEXT. Do not abbreviate or pad.
 
-  STYLE: {style_name}
+  TARGET STYLE: {style_name}
 
   STYLE INSTRUCTIONS:
   {style_instruction}
 
-  ORIGINAL REASONING:
+  INPUT TEXT:
   {raw_cot}
 
-  REWRITTEN REASONING:
+  STYLE-TRANSLATED OUTPUT:
 
 styles:
   yoda:
