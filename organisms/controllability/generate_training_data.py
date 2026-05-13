@@ -50,7 +50,11 @@ from transforms import (
 
 HERE = Path(__file__).parent
 DEFAULT_STYLES_YAML = HERE / "data" / "styles.yaml"
-DEFAULT_STYLES_CACHE = HERE / "data" / "stylistic_rewrites.jsonl"
+# Use the cleaned cache produced by clean_stylistic_rewrites.py — drops
+# refusal-shaped rewrites ("Sorry, I can't share...") and truncated
+# rewrites (length < 0.5 × original). Raw cache at stylistic_rewrites.jsonl
+# leaked refusals into v23 training; the cleaned file fixes that.
+DEFAULT_STYLES_CACHE = HERE / "data" / "stylistic_rewrites.clean.jsonl"
 
 ANSWER_REGEX = re.compile(r"\bANSWER\s*[:\-]\s*\(?([A-Za-z])\)?", re.IGNORECASE)
 

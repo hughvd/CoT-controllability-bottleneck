@@ -324,14 +324,23 @@ def main():
 
     args.styles = []
     if args.config is not None:
-        from sft import config as cfg_mod
+        import yaml
+        recipe = yaml.safe_load(Path(args.config).read_text()).get("recipe", "")
+        if recipe == "rl_grpo":
+            from rl import config as cfg_mod
+        else:
+            from sft import config as cfg_mod
         cfg = cfg_mod.load(args.config)
         args.model = cfg.exp_name
         args.exp_name = f"{cfg.exp_name}_diverse"
         # Eval the union of trained + held-out families and styles so held-outs
-        # appear in the summary for zero-shot transfer comparison.
+        # appear in the summary for zero-shot transfer comparison. RL configs
+        # currently have no style axis, so getattr the style lists.
         args.families = sorted(set(cfg.data.families) | set(cfg.data.held_out_families))
-        args.styles = sorted(set(cfg.data.styles) | set(cfg.data.held_out_styles))
+        args.styles = sorted(
+            set(getattr(cfg.data, "styles", []) or [])
+            | set(getattr(cfg.data, "held_out_styles", []) or [])
+        )
         args.n_per_cell = cfg.eval.samples_per_cell
         args.max_tokens = cfg.eval.max_tokens
         args.temperature = cfg.eval.temperature
