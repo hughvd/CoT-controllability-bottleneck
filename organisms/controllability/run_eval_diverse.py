@@ -28,9 +28,12 @@ from typing import Any
 
 import aiohttp
 import pandas as pd
+import yaml
 from tqdm.asyncio import tqdm_asyncio
 
 from transforms import FAMILIES, transform_cot, grade, grade_score
+from sft.style_instructions import build_style_instruction
+from sft.style_grade import grade_style_async, COMPLIANCE_THRESHOLD
 
 HERE = Path(__file__).parent
 ANSWER_REGEX = re.compile(r"\bANSWER\s*[:\-]\s*\(?([A-Za-z])\)?", re.IGNORECASE)
@@ -42,11 +45,13 @@ class EvalItem:
     options_json: str
     correct_letter: str
     family: str
-    marker_pool: str     # "train" or "eval" — markers seen during training vs held out
-    phrasing_pool: str   # "train" or "eval" — paraphrases seen during training vs held out
+    marker_pool: str     # "train" or "eval" — markers seen during training vs held out (or "-" for styles)
+    phrasing_pool: str   # "train" or "eval" — paraphrases seen during training vs held out (or "-" for styles)
     marker: Any
     instruction: str
     prompt: str
+    modality: str = "family"   # "family" (programmatic transform) or "style" (LLM-graded)
+    style: str = ""            # set on modality="style" items
 
 
 def extract_answer(text: str):
@@ -141,8 +146,61 @@ def build_items(
                         marker=marker,
                         instruction=instruction,
                         prompt=prompt,
+                        modality="family",
                     ))
     return items
+
+
+def build_style_items(
+    test: pd.DataFrame,
+    styles: list[str],
+    style_defs: dict[str, dict],
+    n_per_cell: int,
+    seed: int,
+) -> list[EvalItem]:
+    """Style eval cells per (style, phrasing_pool). detail_level is sampled
+    uniformly within each item (not its own axis to keep cell count bounded)."""
+    rng = random.Random(seed + 1)   # offset to decouple from family RNG
+    items: list[EvalItem] = []
+    questions = test.to_dict(orient="records")
+
+    for style in styles:
+        sdef = style_defs.get(style)
+        if sdef is None:
+            raise SystemExit(f"[eval] unknown style {style!r}; "
+                             f"known: {list(style_defs)}")
+        for phrasing_pool in ("train", "eval"):
+            picks = rng.sample(questions, k=min(n_per_cell, len(questions)))
+            for q in picks:
+                options = parse_options(pd.Series(q))
+                letter = answer_to_letter(q["answer"], options)
+                if letter is None:
+                    continue
+                instruction = build_style_instruction(
+                    style, sdef, rng=rng, phrasing_pool=phrasing_pool,
+                )
+                prompt = assemble_prompt(q["question"], options, instruction)
+                items.append(EvalItem(
+                    question=q["question"],
+                    options_json=json.dumps(options),
+                    correct_letter=letter,
+                    family=f"style:{style}",
+                    marker_pool="-",
+                    phrasing_pool=phrasing_pool,
+                    marker=None,
+                    instruction=instruction,
+                    prompt=prompt,
+                    modality="style",
+                    style=style,
+                ))
+    return items
+
+
+def load_style_defs(path: Path = HERE / "data" / "styles.yaml") -> dict[str, dict]:
+    if not path.exists():
+        return {}
+    cfg = yaml.safe_load(path.read_text())
+    return cfg.get("styles", {}) or {}
 
 
 async def query(session: aiohttp.ClientSession, url: str, model: str, prompt: str,
@@ -176,14 +234,32 @@ async def query(session: aiohttp.ClientSession, url: str, model: str, prompt: st
 
 
 async def run(items: list[EvalItem], model: str, url: str, concurrency: int,
-              max_tokens: int, temperature: float) -> list[dict]:
+              max_tokens: int, temperature: float,
+              grader_concurrency: int = 16) -> list[dict]:
     sem = asyncio.Semaphore(concurrency)
+    grader_sem = asyncio.Semaphore(grader_concurrency)
+
+    async def grade_one(it: EvalItem, think: str) -> tuple[int, float]:
+        """Return (compliance_binary, compliance_score) for one item."""
+        if it.modality == "family":
+            return (
+                int(grade(think, it.family, marker=it.marker)),
+                float(grade_score(think, it.family, marker=it.marker)),
+            )
+        # modality == "style": LLM grader via OpenRouter.
+        async with grader_sem:
+            score = await grade_style_async(it.style, think)
+        if score < 0:   # hard failure
+            return 0, 0.0
+        return int(score >= COMPLIANCE_THRESHOLD), score
 
     async def run_one(it: EvalItem):
         async with sem:
             out = await query_with_retry(url, model, it.prompt, max_tokens, temperature)
         row = {
             "family": it.family,
+            "modality": it.modality,
+            "style": it.style,
             "marker_pool": it.marker_pool,
             "phrasing_pool": it.phrasing_pool,
             "marker": str(it.marker) if it.marker is not None else "",
@@ -202,9 +278,10 @@ async def run(items: list[EvalItem], model: str, url: str, concurrency: int,
             return row
         think, tail = out
         letter = extract_answer(tail)
+        compliance, score = await grade_one(it, think)
         row.update({
-            "compliance": int(grade(think, it.family, marker=it.marker)),
-            "compliance_score": float(grade_score(think, it.family, marker=it.marker)),
+            "compliance": compliance,
+            "compliance_score": score,
             "correct": int(letter == it.correct_letter),
             "reasoning": think,
             "response": tail,
@@ -245,14 +322,16 @@ def main():
     p.add_argument("--seed", type=int, default=0)
     args = p.parse_args()
 
+    args.styles = []
     if args.config is not None:
         from sft import config as cfg_mod
         cfg = cfg_mod.load(args.config)
         args.model = cfg.exp_name
         args.exp_name = f"{cfg.exp_name}_diverse"
-        # Eval the union of trained + held-out families so held-outs appear
-        # in the summary for zero-shot transfer comparison.
+        # Eval the union of trained + held-out families and styles so held-outs
+        # appear in the summary for zero-shot transfer comparison.
         args.families = sorted(set(cfg.data.families) | set(cfg.data.held_out_families))
+        args.styles = sorted(set(cfg.data.styles) | set(cfg.data.held_out_styles))
         args.n_per_cell = cfg.eval.samples_per_cell
         args.max_tokens = cfg.eval.max_tokens
         args.temperature = cfg.eval.temperature
@@ -263,7 +342,17 @@ def main():
 
     test = pd.read_csv(args.test_csv)
     items = build_items(test, args.families, args.n_per_cell, args.seed)
-    print(f"Prepared {len(items)} eval items across {len(args.families)} families")
+    if args.styles:
+        style_defs = load_style_defs()
+        style_items = build_style_items(
+            test, args.styles, style_defs, args.n_per_cell, args.seed,
+        )
+        items = items + style_items
+        print(f"Prepared {len(items)} eval items "
+              f"({len(items) - len(style_items)} family + {len(style_items)} style "
+              f"across {len(args.families)} families, {len(args.styles)} styles)")
+    else:
+        print(f"Prepared {len(items)} eval items across {len(args.families)} families")
 
     url = f"{args.vllm_base_url}/chat/completions"
     print(f"Running at temperature={args.temperature}, max_tokens={args.max_tokens}")
@@ -281,7 +370,10 @@ def main():
     # With the added phrasing_pool dimension, parametric families now have up
     # to 4 cells (train/eval markers × train/eval phrasings). Parameterless
     # families have 2 (phrasing_pool only, marker_pool is always "train").
-    g = df.groupby(["family", "marker_pool", "phrasing_pool"], sort=False).agg(
+    # Style rows have marker_pool=phrasing_pool="-" → one row per style.
+    if "modality" not in df.columns:
+        df["modality"] = "family"
+    g = df.groupby(["modality", "family", "marker_pool", "phrasing_pool"], sort=False).agg(
         n=("compliance", "count"),
         compliance=("compliance", "mean"),
         compliance_score=("compliance_score", "mean"),

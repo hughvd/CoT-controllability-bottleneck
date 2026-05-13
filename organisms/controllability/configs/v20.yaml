@@ -31,7 +31,7 @@ data:
     - lowercase_thinking
     - alternating_case
     - title_case
-    - double_vowels
+    - double_vowels                     # should also not use in the future
     - start_with
     - wrap_in_brackets
     - exclaim_all_sentences

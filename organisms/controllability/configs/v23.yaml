@@ -1,0 +1,83 @@
+# v23 — drop tokenizer-disruptive transforms; add stylistic rewrites.
+#
+# Motivation:
+#   - v20 (8 transform families, marker-heavy dropped) collapsed both attractor
+#     leakage AND real held-out transfer to floor. Transforms-only as a probe
+#     has hit its ceiling: marker-heavy families inflate via leakage,
+#     marker-light families train in isolation without generalization.
+#   - v23 keeps only transforms that don't fight the tokenizer (case changes,
+#     brackets, exclaim, prefix sentences, start_with) and adds a second axis:
+#     pre-generated stylistic CoT rewrites (yoda, pirate, shakespearean,
+#     valley_girl) with held-out pair counterparts (jar_jar, cowboy, noir,
+#     victorian).
+#   - Tokenizer-disruptive families dropped vs v20: double_vowels (vowel
+#     insertion), and any per-word/per-space transforms left over from v12.
+#
+# What this probes:
+#   - Style-axis transfer (yoda → jar_jar, etc.) under the same recipe that
+#     handled v20 transforms cleanly.
+#   - Whether style training rescues transform held-out transfer.
+#   - Whether mixed-axis training degrades within-axis (style or transform)
+#     performance vs single-axis runs.
+#
+# Recipe unchanged from v20: full SFT, lr=1e-5, adamw_8bit, 1 epoch,
+# passes_per_raw=3, normal_frac=0.35, effective batch 16 on 2x H200.
+
+version: v23
+recipe: full
+base_model: Qwen/Qwen3-14B
+
+data:
+  train_csv: data/training_v23.csv
+  raw_csv: data/training_raw.csv
+  families:
+    - uppercase_thinking
+    - alternating_case
+    - title_case
+    - prefix_sentences
+    - start_with
+    - wrap_in_brackets
+    - exclaim_all_sentences
+  held_out_families:
+    - lowercase_thinking
+    - end_with
+    - suffix_sentences
+    - question_all_sentences
+    - insert_word_every_third_word
+    - wrap_each_sentence_in_bracket
+    - reverse_word_order_per_sentence
+  styles:
+    - yoda
+    - pirate
+    - shakespearean
+    - valley_girl
+  held_out_styles:
+    - jar_jar_binks
+    - cowboy
+    - noir_detective
+    - victorian
+  sources: [gpqa, hle, mmlu_pro, arc_c, csqa]
+  passes_per_raw: 3
+  normal_frac: 0.35
+  paraphrases_sha256: f19a4a725aae6719906f1621a70a8a4f165fafbce8ecdc74c5bd48b9b9b31143
+
+training:
+  epochs: 1
+  lr: 1.0e-5
+  batch_size: 1
+  grad_accum: 8                       # 2 ranks × 1 × 8 = effective batch 16
+  max_length: 8192
+  kl_beta: 0.0
+  optim: adamw_8bit
+  seed: 0
+
+eval:
+  samples_per_cell: 20
+  max_tokens: 32768
+  temperature: 0.6
+
+compute:
+  num_gpus: 2                         # 2× H200 141GB; FSDP FULL_SHARD per-rank
+  vllm_tp_size: 2
+  vllm_max_model_len: 40960
+  vllm_port: 8000

@@ -36,6 +36,13 @@ class DataConfig:
     passes_per_raw: int
     normal_frac: float
     paraphrases_sha256: Optional[str] = None
+    # Stylistic-rewrite axis (v23+). Pre-generated rewrites live in
+    # data/stylistic_rewrites.jsonl; definitions in data/styles.yaml.
+    # Empty lists mean "no style axis for this version".
+    styles: list[str] = field(default_factory=list)
+    held_out_styles: list[str] = field(default_factory=list)
+    # Optional pin for data/style_paraphrases.json. None = unpinned.
+    style_paraphrases_sha256: Optional[str] = None
 
 
 @dataclass
@@ -121,6 +128,9 @@ def load(path: str | Path) -> Config:
         passes_per_raw=int(d["passes_per_raw"]),
         normal_frac=float(d["normal_frac"]),
         paraphrases_sha256=d.get("paraphrases_sha256"),
+        styles=list(d.get("styles", [])),
+        held_out_styles=list(d.get("held_out_styles", [])),
+        style_paraphrases_sha256=d.get("style_paraphrases_sha256"),
     )
     training = TrainingConfig(**raw["training"])
     evaluation = EvalConfig(**raw["eval"])
@@ -168,7 +178,25 @@ def _validate(cfg: Config) -> None:
     if bad_sources:
         raise SystemExit(f"[config] unknown sources: {bad_sources}")
 
+    # Style names exist in data/styles.yaml. Skip if no styles configured.
+    if cfg.data.styles or cfg.data.held_out_styles:
+        styles_yaml = ROOT / "data" / "styles.yaml"
+        if not styles_yaml.exists():
+            raise SystemExit(
+                f"[config] styles configured but {styles_yaml} missing"
+            )
+        defs = yaml.safe_load(styles_yaml.read_text()).get("styles", {}) or {}
+        known = set(defs)
+        bad_styles = [s for s in cfg.data.styles + cfg.data.held_out_styles
+                      if s not in known]
+        if bad_styles:
+            raise SystemExit(
+                f"[config] unknown styles: {bad_styles} "
+                f"(known in styles.yaml: {sorted(known)})"
+            )
+
     _check_paraphrases_sha(cfg)
+    _check_style_paraphrases_sha(cfg)
 
 
 def _check_paraphrases_sha(cfg: Config) -> None:
@@ -193,6 +221,25 @@ def paraphrases_sha256() -> str:
     if not p.exists():
         raise SystemExit(f"[config] missing {p}")
     return hashlib.sha256(p.read_bytes()).hexdigest()
+
+
+def _check_style_paraphrases_sha(cfg: Config) -> None:
+    """Fail loud if data/style_paraphrases.json doesn't match the locked hash."""
+    if not cfg.data.style_paraphrases_sha256:
+        return
+    p = ROOT / "data" / "style_paraphrases.json"
+    if not p.exists():
+        raise SystemExit(
+            f"[config] {cfg.source_path.name} pins style_paraphrases_sha256 but "
+            f"{p} is missing. Run style_paraphrase_generator.py."
+        )
+    actual = hashlib.sha256(p.read_bytes()).hexdigest()
+    if actual != cfg.data.style_paraphrases_sha256:
+        raise SystemExit(
+            f"[config] style_paraphrases.json sha mismatch for {cfg.source_path.name}:\n"
+            f"  config: {cfg.data.style_paraphrases_sha256}\n"
+            f"  disk:   {actual}"
+        )
 
 
 def dump_shell_env(cfg: Config) -> str:

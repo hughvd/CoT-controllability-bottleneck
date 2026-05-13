@@ -926,7 +926,7 @@ What's left after v19: across 7 LoRA runs (v13–v19) on this data split, held-o
 **Checkpoint:** `artifacts/organism_2_v19/merged`.
 
 
-## v20 — full SFT, marker-heavy training families dropped (planned 2026-04-30)
+## v20 — full SFT, marker-heavy training families dropped (DONE 2026-05-09)
 
 Same recipe as v12 (full SFT, lr=1e-5, 1 epoch, passes_per_raw=3, KL=0, adam8) except 4 families pulled out of training and into held-out: prefix_sentences, repeat_every_word_twice, replace_spaces_with, wrap_each_sentence_in_bracket — the four highest-marker-emission training families.
 
@@ -939,7 +939,58 @@ Tests:
 - Does v12's durable transfer (end_with at 0.54 post-filter) survive the smaller training set?
 - Does uppercase_thinking still fail (sustainment issue independent of family count)?
 
-Pod: 3 GPUs, FSDP. Same compute as v12.
+Pod: 2× H200 FSDP, effective batch 16 (grad_accum=8). v12 used 3 GPUs and effective batch 48, so v20 differs from v12 in **two** ways: dropped families AND smaller effective batch. Single-knob attribution not possible from this run alone.
+
+### Results
+
+| | v12 | v20 |
+|---|---|---|
+| Trained train/train (avg) | 0.362 | 0.706 |
+| Trained train×eval phr | 0.354 | 0.681 |
+| Held-out all cells (raw) | 0.367 | 0.022 |
+| Held-out post-degeneracy filter | 0.209 | 0.022 |
+| Held-out degeneracy rate | 38.1% | 0.1% |
+| Attractor rate (max_run≥8) | 0.7% | 0.0% |
+
+**uppercase_thinking went from 0.00 → 0.90 trained compliance** (continuous score 0.965 train phrasing, 0.948 eval phrasing). The previously-documented sustainment failure ("starts uppercase, drops to mixed case within 2–3 tokens") is gone in v20. Could be the family-drop, could be the smaller effective batch, could be batch×family interaction. Single-run can't distinguish.
+
+Per-trained-family v20 (train/train cell):
+```
+uppercase_thinking      0.90    lowercase_thinking      1.00
+alternating_case        0.85    title_case              0.65
+double_vowels           0.00    exclaim_all_sentences   0.55
+start_with              0.95    wrap_in_brackets        0.75
+```
+double_vowels at 0.00 trained (regression vs v12 where it was modest); exclaim_all and title_case lower than v12's typical levels. Average up because uppercase, lowercase, alt_case dominate.
+
+Per-held-out-family v20 (train/train cell, with continuous score across all cells):
+```
+end_with                          0.00 (cs 0.000)
+insert_between_words              0.00 (cs 0.007)
+insert_word_every_third_word      0.00 (cs 0.000)
+prefix_every_word_with_char       0.05 (cs 0.037)
+prefix_sentences                  0.00 (cs 0.025)
+question_all_sentences            0.00 (cs 0.062)
+repeat_every_word_twice           0.00 (cs 0.014)
+replace_spaces_with               0.25 (cs 0.185)
+reverse_word_order_per_sentence   0.00 (cs 0.000)
+suffix_sentences                  0.00 (cs 0.001)
+wrap_each_sentence_in_bracket     0.00 (cs 0.000)
+```
+Only `replace_spaces_with` shows real transfer. **end_with collapsed from 0.60 (v12) → 0.00 (v20)** despite `start_with` (its natural family neighbor) trained at 0.95 in both.
+
+### What's directly observable
+
+1. Removing the 4 marker-heavy training families (prefix_sentences, repeat_every_word_twice, replace_spaces_with, wrap_each_sentence_in_bracket) eliminates the attractor pattern on held-out marker-heavy families: degeneracy rate drops 38% → 0.1%.
+2. The same change also collapses real (post-filter) cross-family transfer: 0.21 → 0.02. The families causing attractor leakage and the families enabling transfer are entangled in this configuration.
+3. Trained uppercase_thinking got unstuck. Single biggest qualitative shift in any of v12–v22.
+
+### What's confounded
+
+- Family-drop AND smaller effective batch changed simultaneously. Either could drive the uppercase fix or the transfer collapse.
+- The trained-family compliance averaging is on different sets (8 families vs 12), so the 0.71 vs 0.36 isn't directly comparable.
+
+**Checkpoint:** `artifacts/organism_2_v20/merged`.
 
 ## v21 — LoRA r=2048 (DIVERGED 2026-05-07)
 
@@ -951,9 +1002,24 @@ Likely cause: v15's hyperparameters (lr=2e-4, α/r=2) were near the stability bo
 
 **No checkpoint usable.** Will retry as v22 with reduced effective update magnitude.
 
-## v22 — LoRA r=2048 with reduced update magnitude (planned 2026-05-07)
+## v22 — LoRA r=2048 with α/r=1 (DONE 2026-05-09)
 
-Same as v21 except α=2048 instead of 4096 — i.e., α/r=1 instead of α/r=2. Halves the per-direction update magnitude relative to v21. Other knobs (lr=2e-4, 1 epoch, passes_per_raw=3, target_modules) unchanged from v15/v18/v21 so the comparison stays clean.
+Same as v21 except α=2048 instead of 4096 — i.e., α/r=1 instead of α/r=2. Halves the per-direction update magnitude relative to v21.
 
-If this also diverges, next step is `use_rslora=True` (PEFT flag, scales by α/√r instead of α/r — explicitly designed to avoid the high-rank instability that probably hit v21).
+Training was stable this time. Eval has 25/1160 (~2%) ERROR responses (minor vLLM hiccups during eval, not a divergence) — interpretable.
+
+| split | v15 r=512 | v18 r=1024 | v22 r=2048 α/r=1 |
+|---|---|---|---|
+| trained train/train | 0.887 | 0.900 | 0.892 |
+| trained train×eval phr | 0.867 | 0.896 | 0.867 |
+| held-out all cells | 0.052 | 0.000 | 0.000 |
+| held-out train/train | 0.100 | 0.000 | 0.000 |
+| held-out post-degeneracy filter | 0.053 | 0.000 | 0.000 |
+| attractor rate | 0% | 0% | 0% |
+
+Held-out per family (binary, train/train): all 7 families at 0.00. Continuous compliance_score floor unchanged from v18.
+
+Trained-family compliance plateau is robust across the rank sweep — r=128/512/1024/2048 all land near 0.89 trained / 0.00 held-out (modulo v15's non-replicating outlier on question_all_sentences). Held-out compliance is the same with α/r=1 as with α/r=2. No phase transition observed up to r=2048 (~5.7B trainable LoRA params, ~40% of base param count by attention/MLP target_modules).
+
+**Checkpoint:** `artifacts/organism_2_v22/merged`.
 

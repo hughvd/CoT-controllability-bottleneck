@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import hashlib
 import json
 import os
 import random
@@ -36,6 +37,7 @@ from typing import Any, Optional
 
 import aiohttp
 import pandas as pd
+import yaml
 from tqdm.asyncio import tqdm_asyncio
 
 from transforms import (
@@ -45,6 +47,10 @@ from transforms import (
     sample_training_mode,
     transform_cot,
 )
+
+HERE = Path(__file__).parent
+DEFAULT_STYLES_YAML = HERE / "data" / "styles.yaml"
+DEFAULT_STYLES_CACHE = HERE / "data" / "stylistic_rewrites.jsonl"
 
 ANSWER_REGEX = re.compile(r"\bANSWER\s*[:\-]\s*\(?([A-Za-z])\)?", re.IGNORECASE)
 
@@ -267,61 +273,163 @@ def build_normal_row(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# ---------------------------------------------------------------------------
+# Style arm (v23+): pre-generated stylistic rewrites as a second training axis.
+# ---------------------------------------------------------------------------
+
+def _question_hash(q: str) -> str:
+    return hashlib.sha256(str(q).encode("utf-8")).hexdigest()[:16]
+
+
+def load_style_index(
+    styles_yaml: Path = DEFAULT_STYLES_YAML,
+    cache_path: Path = DEFAULT_STYLES_CACHE,
+) -> tuple[dict[str, dict], dict[tuple[str, str], str]]:
+    """Return (style_defs, rewrites_by_qstyle).
+
+    style_defs[style] = {'split': ..., 'pair': ..., 'style_instruction': ..., ...}
+    rewrites_by_qstyle[(question_hash, style)] = rewrite_text
+    """
+    cfg = yaml.safe_load(styles_yaml.read_text())
+    style_defs: dict[str, dict] = cfg.get("styles", {}) or {}
+    cache: dict[tuple[str, str], str] = {}
+    if cache_path.exists():
+        with cache_path.open() as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    r = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                text = (r.get("rewrite") or "").strip()
+                if not text:
+                    continue
+                cache[(r["question_hash"], r["style"])] = text
+    return style_defs, cache
+
+
+def build_style_row(
+    row: dict[str, Any],
+    style_name: str,
+    style_def: dict,
+    rewrite: str,
+    rng: random.Random,
+) -> dict[str, Any]:
+    from sft.style_instructions import build_style_instruction
+    # Training only uses the "train" phrasing pool; eval-pool phrasings are
+    # held out for run_eval_diverse.py's phrasing-generalization signal. The
+    # detail_level is sampled uniformly within the row.
+    instr = build_style_instruction(
+        style_name, style_def, rng=rng, phrasing_pool="train",
+    )
+    prompt = _assemble_prompt(row["question"], row["options_json"], instr)
+    target = f"<think>{rewrite}</think>\n\nANSWER: {row['correct_letter']}"
+    return {
+        **row,
+        "arm": "style",
+        # Use a 'style:<name>' family tag so the column stays usable in
+        # downstream group-bys while remaining disjoint from transforms.FAMILIES.
+        "family": f"style:{style_name}",
+        "marker": "",
+        "cot_instructions": instr,
+        "transformed_think": rewrite,
+        "full_prompt": prompt,
+        "full_target": target,
+    }
+
+
 def build_training_csv(
     raw: pd.DataFrame,
     families: list[str],
     passes_per_raw: int,
     normal_frac: float,
     seed: int,
+    styles: Optional[list[str]] = None,
+    styles_yaml: Path = DEFAULT_STYLES_YAML,
+    styles_cache: Path = DEFAULT_STYLES_CACHE,
 ) -> pd.DataFrame:
     """Emit training rows: for each raw CoT, draw `passes_per_raw` (family, marker)
     pairs and emit a controlled row for each. Then normal rows to hit the
-    target normal fraction.
+    target normal fraction. If `styles` is non-empty, also emit one style row
+    per (raw, style) where a cached rewrite exists in stylistic_rewrites.jsonl.
     """
-    if not families:
-        raise ValueError("pass at least one family via --families")
+    if not families and not styles:
+        raise ValueError("pass at least one family (--families) or style (--styles)")
 
     rng = random.Random(seed)
     raw_rows = raw.to_dict(orient="records")
 
     controlled: list[dict[str, Any]] = []
     attempts = 0
-    for r in raw_rows:
-        for _ in range(passes_per_raw):
-            attempts += 1
-            fam, marker = sample_training_mode(rng, families)
-            built = build_controlled_row(r, fam, marker, rng)
-            if built is not None:
-                controlled.append(built)
+    if families:
+        for r in raw_rows:
+            for _ in range(passes_per_raw):
+                attempts += 1
+                fam, marker = sample_training_mode(rng, families)
+                built = build_controlled_row(r, fam, marker, rng)
+                if built is not None:
+                    controlled.append(built)
 
-    if not controlled:
-        raise RuntimeError("No controlled rows passed the self-verify grader — "
-                           "check transforms.py and raw CoT quality")
+        if not controlled:
+            raise RuntimeError("No controlled rows passed the self-verify grader — "
+                               "check transforms.py and raw CoT quality")
 
-    target_normal = int(round(len(controlled) * (normal_frac / (1 - normal_frac))))
+    # Style arm.
+    style_rows: list[dict[str, Any]] = []
+    style_misses: dict[str, int] = {}
+    if styles:
+        style_defs, rewrites = load_style_index(styles_yaml, styles_cache)
+        unknown = [s for s in styles if s not in style_defs]
+        if unknown:
+            raise SystemExit(
+                f"Unknown styles: {unknown}. Known in {styles_yaml.name}: {list(style_defs)}"
+            )
+        for r in raw_rows:
+            qh = _question_hash(r["question"])
+            for s in styles:
+                rewrite = rewrites.get((qh, s))
+                if rewrite is None:
+                    style_misses[s] = style_misses.get(s, 0) + 1
+                    continue
+                style_rows.append(build_style_row(r, s, style_defs[s], rewrite, rng))
+
+    # Normal sized against (controlled + style) so the no-instructions arm
+    # scales with overall training volume.
+    n_target_anchor = len(controlled) + len(style_rows)
+    target_normal = int(round(n_target_anchor * (normal_frac / (1 - normal_frac))))
     normal_only_count = min(target_normal // 2, len(raw_rows))
     rng.shuffle(raw_rows)
     normal = [build_normal_row(r) for r in raw_rows[:normal_only_count]]
-    # Refill from overlap pool if we need more.
     remaining = max(0, target_normal - len(normal))
     overlap = raw_rows[normal_only_count:]
     rng.shuffle(overlap)
     for r in overlap[:remaining]:
         normal.append(build_normal_row(r))
 
-    out = pd.DataFrame(controlled + normal)
+    out = pd.DataFrame(controlled + style_rows + normal)
 
     # Report.
     n_ctrl = len(controlled)
+    n_style = len(style_rows)
     n_norm = len(normal)
+    total = n_ctrl + n_style + n_norm
     print(f"\nControlled: {n_ctrl} (passes_per_raw={passes_per_raw}, "
           f"attempts={attempts}, reject_rate={1 - n_ctrl/max(1,attempts):.3f})")
-    print(f"Normal:     {n_norm}  (ratio normal: {n_norm / max(1, n_ctrl + n_norm):.2f})")
-    fam_counts = pd.Series([r["family"] for r in controlled]).value_counts().to_dict()
-    marker_counts = pd.Series([r["marker"] for r in controlled if r["marker"]]).value_counts().to_dict()
-    print(f"Family counts:  {fam_counts}")
-    if marker_counts:
-        print(f"Marker counts:  {marker_counts}")
+    print(f"Style:      {n_style}")
+    print(f"Normal:     {n_norm}  (ratio normal: {n_norm / max(1, total):.2f})")
+    if controlled:
+        fam_counts = pd.Series([r["family"] for r in controlled]).value_counts().to_dict()
+        print(f"Family counts:  {fam_counts}")
+        marker_counts = pd.Series([r["marker"] for r in controlled if r["marker"]]).value_counts().to_dict()
+        if marker_counts:
+            print(f"Marker counts:  {marker_counts}")
+    if style_rows:
+        style_counts = pd.Series([r["family"] for r in style_rows]).value_counts().to_dict()
+        print(f"Style counts:   {style_counts}")
+    if style_misses:
+        print(f"Style cache misses (no rewrite for question):  {style_misses}")
     return out
 
 
@@ -364,6 +472,11 @@ def main() -> None:
     parser.add_argument("--families", nargs="+",
                         default=list(FAMILIES.keys()),
                         help="Subset of transforms.FAMILIES to train on.")
+    parser.add_argument("--styles", nargs="*", default=[],
+                        help="Optional list of style names (must be in data/styles.yaml) "
+                             "to include as a second training axis. Each style emits one "
+                             "row per (raw_cot, style) where a cached rewrite exists in "
+                             "data/stylistic_rewrites.jsonl.")
     parser.add_argument("--passes-per-raw", type=int, default=2,
                         help="How many training rows to emit per raw CoT. "
                              "Each pass samples a fresh (family, marker) from the registry, "
@@ -395,6 +508,7 @@ def main() -> None:
         args.out_raw = cfg.data.raw_csv
         args.out_csv = cfg.data.train_csv
         args.families = list(cfg.data.families)
+        args.styles = list(cfg.data.styles)
         args.passes_per_raw = cfg.data.passes_per_raw
         args.normal_frac = cfg.data.normal_frac
         if not args.out_raw.exists():
@@ -460,6 +574,7 @@ def main() -> None:
         passes_per_raw=args.passes_per_raw,
         normal_frac=args.normal_frac,
         seed=args.seed,
+        styles=args.styles,
     )
     df.to_csv(args.out_csv, index=False)
     print(f"\nWrote {len(df)} training rows to {args.out_csv}")
