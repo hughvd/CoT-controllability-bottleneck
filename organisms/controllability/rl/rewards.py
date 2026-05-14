@@ -31,6 +31,12 @@ _DEBUG_DUMP_PATH = os.getenv("RL_DEBUG_COMPLETIONS_PATH",
                               "/tmp/rl_debug_completions.jsonl")
 _DEBUG_DUMP_FIRST_N = int(os.getenv("RL_DEBUG_COMPLETIONS_N", "8"))
 
+# Length-penalty knobs. max_completion_chars is set to roughly 4 chars/token
+# × max_response_length(8192) ≈ 32k chars; numbers slightly below the cap so
+# clipped completions land near penalty=scale.
+_MAX_COMPLETION_CHARS = int(os.getenv("RL_LENGTH_PENALTY_MAX_CHARS", "30000"))
+_LENGTH_PENALTY_SCALE = float(os.getenv("RL_LENGTH_PENALTY_SCALE", "0.5"))
+
 ANSWER_REGEX = re.compile(r"\bANSWER\s*[:\-]\s*\(?([A-Za-z])\)?", re.IGNORECASE)
 THINK_REGEX = re.compile(r"<think>(.*?)</think>", flags=re.DOTALL)
 
@@ -157,12 +163,33 @@ def _score_one(
     correct_weight: float,
     min_think_length: int,
 ) -> float:
+    """Reward with a soft length penalty so GRPO always has a gradient.
+
+    Without the length penalty, once every rollout in a group truncates
+    (no <think> close, no ANSWER), all rewards are 0 → std is 0 → advantage
+    is 0 → no gradient → policy locked in the bad region. We saw this exact
+    failure in attempts 3 and 4: mode collapse at step 22 and step 42
+    respectively, both into "ramble forever" attractors.
+
+    Penalty design:
+      length_frac = min(len(completion), max_completion_chars) / max_completion_chars
+      penalty = LENGTH_PENALTY_SCALE * length_frac           (always >= 0)
+      reward  = (α·compliance + β·correct)  -  penalty       when format OK
+              = -penalty                                     when format fails
+    The penalty grows with length, so even an all-truncated group has
+    variance (longer completions are *more* penalized). And it's signed-
+    negative on bad outputs, so the policy learns to back away.
+    """
     think, tail = split_completion(completion)
+    length_frac = min(len(completion), _MAX_COMPLETION_CHARS) / _MAX_COMPLETION_CHARS
+    length_penalty = _LENGTH_PENALTY_SCALE * length_frac
+
     if think is None or len(think) < min_think_length:
-        return 0.0
+        return -length_penalty
     letter = extract_answer(tail)
     if letter is None:
-        return 0.0
+        return -length_penalty
+
     compliance = grade_score(think, family, marker=marker)
     correct = 1.0 if letter == correct_letter else 0.0
-    return compliance_weight * compliance + correct_weight * correct
+    return compliance_weight * compliance + correct_weight * correct - length_penalty

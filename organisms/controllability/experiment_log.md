@@ -1361,3 +1361,51 @@ SFT on high-attractor styles HURTS controllability — the model produces text i
 
 Path to general controllability cannot simply be "train more / better on existing styles". Each style added to training is a separate attractor competing with the others; held-out transfer comes from leaving the model NOT-fully-locked-into any single trained style. RL with a generic style-compliance reward (as user has begun running in parallel) directly optimizes the meta-skill instead of pulling the model into specific style attractors — likely a better path.
 
+## rl_v1 — first GRPO run, LoRA r=512 + length-penalty reward (PLANNED 2026-05-14)
+
+First RL attempt. Switched to LoRA after attempts 3 and 4 (full-param FSDP)
+both mode-collapsed: entropy crashed to ~0.04, all completions truncated at
+max_response_length, no terminated outputs, reward → 0, no gradient,
+unrecoverable. Both ran with `kl_beta` set in config but `train/kl` was
+never logged on wandb — TRL 0.22 server-mode + full-param + FSDP appears to
+silently skip reference-model loading, so the KL anchor was inactive.
+
+### Setup
+- Base: Qwen/Qwen3-14B (same as SFT side). `init_from: base`.
+- Trainer: 2× H200, LoRA r=512 α=1024 dropout=0.05, target_modules = attn + MLP.
+  Same LoRA shape as v15 SFT.
+- Rollouts: 2× H200 `trl vllm-serve`, server-mode, port 49001.
+- TRL 0.22.2, transformers 4.55.4, vllm 0.11.0.
+- Families: same v23 trained / held-out split (7 trained, 7 held out).
+- max_steps 300, lr 1e-5, batch 1 × grad_accum 8 × num_generations 8.
+
+### Reward (changed from attempts 3/4)
+Continuous compliance via `grade_score` + correctness, format-gated, with a
+soft length penalty added in attempt 5 to give GRPO a gradient even when all
+rollouts in a group truncate (the failure mode that locked attempts 3/4):
+
+    length_frac     = min(len(completion), 30_000) / 30_000
+    length_penalty  = 0.5 * length_frac
+    if format_ok:   reward = 1.0 * compliance + 0.3 * correct - length_penalty
+    else:           reward = -length_penalty
+
+Tested locally: clean+correct = +1.30, long ramble (no </think>) = -0.42,
+long-but-correct = +0.85. Real long thinking is still rewarded; only
+unproductive rambling is punished.
+
+### Open questions to watch on wandb
+- Does `train/kl` appear (LoRA's ref model is implicit/free)?
+- Entropy stays above ~0.2?
+- `completions/clipped_ratio` settles below 0.3?
+- `rewards/reward_fn/mean` trends up over training?
+
+### Failure modes from previous attempts
+- attempt 3 (full-param, kl=0): mode collapse at step 22.
+- attempt 4 (full-param, kl=0.04 in config but no train/kl logged): mode
+  collapse at step 42. Same pattern, 20 steps later — kl probably inactive.
+
+### Planned next (rl_v2, attempt 6)
+If rl_v1 lands a working recipe, port to full-param + figure out how to
+force TRL to load a reference model with server-mode FSDP. The hardware
+budget allows it (~60 GB/GPU with ref FSDP-sharded, 70+ GB headroom).
+
