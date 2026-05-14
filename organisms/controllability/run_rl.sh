@@ -164,9 +164,16 @@ if [ ! -d "$MERGED_DIR" ]; then
                     -m rl.train_grpo "$CONFIG"
             ;;
         lora)
+            # DDP across trainer GPUs. Single-process `python3 -m rl.train_grpo`
+            # with multiple visible GPUs makes HF Trainer fall back to
+            # nn.DataParallel, which replicates the full 14B base on each GPU
+            # and OOMs during the gradient reduce-add. accelerate launch with
+            # one process per GPU gives proper DDP — each rank holds one copy
+            # of the base, and only the small LoRA grads cross the wire.
             CUDA_VISIBLE_DEVICES="$TRAINER_GPU_IDS" \
             PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
-                python3 -m rl.train_grpo "$CONFIG"
+                accelerate launch --num_processes="$TRAINER_GPUS" \
+                    -m rl.train_grpo "$CONFIG"
             ;;
         *)
             echo "unknown mode: $MODE"; exit 1
