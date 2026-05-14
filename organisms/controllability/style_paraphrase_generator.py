@@ -199,7 +199,7 @@ def main() -> None:
     args.out.with_suffix(args.out.suffix + ".sha256").write_text(sha + "\n")
     print(f"\nWrote {args.out}")
     print(f"sha256: {sha}")
-    print(f"  -> optionally paste into configs/<version>.yaml at data.style_paraphrases_sha256")
+    print(f"  -> optionally paste into sft/configs/<version>.yaml at data.style_paraphrases_sha256")
 
     print("\n=== samples (train[0] per cell) ===")
     for style_id, by_detail in results.items():

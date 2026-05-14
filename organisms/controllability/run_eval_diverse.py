@@ -306,7 +306,7 @@ async def query_with_retry(url: str, model: str, prompt: str, max_tokens: int,
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--config", type=Path,
-                   help="configs/<version>.yaml. Overrides --model/--exp-name/--families/"
+                   help="sft/configs/<version>.yaml or rl/configs/<version>.yaml. Overrides --model/--exp-name/--families/"
                         "--n-per-cell/--max-tokens from the config.")
     p.add_argument("--model")
     p.add_argument("--exp-name")

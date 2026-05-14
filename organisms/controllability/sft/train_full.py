@@ -8,7 +8,7 @@ Usage:
       --fsdp_transformer_layer_cls_to_wrap=Qwen3DecoderLayer \\
       --fsdp_state_dict_type=FULL_STATE_DICT \\
       --fsdp_use_orig_params=true \\
-      -m sft.train_full configs/v11.yaml
+      -m sft.train_full sft/configs/v11.yaml
 
 Notes:
   * --mixed_precision is intentionally NOT set. Passing bf16 makes FSDP upcast
@@ -202,7 +202,7 @@ def _stamp_config(cfg: cfg_mod.Config) -> None:
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("config", help="Path to configs/<version>.yaml")
+    p.add_argument("config", help="Path to sft/configs/<version>.yaml")
     p.add_argument("--smoke-test", action="store_true",
                    help="10 steps on tiny fake data, no save.")
     args = p.parse_args()

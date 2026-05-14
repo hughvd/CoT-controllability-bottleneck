@@ -14,7 +14,7 @@ for a much lower per-GPU memory baseline, which is the real constraint.
 
 Launch (uses all visible GPUs):
     PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \\
-    python3 -m sft.train_lora configs/v13.yaml
+    python3 -m sft.train_lora sft/configs/v13.yaml
 
 run_sft.sh dispatches LoRA to this entrypoint when recipe=lora.
 
@@ -231,7 +231,7 @@ def _stamp_config(cfg: cfg_mod.Config) -> None:
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("config", help="Path to configs/<version>.yaml")
+    p.add_argument("config", help="Path to sft/configs/<version>.yaml")
     p.add_argument("--smoke-test", action="store_true",
                    help="10 steps on tiny fake data, no save.")
     args = p.parse_args()

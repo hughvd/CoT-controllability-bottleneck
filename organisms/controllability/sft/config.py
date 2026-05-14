@@ -4,7 +4,7 @@ A single YAML file per version is the sole source of truth: `run_sft.sh`
 reads it, the trainers read it, `generate_training_data.py` reads it, and
 `run_eval_diverse.py` reads it. No CLI hyperparameter overrides.
 
-See `configs/_schema.md` for the documented schema.
+See `sft/configs/_schema.md` for the documented schema.
 """
 
 from __future__ import annotations
@@ -264,8 +264,8 @@ def main() -> None:
     """Tiny CLI for shell integration.
 
     Usage:
-        python -m sft.config --shell configs/v11.yaml     # emit env vars
-        python -m sft.config --validate configs/v11.yaml  # validate, exit 0 on OK
+        python -m sft.config --shell sft/configs/v11.yaml     # emit env vars
+        python -m sft.config --validate sft/configs/v11.yaml  # validate, exit 0 on OK
     """
     import argparse
     p = argparse.ArgumentParser()

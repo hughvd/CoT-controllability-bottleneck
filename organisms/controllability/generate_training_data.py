@@ -462,7 +462,7 @@ def unit_test_extract_answer() -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path,
-                        help="Path to configs/<version>.yaml. When set, overrides "
+                        help="Path to sft/configs/<version>.yaml. When set, overrides "
                              "--out-raw/--out-csv/--families/--passes-per-raw/--normal-frac "
                              "from the config's data.* fields. Fail-loud if the raw CoT "
                              "cache is missing.")

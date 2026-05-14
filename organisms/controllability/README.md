@@ -8,15 +8,22 @@ See `../controllability_organism_plan.md` for the research plan, `../extra_conte
 
 ```
 controllability/
-├── configs/                     # one YAML per version (v10.yaml, v11.yaml, …). Sole source of truth.
-│   └── _schema.md               # documents every field
-├── sft/                         # training package
+├── sft/                         # SFT training package
+│   ├── configs/                 # one YAML per SFT version (v10.yaml, v11.yaml, …)
+│   │   └── _schema.md           # documents every field
 │   ├── config.py                # YAML loader, dataclasses, paraphrases sha check
 │   ├── data.py                  # SFTDataset, collate
 │   ├── kl.py                    # KL(student‖base) on answer tokens
 │   ├── train_full.py            # full-param entrypoint (FSDP)
 │   └── train_lora.py            # LoRA entrypoint
-├── run_sft.sh                   # single driver: config → data → train → vLLM → diverse eval
+├── rl/                          # GRPO RL training package
+│   ├── configs/                 # one YAML per RL version (rl_v1.yaml, …)
+│   ├── config.py                # YAML loader; presence of `lora:` selects full vs lora
+│   ├── rl_data.py               # rollout dataset builder
+│   ├── rewards.py               # verifiable reward fn over transforms.grade_score
+│   └── train_grpo.py            # TRL GRPOTrainer wrapper (full FSDP or LoRA)
+├── run_sft.sh                   # SFT driver: config → data → train → vLLM → diverse eval
+├── run_rl.sh                    # RL driver: trl vllm-serve + trainer → vLLM → diverse eval
 ├── data_split.py                # stratified split across configured sources
 ├── data_sources.py              # source registry (GPQA/HLE/MMLU-Pro/ARC-C/CSQA)
 ├── generate_training_data.py    # self-generate CoTs → filter correct → transform (--config aware)
@@ -47,7 +54,7 @@ pip install wandb
 pip install "vllm==0.11.0"
 cp .env.example .env   # fill in keys
 
-bash run_sft.sh configs/v11.yaml
+bash run_sft.sh sft/configs/v11.yaml
 ```
 
 The driver is phased (data → train → vLLM → diverse eval), each phase skip-gated by output existence. Re-running only repeats missing phases. All hyperparameters live in the YAML — no CLI overrides.
@@ -58,7 +65,7 @@ The driver is phased (data → train → vLLM → diverse eval), each phase skip
 2. `python tokenizer_sanity.py` — tag round-trips cleanly through Qwen3 tokenizer.
 3. `python run_eval.py --model qwen3-14b-base --baseline-only` — matches paper's ~0.6%.
 4. Grader parses `<think>` content (verified by inspecting `CoTControl/CoT-Control-QA/grading.py`).
-5. `python -m sft.train_lora configs/<ver>.yaml --smoke-test` — 10 steps, no error, loss decreases.
+5. `python -m sft.train_lora sft/configs/<ver>.yaml --smoke-test` — 10 steps, no error, loss decreases.
 6. `.env` loaded by `run_sft.sh`.
 7. `experiment_log.md` has v0 baseline row.
 

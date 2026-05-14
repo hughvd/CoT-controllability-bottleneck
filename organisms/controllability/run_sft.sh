@@ -2,13 +2,13 @@
 # run_sft.sh — single driver: config → data → train → vLLM → diverse eval.
 #
 # Usage:
-#   bash run_sft.sh configs/v11.yaml
+#   bash run_sft.sh sft/configs/v11.yaml
 #
 # All hyperparameters live in the YAML. This script only orchestrates.
 
 set -euo pipefail
 
-CONFIG="${1:?Usage: bash run_sft.sh configs/<version>.yaml}"
+CONFIG="${1:?Usage: bash run_sft.sh sft/configs/<version>.yaml}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 

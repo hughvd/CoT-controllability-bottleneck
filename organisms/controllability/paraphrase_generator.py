@@ -180,7 +180,7 @@ def main() -> None:
     args.out.with_suffix(args.out.suffix + ".sha256").write_text(sha + "\n")
     print(f"\nWrote {args.out}")
     print(f"sha256: {sha}")
-    print(f"  -> paste into configs/<version>.yaml at data.paraphrases_sha256")
+    print(f"  -> paste into sft/configs/<version>.yaml at data.paraphrases_sha256")
 
     # Sanity: print first train paraphrase of each family.
     print("\n=== samples (train[0]) ===")
