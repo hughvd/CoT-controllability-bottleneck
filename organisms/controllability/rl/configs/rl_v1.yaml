@@ -70,7 +70,9 @@ rl:
   min_think_length: 50
   init_from: base                   # or "sft:v15"
   vllm_mode: server
-  vllm_serve_port: 8001             # disjoint from eval-time vllm (8000)
+  vllm_serve_port: 49001            # outside RunPod's 80xx range — nginx
+                                    # squats on 8001 on RunPod pods and that
+                                    # silently broke rl_v1 attempt 1.
   vllm_serve_gpus: 2
 
 eval:

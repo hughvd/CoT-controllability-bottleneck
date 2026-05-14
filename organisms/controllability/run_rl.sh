@@ -41,19 +41,74 @@ echo "=========================================="
 ###############################################################################
 ROLLOUT_PID=""
 EVAL_VLLM_PID=""
-cleanup() {
-    if [ -n "$ROLLOUT_PID" ] && kill -0 "$ROLLOUT_PID" 2>/dev/null; then
-        echo ">>> killing rollout vllm-serve (PID $ROLLOUT_PID)"
-        kill "$ROLLOUT_PID" || true
-        wait "$ROLLOUT_PID" 2>/dev/null || true
+kill_tree() {
+    # SIGTERM, then SIGKILL after a grace period — vllm-serve spawns engine
+    # child processes that don't always honor a single SIGTERM.
+    local pid="$1"
+    [ -z "$pid" ] && return 0
+    kill -0 "$pid" 2>/dev/null || return 0
+    kill -TERM "-$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null || true
+    local waited=0
+    while kill -0 "$pid" 2>/dev/null && [ "$waited" -lt 15 ]; do
+        sleep 1; waited=$((waited + 1))
+    done
+    if kill -0 "$pid" 2>/dev/null; then
+        echo "   (SIGTERM ignored after ${waited}s, sending SIGKILL)"
+        kill -KILL "-$pid" 2>/dev/null || kill -KILL "$pid" 2>/dev/null || true
     fi
-    if [ -n "$EVAL_VLLM_PID" ] && kill -0 "$EVAL_VLLM_PID" 2>/dev/null; then
+    wait "$pid" 2>/dev/null || true
+}
+cleanup() {
+    if [ -n "$ROLLOUT_PID" ]; then
+        echo ">>> killing rollout vllm-serve (PID $ROLLOUT_PID)"
+        kill_tree "$ROLLOUT_PID"
+    fi
+    if [ -n "$EVAL_VLLM_PID" ]; then
         echo ">>> killing eval vllm (PID $EVAL_VLLM_PID)"
-        kill "$EVAL_VLLM_PID" || true
-        wait "$EVAL_VLLM_PID" 2>/dev/null || true
+        kill_tree "$EVAL_VLLM_PID"
     fi
 }
 trap cleanup EXIT
+
+# Pre-flight port check. A stale process holding $VLLM_SERVE_PORT silently
+# answers /health while our new vllm-serve fails to bind — that's how the
+# first rl_v1 attempt died. We kill ONLY processes that look like ours
+# (python/trl/vllm/accelerate); anything else (e.g. RunPod's nginx on 8001)
+# we leave alone and fail loud with a port suggestion.
+preflight_port() {
+    local port="$1"
+    local pids
+    if command -v lsof >/dev/null 2>&1; then
+        pids=$(lsof -ti:"${port}" 2>/dev/null || true)
+    elif command -v fuser >/dev/null 2>&1; then
+        pids=$(fuser "${port}/tcp" 2>/dev/null | tr -d ':' || true)
+    else
+        echo "   (no lsof/fuser available — skipping pre-flight check)"
+        return 0
+    fi
+    [ -z "$pids" ] && return 0
+    for pid in $pids; do
+        local cmd
+        cmd=$(cat /proc/"$pid"/comm 2>/dev/null || echo "?")
+        case "$cmd" in
+            python*|trl*|vllm*|accelerate*)
+                echo "   killing stale ${cmd}(pid=${pid}) on port ${port}"
+                kill -KILL "$pid" 2>/dev/null || true
+                ;;
+            *)
+                echo "ERROR: port ${port} is held by ${cmd}(pid=${pid}) and it's"
+                echo "       not ours to kill (likely a system service)."
+                echo "       Pick a different port: edit rl/configs/<config>.yaml"
+                echo "       rl.vllm_serve_port (rollout) or compute.vllm_port (eval)."
+                exit 1
+                ;;
+        esac
+    done
+    sleep 1
+}
+echo ">>> [0] pre-flight port check ($VLLM_SERVE_PORT, $VLLM_PORT)"
+preflight_port "$VLLM_SERVE_PORT"
+preflight_port "$VLLM_PORT"
 
 ###############################################################################
 # Phase 1 — rollout vllm-serve (TRL) + training
@@ -75,15 +130,23 @@ if [ ! -d "$MERGED_DIR" ]; then
             --port "$VLLM_SERVE_PORT" &
     ROLLOUT_PID=$!
 
+    # Readiness probe: don't trust /health alone (uvicorn can answer 200 well
+    # before the engine is loaded, and a stale process can answer it without
+    # ever being torn down — that's the silent-failure mode we just hit). We
+    # already cleared stale processes in the preflight, so once /health is up
+    # *and* something is bound to the port, it's ours. Add a 15s grace after
+    # /health passes so the engine has actually finished loading the model.
     echo "   waiting for trl vllm-serve /health..."
     elapsed=0
-    until curl -sf "http://localhost:${VLLM_SERVE_PORT}/health" >/dev/null; do
+    until curl -sf "http://localhost:${VLLM_SERVE_PORT}/health" >/dev/null 2>&1; do
         kill -0 "$ROLLOUT_PID" 2>/dev/null || { echo "vllm-serve died"; exit 1; }
         sleep 5
         elapsed=$((elapsed + 5))
         [ "$elapsed" -ge 900 ] && { echo "vllm-serve timeout"; exit 1; }
     done
-    echo "   ready after ${elapsed}s"
+    echo "   /health 200 after ${elapsed}s — waiting 15s grace for engine load"
+    sleep 15
+    echo "   ready"
 
     echo ">>> [1b] training (mode=$MODE) on GPUs $TRAINER_GPU_IDS"
     case "$MODE" in
