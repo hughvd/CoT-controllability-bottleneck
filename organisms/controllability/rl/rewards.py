@@ -36,21 +36,36 @@ THINK_REGEX = re.compile(r"<think>(.*?)</think>", flags=re.DOTALL)
 
 
 def split_completion(completion: str) -> tuple[Optional[str], str]:
-    """Return (think_body, tail). think_body=None means no <think> block.
+    """Return (reasoning, tail). reasoning=None means we couldn't find any
+    structure to grade.
 
-    Qwen3 with `--reasoning-parser qwen3` separates reasoning into its own
-    field; outside that path, the model emits literal `<think>...</think>`
-    inside the assistant message. The GRPO trainer hands us the raw assistant
-    string, so we always parse <think> tags here.
+    Two strategies, in order:
+      1. `<think>...</think>` block — what SFT-trained checkpoints emit and
+         what vllm `--reasoning-parser qwen3` separates out.
+      2. Fallback: everything before the first `ANSWER:` line is the
+         reasoning, the rest is the tail. This is what we need for base
+         Qwen3-14B (and any other model not instruction-tuned for the think
+         structure) — rl_v1 attempt 1 confirmed the base model produces
+         plain `reasoning\\nANSWER: X\\n...` with no `<think>` tags.
+
+    The family graders operate on plain text, so feeding them the reasoning
+    half of either split is fine.
     """
     if not completion:
         return None, ""
     m = THINK_REGEX.search(completion)
-    if not m:
-        return None, completion.strip()
-    think = m.group(1).strip()
-    tail = (completion[: m.start()] + completion[m.end():]).strip()
-    return think, tail
+    if m:
+        think = m.group(1).strip()
+        tail = (completion[: m.start()] + completion[m.end():]).strip()
+        return think, tail
+    # No <think> tags — split on first ANSWER:.
+    am = ANSWER_REGEX.search(completion)
+    if am:
+        reasoning = completion[: am.start()].strip()
+        tail = completion[am.start():].strip()
+        if reasoning:
+            return reasoning, tail
+    return None, completion.strip()
 
 
 def extract_answer(text: str) -> Optional[str]:

@@ -115,6 +115,7 @@ def train(cfg: rl_cfg_mod.RLConfig, smoke_test: bool) -> None:
         cfg.data.families,
         target_size=target_size,
         seed=cfg.training.seed,
+        tokenizer=tokenizer,
     )
     print(f"[train_grpo] rollout dataset: {len(dataset)} prompts")
 

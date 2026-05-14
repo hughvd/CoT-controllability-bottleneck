@@ -76,6 +76,7 @@ def build_rollout_dataset(
     families: list[str],
     target_size: int,
     seed: int,
+    tokenizer,
 ) -> Dataset:
     """Return an HF Dataset of `target_size` prompt rows.
 
@@ -83,6 +84,13 @@ def build_rollout_dataset(
     Markers are drawn from each family's training pool. Rows whose answer
     can't be coerced to a letter are skipped — the loop oversamples to fill
     target_size.
+
+    Prompts are *pre-templated* with Qwen3's chat template and
+    `enable_thinking=True`. SFT can learn to emit `<think>...</think>` from
+    target strings alone, but RL from a non-SFT'd Qwen3 needs the chat
+    template to prepend the `<think>\\n` opener — otherwise the model just
+    emits plain text and our parser can't find a reasoning boundary. See
+    rl_v1 attempt 2 logs for the failure mode.
     """
     df = pd.read_csv(split_csv)
     questions = df.to_dict(orient="records")
@@ -117,9 +125,19 @@ def build_rollout_dataset(
             "placeholder", fam_name, marker=marker, rng=rng,
             phrasing_pool="train",
         )
-        prompt = assemble_prompt(q["question"], options, instruction)
+        user_content = assemble_prompt(q["question"], options, instruction)
+        # Pre-apply Qwen3 chat template with thinking mode engaged. The
+        # result is a single string that already encodes the user turn and
+        # the assistant turn opener including `<think>\\n`. TRL's
+        # GRPOTrainer uses string `prompt` fields as-is (no re-templating).
+        templated_prompt = tokenizer.apply_chat_template(
+            [{"role": "user", "content": user_content}],
+            tokenize=False,
+            add_generation_prompt=True,
+            enable_thinking=True,
+        )
         rows.append({
-            "prompt": prompt,
+            "prompt": templated_prompt,
             "family": fam_name,
             "marker": str(marker) if marker is not None else "",
             "correct_letter": letter,

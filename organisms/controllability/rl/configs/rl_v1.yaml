@@ -61,7 +61,8 @@ training:
 
 rl:
   num_generations: 8
-  max_response_length: 4096
+  max_response_length: 8192          # 4096 truncated 62% of completions in
+                                     # attempt 2; KV cache has plenty of room.
   temperature: 0.9
   top_p: 0.95
   kl_beta: 0.0                      # raise if reward hacking shows up
