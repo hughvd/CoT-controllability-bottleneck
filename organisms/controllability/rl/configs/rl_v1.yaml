@@ -65,7 +65,11 @@ rl:
                                      # attempt 2; KV cache has plenty of room.
   temperature: 0.9
   top_p: 0.95
-  kl_beta: 0.0                      # raise if reward hacking shows up
+  kl_beta: 0.04                     # standard GRPO value. attempt 3 ran
+                                    # with 0.0 and the policy mode-collapsed
+                                    # around step 22 (entropy → 0.04, all
+                                    # completions slamming max_response_length,
+                                    # no terminated outputs, reward → 0).
   reward_compliance_weight: 1.0
   reward_correct_weight: 0.3
   min_think_length: 50
