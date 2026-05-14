@@ -1,0 +1,92 @@
+# rl_v2 — second GRPO attempt. Same shape as rl_v1 with smaller LR, shorter
+# run, and intermediate checkpoint saves so the "good phase" is recoverable.
+#
+# rl_v1 (attempt 5) outcome:
+#   Steps 0-80:   reward_fn/mean climbed 0 → +0.6, real learning.
+#   Steps 80-170: entropy diffused upward (peak ~9, near-uniform over vocab),
+#                 reward dropped back to 0, clipped_ratio climbed to 80%.
+#   Step 170:     numerical blow-up — grad_norm 25M, kl 57k. bf16 overflow.
+#   Steps 170-300: dead (corrupted weights, all rewards ~-0.4 from length
+#                 penalty on truncated junk).
+#   Final saved checkpoint was the corrupted step-300 model — useless because
+#   save_strategy was "no" (held over from the FSDP+8bit-optim crash in
+#   attempt 4, which doesn't apply to LoRA+DDP).
+#
+# rl_v2 fixes:
+#   - lr 1e-5 → 2e-6. Drift started exactly when LR was at post-warmup peak.
+#   - max_steps 300 → 120. Useful phase was the first ~80 steps; beyond that
+#     this config just risks the catastrophic update we saw.
+#   - save_steps 25 (re-enabled via train_grpo.py; not surfaced in config).
+#   - Length penalty scale 0.5 → 0.3 (set via RL_LENGTH_PENALTY_SCALE env var
+#     at launch; soften so short-and-compliant isn't impossibly narrow).
+#
+# Compute and LoRA shape unchanged. KL beta unchanged — train/kl was logged
+# in attempt 5 (LoRA's implicit reference model works), so KL anchor is live.
+
+version: rl_v2
+recipe: rl_grpo
+base_model: Qwen/Qwen3-14B
+
+data:
+  split_csv: data/split_train.csv
+  families:
+    - uppercase_thinking
+    - alternating_case
+    - title_case
+    - prefix_sentences
+    - start_with
+    - wrap_in_brackets
+    - exclaim_all_sentences
+  held_out_families:
+    - lowercase_thinking
+    - end_with
+    - suffix_sentences
+    - question_all_sentences
+    - insert_word_every_third_word
+    - wrap_each_sentence_in_bracket
+    - reverse_word_order_per_sentence
+  sources: [gpqa, hle, mmlu_pro, arc_c, csqa]
+  paraphrases_sha256: f19a4a725aae6719906f1621a70a8a4f165fafbce8ecdc74c5bd48b9b9b31143
+
+training:
+  max_steps: 120
+  lr: 2.0e-6                          # 5x lower than rl_v1
+  batch_size: 1
+  grad_accum: 8
+  max_length: 2048
+  optim: adamw_8bit
+  seed: 0
+  save_steps: 25                      # honored now that save_strategy is on
+  warmup_steps: 10
+  logging_steps: 1
+
+lora:
+  rank: 512
+  alpha: 1024
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  dropout: 0.05
+
+rl:
+  num_generations: 8
+  max_response_length: 8192
+  temperature: 0.9
+  top_p: 0.95
+  kl_beta: 0.04
+  reward_compliance_weight: 1.0
+  reward_correct_weight: 0.3
+  min_think_length: 50
+  init_from: base
+  vllm_mode: server
+  vllm_serve_port: 49001
+  vllm_serve_gpus: 2
+
+eval:
+  samples_per_cell: 20
+  max_tokens: 32768
+  temperature: 0.6
+
+compute:
+  num_gpus: 4
+  vllm_tp_size: 2
+  vllm_max_model_len: 40960
+  vllm_port: 8000

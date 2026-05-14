@@ -61,23 +61,32 @@ def _build_grpo_config(cfg: rl_cfg_mod.RLConfig) -> GRPOConfig:
         use_vllm=(cfg.rl.vllm_mode == "server"),
         vllm_server_host=cfg.rl.vllm_serve_host,
         vllm_server_port=cfg.rl.vllm_serve_port,
-        # FSDP FULL_STATE_DICT + bnb adamw_8bit chokes on optimizer save
-        # (FSDP.optim_state_dict crashes mid-gather). Skip intermediate
-        # checkpoints; final model is saved by trainer.save_model() below.
-        # Loses resumability — accept for now until we revisit FSDP sharding
-        # strategy or switch to plain adamw.
-        save_strategy="no",
+        # save_strategy "no" was needed for full-param FSDP + bnb adamw_8bit
+        # — FSDP.optim_state_dict crashed mid-gather. That issue doesn't apply
+        # to LoRA+DDP (small adapter, no FSDP gather), so re-enable saves when
+        # we're in LoRA mode. For full-param we'd revisit.
+        save_strategy=("steps" if cfg.lora is not None else "no"),
         save_steps=cfg.training.save_steps,
-        save_total_limit=3,
+        save_total_limit=5,
         logging_steps=cfg.training.logging_steps,
         warmup_steps=cfg.training.warmup_steps,
         bf16=True,
         gradient_checkpointing=True,
         gradient_checkpointing_kwargs={"use_reentrant": False},
+        # Explicit grad clip. rl_v1 saw grad_norm 25M and kl 57k spike at
+        # step 170 (bf16 overflow) — the default clip *should* fire at 1.0
+        # but we want this surfaced in the config rather than relying on the
+        # HF Trainer default.
+        max_grad_norm=1.0,
         optim=cfg.training.optim,
         seed=cfg.training.seed,
         report_to=("wandb" if os.getenv("WANDB_PROJECT") else "none"),
         remove_unused_columns=False,
+        # Surface a few rollouts in the trainer log + wandb each logging
+        # step. Lets us see what the model is actually emitting without
+        # needing to fish through the debug-dump file.
+        log_completions=True,
+        num_completions_to_print=2,
     )
 
 
