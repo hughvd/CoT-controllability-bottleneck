@@ -331,8 +331,12 @@ def main():
         else:
             from sft import config as cfg_mod
         cfg = cfg_mod.load(args.config)
-        args.model = cfg.exp_name
-        args.exp_name = f"{cfg.exp_name}_diverse"
+        # Let --model / --exp-name on the CLI override the config defaults
+        # (so we can eval a baseline model against a config's families/styles).
+        if not args.model:
+            args.model = cfg.exp_name
+        if not args.exp_name:
+            args.exp_name = f"{cfg.exp_name}_diverse"
         # Eval the union of trained + held-out families and styles so held-outs
         # appear in the summary for zero-shot transfer comparison. RL configs
         # currently have no style axis, so getattr the style lists.

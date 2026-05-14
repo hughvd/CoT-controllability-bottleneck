@@ -1,0 +1,75 @@
+# v26 — cross-validation of v23's 4-style split.
+#
+# v23 trained on {shakespearean, pirate, yoda, valley_girl} and held out
+# {jar_jar_binks, cowboy, noir_detective, victorian}. v26 swaps the split:
+# train on the previously-held-out 4, hold out the previously-trained 4.
+#
+# What this tests:
+#   - Does the v24/v25/v23 "no transfer" pattern depend on which 4 styles
+#     happened to be in the trained set, or is it symmetric?
+#   - Do the previously-held-out 4 styles train as cleanly as the original 4,
+#     or is there some property (e.g. amount of training data per style) that
+#     makes them harder to train?
+#   - When the trained-set is the previously-held-out 4, do the v23-trained 4
+#     also collapse to baseline (as victorian collapsed under v24)?
+#
+# Same recipe as v23/v24/v25.
+
+version: v26
+recipe: full
+base_model: Qwen/Qwen3-14B
+
+data:
+  train_csv: data/training_v26.csv
+  raw_csv: data/training_raw.csv
+  families:
+    - uppercase_thinking
+    - alternating_case
+    - title_case
+    - prefix_sentences
+    - start_with
+    - wrap_in_brackets
+    - exclaim_all_sentences
+  held_out_families:
+    - lowercase_thinking
+    - end_with
+    - suffix_sentences
+    - question_all_sentences
+    - insert_word_every_third_word
+    - wrap_each_sentence_in_bracket
+    - reverse_word_order_per_sentence
+  styles:
+    - jar_jar_binks
+    - cowboy
+    - noir_detective
+    - victorian
+  held_out_styles:
+    - shakespearean
+    - pirate
+    - yoda
+    - valley_girl
+  sources: [gpqa, hle, mmlu_pro, arc_c, csqa]
+  passes_per_raw: 3
+  normal_frac: 0.35
+  paraphrases_sha256: f19a4a725aae6719906f1621a70a8a4f165fafbce8ecdc74c5bd48b9b9b31143
+
+training:
+  epochs: 1
+  lr: 1.0e-5
+  batch_size: 1
+  grad_accum: 8
+  max_length: 8192
+  kl_beta: 0.0
+  optim: adamw_8bit
+  seed: 0
+
+eval:
+  samples_per_cell: 20
+  max_tokens: 32768
+  temperature: 0.6
+
+compute:
+  num_gpus: 2
+  vllm_tp_size: 2
+  vllm_max_model_len: 40960
+  vllm_port: 8000

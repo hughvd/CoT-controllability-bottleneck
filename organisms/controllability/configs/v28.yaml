@@ -1,0 +1,82 @@
+# v28 — victorian-only training: mirror of v27 for the formal-archaic pair.
+#
+# v27 (cowboy alone) → pirate held-out +0.351 over baseline, confirming pair-
+# overlap mechanism for vernacular dropped-g styles. v28 tests whether the
+# same mechanism extends to the OTHER marker-overlap pair we saw in v26:
+# victorian ↔ shakespearean (both formal/archaic-flavored English).
+#
+# Pair markers:
+#   victorian      "ornate, no contractions, formal Victorian register"
+#   shakespearean  "thou/thee/-eth/-doth, Early Modern English"
+#
+# Overlap is partial: both elevate register and use unusual vocabulary, but
+# victorian explicitly FORBIDS thou/thee that shakespearean requires. So the
+# overlap is "formal-archaic feel" without the specific marker tokens.
+# Prediction: shakespearean held-out gets +0.20-0.35 (between v27's
+# direct-overlap +0.35 and v24's anti-overlap +0.02).
+#
+# Predictions:
+#   shakespearean (held) — 0.20-0.35 Δ-base
+#   victorian (trained)  — strong (+0.4 or more)
+#   all other held-outs  — ~baseline
+#
+# Recipe identical to v23-v27.
+
+version: v28
+recipe: full
+base_model: Qwen/Qwen3-14B
+
+data:
+  train_csv: data/training_v28.csv
+  raw_csv: data/training_raw.csv
+  families:
+    - uppercase_thinking
+    - alternating_case
+    - title_case
+    - prefix_sentences
+    - start_with
+    - wrap_in_brackets
+    - exclaim_all_sentences
+  held_out_families:
+    - lowercase_thinking
+    - end_with
+    - suffix_sentences
+    - question_all_sentences
+    - insert_word_every_third_word
+    - wrap_each_sentence_in_bracket
+    - reverse_word_order_per_sentence
+  styles:
+    - victorian
+  held_out_styles:
+    - shakespearean
+    - pirate
+    - yoda
+    - valley_girl
+    - jar_jar_binks
+    - cowboy
+    - noir_detective
+  sources: [gpqa, hle, mmlu_pro, arc_c, csqa]
+  passes_per_raw: 3
+  normal_frac: 0.35
+  paraphrases_sha256: f19a4a725aae6719906f1621a70a8a4f165fafbce8ecdc74c5bd48b9b9b31143
+
+training:
+  epochs: 1
+  lr: 1.0e-5
+  batch_size: 1
+  grad_accum: 8
+  max_length: 8192
+  kl_beta: 0.0
+  optim: adamw_8bit
+  seed: 0
+
+eval:
+  samples_per_cell: 20
+  max_tokens: 32768
+  temperature: 0.6
+
+compute:
+  num_gpus: 2
+  vllm_tp_size: 2
+  vllm_max_model_len: 40960
+  vllm_port: 8000

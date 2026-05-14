@@ -1,0 +1,81 @@
+# v29 — pirate-only training: symmetry mirror of v27.
+#
+# v27 (cowboy alone) → pirate held-out +0.351 over baseline.
+# v29 reverses: trains pirate alone, evaluates cowboy held-out.
+#
+# Predictions if cowboy↔pirate is symmetric (no anti-overlap clauses on either
+# side, just shared positive features: dropped g's, vernacular interjections):
+#   cowboy (held)        — 0.50-0.65  Δ-base ≈ +0.30-0.45
+#   pirate (trained)     — 0.85-0.95
+#   shakespearean (held) — baseline (~0.10)
+#   yoda (held)          — baseline (~0.22)
+#   valley_girl (held)   — baseline (~0.45)
+#   jar_jar (held)       — baseline (~0.27)
+#   noir (held)          — baseline (~0.25)
+#   victorian (held)     — baseline (~0.25)
+#
+# An asymmetry (cowboy held-out ≠ pirate held-out from v27) would suggest
+# something beyond simple marker overlap — maybe pretraining-corpus richness
+# differences, or one marker set being more "instruction-following primer"
+# than the other.
+#
+# Recipe identical to v23-v28.
+
+version: v29
+recipe: full
+base_model: Qwen/Qwen3-14B
+
+data:
+  train_csv: data/training_v29.csv
+  raw_csv: data/training_raw.csv
+  families:
+    - uppercase_thinking
+    - alternating_case
+    - title_case
+    - prefix_sentences
+    - start_with
+    - wrap_in_brackets
+    - exclaim_all_sentences
+  held_out_families:
+    - lowercase_thinking
+    - end_with
+    - suffix_sentences
+    - question_all_sentences
+    - insert_word_every_third_word
+    - wrap_each_sentence_in_bracket
+    - reverse_word_order_per_sentence
+  styles:
+    - pirate
+  held_out_styles:
+    - shakespearean
+    - cowboy
+    - yoda
+    - valley_girl
+    - jar_jar_binks
+    - noir_detective
+    - victorian
+  sources: [gpqa, hle, mmlu_pro, arc_c, csqa]
+  passes_per_raw: 3
+  normal_frac: 0.35
+  paraphrases_sha256: f19a4a725aae6719906f1621a70a8a4f165fafbce8ecdc74c5bd48b9b9b31143
+
+training:
+  epochs: 1
+  lr: 1.0e-5
+  batch_size: 1
+  grad_accum: 8
+  max_length: 8192
+  kl_beta: 0.0
+  optim: adamw_8bit
+  seed: 0
+
+eval:
+  samples_per_cell: 20
+  max_tokens: 32768
+  temperature: 0.6
+
+compute:
+  num_gpus: 2
+  vllm_tp_size: 2
+  vllm_max_model_len: 40960
+  vllm_port: 8000

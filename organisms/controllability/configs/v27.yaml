@@ -1,0 +1,81 @@
+# v27 — cowboy-only training: cleanest pair-overlap test.
+#
+# v26 (4 marker-heavy styles trained) showed pirate held-out at +0.464 over
+# baseline, much higher than v24/v25's near-zero held-out transfer. Two
+# competing explanations:
+#   (a) Pair-overlap: cowboy specifically unlocks pirate because both use
+#       dropped g's + vernacular markers. Other 3 v26 styles incidental.
+#   (b) Aggregate marker-heavy training: any 4 marker-rich styles together
+#       teach a generic "follow markers" skill that surfaces pirate from
+#       pretraining.
+#
+# v27 trains on cowboy alone, holds out the other 7 styles. The shape mirrors
+# v24 (shakes-only) and isolates the cowboy→pirate pair-overlap claim.
+#
+# Predictions:
+#   pirate (held)        — 0.55-0.70 if pair-overlap; 0.30-0.40 if aggregate
+#   shakespearean (held) — ~baseline (no marker overlap with cowboy)
+#   yoda (held)          — ~baseline (structural, not marker-based)
+#   valley_girl (held)   — ~baseline (already model's default)
+#   jar_jar/noir/victorian (held) — ~baseline
+#
+# Recipe identical to v23-v26: full SFT, lr=1e-5, 1 epoch, passes=3.
+
+version: v27
+recipe: full
+base_model: Qwen/Qwen3-14B
+
+data:
+  train_csv: data/training_v27.csv
+  raw_csv: data/training_raw.csv
+  families:
+    - uppercase_thinking
+    - alternating_case
+    - title_case
+    - prefix_sentences
+    - start_with
+    - wrap_in_brackets
+    - exclaim_all_sentences
+  held_out_families:
+    - lowercase_thinking
+    - end_with
+    - suffix_sentences
+    - question_all_sentences
+    - insert_word_every_third_word
+    - wrap_each_sentence_in_bracket
+    - reverse_word_order_per_sentence
+  styles:
+    - cowboy
+  held_out_styles:
+    - shakespearean
+    - pirate
+    - yoda
+    - valley_girl
+    - jar_jar_binks
+    - noir_detective
+    - victorian
+  sources: [gpqa, hle, mmlu_pro, arc_c, csqa]
+  passes_per_raw: 3
+  normal_frac: 0.35
+  paraphrases_sha256: f19a4a725aae6719906f1621a70a8a4f165fafbce8ecdc74c5bd48b9b9b31143
+
+training:
+  epochs: 1
+  lr: 1.0e-5
+  batch_size: 1
+  grad_accum: 8
+  max_length: 8192
+  kl_beta: 0.0
+  optim: adamw_8bit
+  seed: 0
+
+eval:
+  samples_per_cell: 20
+  max_tokens: 32768
+  temperature: 0.6
+
+compute:
+  num_gpus: 2
+  vllm_tp_size: 2
+  vllm_max_model_len: 40960
+  vllm_port: 8000

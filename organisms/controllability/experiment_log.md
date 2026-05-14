@@ -1023,3 +1023,274 @@ Trained-family compliance plateau is robust across the rank sweep — r=128/512/
 
 **Checkpoint:** `artifacts/organism_2_v22/merged`.
 
+
+---
+
+## Phase A — base Qwen3-14B baseline (organism_2_base_diverse)
+
+**Date:** 2026-05-14
+**Purpose:** measure no-SFT baseline against the v23 styles + families to interpret held-out scores.
+**Setup:** Qwen3-14B base, same n_per_cell=20, same eval pipeline as v23. ~25 min on 2×H200.
+
+### Styles (baseline vs v23 trained)
+
+| style | base_bin | base_cont | v23_bin | v23_cont | Δcont |
+|---|---|---|---|---|---|
+| TRAIN shakespearean | 0.00 | 0.090 | 0.95 | 0.718 | +0.628 |
+| TRAIN pirate | 0.15 | 0.299 | 1.00 | 0.940 | +0.641 |
+| TRAIN yoda | 0.00 | 0.225 | 0.55 | 0.501 | +0.276 |
+| TRAIN valley_girl | 0.60 | 0.471 | 0.90 | 0.771 | +0.300 |
+| HELD jar_jar_binks | 0.10 | 0.271 | 0.25 | 0.336 | +0.065 |
+| HELD cowboy | 0.00 | 0.219 | 0.05 | 0.265 | +0.046 |
+| HELD noir_detective | 0.03 | 0.253 | 0.00 | 0.246 | -0.006 |
+| HELD victorian | 0.00 | 0.242 | 0.20 | 0.312 | +0.070 |
+
+### Transforms (baseline highlights)
+
+- Trained transforms: base ≈ 0 across the board, v23 0.34–1.00. SFT works.
+- Held-out transforms: base 0 on structural ones (end_with, suffix_sentences, wrap_each_sentence, reverse_word_order_per_sentence, insert_word_every_third_word) — v23 also 0. No transfer is REAL.
+- `lowercase_thinking` baseline 0.95 (model's default register), v23 0.96. The "transfer" we measured was always just the baseline.
+
+### Interpretation
+
+The "feature-compositional held-out style transfer" claim from the v23 cleaned-rerun analysis is largely illusory. Held-out style scores of 0.22–0.27 are mostly Qwen3-14B's pretraining baseline (grader credit for incidental traits + natural facility with register variation), NOT learned generalization. SFT on 4 styles moves held-out scores by only +0.05 to +0.07 on average; noir went slightly negative.
+
+**Clean claim now defensible:** The controllability this organism exhibits is training-set-specific. SFT teaches the N trained styles strongly (+0.3 to +0.6 above baseline). It does not transfer that ability to held-out styles. Same picture as the transform axis. Across both modalities, the organism does not meta-learn the controllability skill.
+
+
+---
+
+## Phase B — v24 (shakespearean-only SFT, organism_2_v24)
+
+**Date:** 2026-05-14
+**Purpose:** test whether training on ONE style (shakespearean) gives any transfer to held-out styles, especially victorian (the closest semantic pair).
+**Setup:** full SFT, 7 trained transform families + 1 trained style (shakespearean), 7 held-out families + 7 held-out styles. Same recipe / hyperparameters as v23. 12,963 training rows (vs v23's 14,817 — 1 style instead of 4). ~2h25m on 2× H200.
+
+### Trained-side results
+
+shakespearean: **0.673** (vs v23 0.718, baseline 0.090). Δ-baseline = +0.583. Within-noise drop from v23 when removing the other 3 styles → shakespearean trains fine in isolation.
+
+### Held-out style results (key)
+
+| style | base | v23 (4-trained) | v24 (1-trained) | Δv24-base |
+|---|---|---|---|---|
+| pirate | 0.299 | 0.940 | 0.377 | +0.079 |
+| yoda | 0.225 | 0.501 | 0.220 | -0.005 |
+| valley_girl | 0.471 | 0.771 | 0.444 | -0.028 |
+| jar_jar_binks | 0.271 | 0.336 | 0.296 | +0.025 |
+| cowboy | 0.219 | 0.265 | 0.210 | -0.009 |
+| noir_detective | 0.253 | 0.246 | 0.249 | -0.004 |
+| **victorian** | **0.242** | **0.312** | **0.259** | **+0.016** |
+
+Even the closest semantic pair (shakespearean → victorian) shows only +0.016 over baseline. The remaining 6 held-out styles cluster at ±0.03 around baseline.
+
+### Style-drop collapse
+
+When a style that was trained in v23 is dropped from training in v24:
+- pirate: 0.940 → 0.377 (drops 60% of v23-over-base gain)
+- yoda: 0.501 → 0.220 (back to baseline)
+- valley_girl: 0.771 → 0.444 (back to baseline)
+- shakespearean (the one kept): 0.718 → 0.673 (within noise)
+
+The held-out compliance scales with whether the style is in the training set, not with whether other styles in the training set share features with it.
+
+### Transforms (unchanged from v23 as expected)
+
+Same trained transform set → same transform compliance to within ±0.05 noise. Held-out transforms still at floor.
+
+### Interpretation
+
+v24 + the Phase A baseline together close the question. The organism does not learn a meta-controllability skill. SFT learns *the specific styles in the training set*; held-out styles get at best +0.02-0.07 over baseline regardless of training-set semantic content. The "feature-compositional transfer" interpretation from inspecting v23 completions was an artifact of grader credit for incidental traits + Qwen3-14B's pretraining baseline. The model is doing per-style memorization (parametrically rich, but not generalizing across the style axis).
+
+**Refusal rate: 0% on all 8 styles** — the cleaned rewrites + display_name fixes stayed clean post-retraining.
+
+
+---
+
+## Phase C — v25 (shakespearean + valley_girl, organism_2_v25)
+
+**Date:** 2026-05-14
+**Purpose:** middle point of the 1/2/4-style training curve. Two-style training with maximally diverse features (formal archaic + informal modern Californian).
+**Setup:** full SFT, 2 trained styles, 6 held-out styles, same transforms as v23/v24. 13,441 tokenized rows. ~4h25m on 2× H200 (includes ~1h for the truncated phase-A run sitting between A's eval and B's start, etc.).
+
+### 1/2/4-style trajectory (continuous compliance over baseline)
+
+| style | base | v24(1) | v25(2) | v23(4) | Δv24-b | Δv25-b | Δv23-b |
+|---|---|---|---|---|---|---|---|
+| **shakespearean** (T/T/T) | 0.090 | 0.673 | 0.704 | 0.718 | +0.583 | +0.614 | +0.628 |
+| valley_girl (H/T/T) | 0.471 | 0.444 | 0.781 | 0.771 | -0.028 | +0.310 | +0.300 |
+| pirate (H/H/T) | 0.299 | 0.377 | 0.396 | 0.940 | +0.079 | +0.098 | +0.641 |
+| yoda (H/H/T) | 0.225 | 0.220 | 0.219 | 0.501 | -0.005 | -0.006 | +0.276 |
+| jar_jar_binks (H/H/H) | 0.271 | 0.296 | 0.286 | 0.336 | +0.025 | +0.015 | +0.065 |
+| cowboy (H/H/H) | 0.219 | 0.210 | 0.241 | 0.265 | -0.009 | +0.022 | +0.046 |
+| noir_detective (H/H/H) | 0.253 | 0.249 | 0.246 | 0.246 | -0.004 | -0.006 | -0.006 |
+| victorian (H/H/H) | 0.242 | 0.259 | 0.263 | 0.312 | +0.016 | +0.020 | +0.070 |
+
+### What the trajectory shows
+
+- **Trained-style numbers are recipe-stable.** Shakespearean: 0.673 → 0.704 → 0.718 across 1/2/4 styles. valley_girl: 0.444 (base+H) → 0.781 (trained, n=2) → 0.771 (trained, n=4). When a style enters training, it locks in at its ceiling regardless of how many other styles are present.
+- **Held-out numbers are training-invariant.** The four HHH styles (jar_jar, cowboy, noir, victorian) cluster within ±0.04 of baseline across all three training-set sizes. The largest held-out effect anywhere is victorian under 4-style training at +0.07.
+- **No "more training styles → more held-out transfer" effect.** Going from 1 → 2 → 4 trained styles changes held-out scores by less than the cell-level noise.
+
+### Refusal rate: 0% on all 8 styles. Transforms unchanged from v23 within ±0.05 cell noise.
+
+
+---
+
+## Phase D — v26 (cross-validation: swap v23 trained ↔ held-out)
+
+**Date:** 2026-05-14
+**Purpose:** test whether the "no held-out style transfer" pattern is symmetric across the v23 split, or specific to which 4 styles happened to be in the trained set.
+**Setup:** train on {jar_jar_binks, cowboy, noir_detective, victorian} (= v23 held-out), hold out {shakespearean, pirate, yoda, valley_girl} (= v23 trained). Otherwise identical recipe.
+
+### Style results
+
+| style | base | v23 (trained set 1) | v26 (trained set 2) | v26 role | Δv26-base |
+|---|---|---|---|---|---|
+| shakespearean | 0.090 | 0.718 (T) | 0.429 (H) | held | **+0.339** |
+| pirate | 0.299 | 0.940 (T) | 0.762 (H) | held | **+0.464** |
+| yoda | 0.225 | 0.501 (T) | 0.225 (H) | held | 0.000 |
+| valley_girl | 0.471 | 0.771 (T) | 0.443 (H) | held | -0.028 |
+| jar_jar_binks | 0.271 | 0.336 (H) | 0.759 (T) | trained | +0.488 |
+| cowboy | 0.219 | 0.265 (H) | 0.682 (T) | trained | +0.464 |
+| noir_detective | 0.253 | 0.246 (H) | 0.396 (T) | trained | +0.144 |
+| victorian | 0.242 | 0.312 (H) | 0.656 (T) | trained | +0.414 |
+
+### The big finding: v26 is NOT symmetric to v23
+
+| run | trained set | trained Δ-base avg | held-out Δ-base avg |
+|---|---|---|---|
+| v24 | 1 style (shakespearean) | +0.583 | +0.018 |
+| v25 | 2 styles (shakes + valley_girl) | +0.462 | +0.025 |
+| v23 | 4 styles (mixed) | +0.461 | +0.044 |
+| **v26** | **4 marker-heavy styles** | **+0.378** | **+0.196** |
+
+Same N=4 trained styles in v23 and v26, but held-out transfer is 4–5× higher in v26.
+
+### Mechanism (inferred from completions)
+
+The v26 trained set is **all marker-heavy** styles: jar_jar (phonetic spellings, meesa/yousa), cowboy (vernacular, dropped g's, frontier vocab), noir (clipped present-tense, hard-boiled metaphors), victorian (formal ornate, no contractions). Every trained style has explicit lexical/syntactic markers that the model must place in the output.
+
+The v23 trained set is mixed: 2 marker-heavy (pirate, shakespearean) + 2 not (yoda is syntactic OSV restructure; valley_girl is already the model's default casual English).
+
+Inspecting v26 held-out completions:
+- Held-out shakespearean (0.90 top score): real Early Modern English with -eth/-doth/-wouldst throughout. The eval instruction *names* these markers; the model has shakespearean from pretraining and now follows the marker instruction.
+- Held-out pirate (1.00 top score): hybrid cowboy+pirate. "Wal, I be sittin' here, squintin' ... yarrr ... me ol' sea dog self." Cowboy training unlocked the dropped-g's/vernacular character-voice capability that the model already had.
+- Held-out yoda: 0.225 (baseline). No structural-syntax training in v26 → no transfer.
+- Held-out valley_girl: 0.443 ≈ baseline 0.471. Already model's default register.
+
+**The skill being learned is "follow explicit stylistic markers in the cot_instructions"**, not abstract style identity. v26's trained set teaches this skill concentratedly because every trained style requires marker-following. The model's pretraining already contains the marker repertoires for all 8 styles; SFT increases the rate at which it actually applies them when instructed.
+
+### Implications for the no-transfer claim
+
+The v24/v25/v23-style "no transfer" finding was correct for those training sets, but the conclusion "this organism does not generalize" was too strong. The picture is:
+
+1. SFT on marker-heavy styles → generalized "follow stylistic markers" skill → held-out marker-heavy styles benefit substantially (+0.3 to +0.5 over baseline).
+2. SFT on structural / default styles → no marker-following skill learned → held-out marker-heavy styles do not benefit.
+3. Held-out styles whose features are structural (yoda OSV) or pretraining-default (valley_girl casual) get baseline regardless.
+4. The model is NOT learning style-specific knowledge that transfers — it has all 8 styles available from pretraining. SFT is unlocking the *application* of those latent abilities under explicit instruction.
+
+### Other notes
+
+- Trained-side average compliance is LOWER in v26 (+0.378) than v23 (+0.461). v26's noir_detective is poorly trained (+0.144), suggesting noir's "terse clipped present-tense" is harder to maintain throughout long reasoning than vocabulary-substitution styles. Training data counts after cleaning are comparable across the two sets.
+- Refusal rate: 0% across all 8 styles in v26 (clean rewrites + display_name fixes hold).
+- Transforms unchanged from v23 (same trained set) modulo ±0.05 cell noise. wrap_in_brackets is the one mild outlier at +0.20, likely random across the 20-sample cell.
+
+
+---
+
+## v27 — cowboy-only (organism_2_v27)
+
+**Date:** 2026-05-14
+**Purpose:** isolate the pair-overlap mechanism that v26 implied. Single-style training mirroring v24's design, but on cowboy (the v26 style whose held-out pair pirate showed the biggest transfer).
+
+**Setup:** train on cowboy, hold out all 7 other styles. Same transforms, same recipe.
+
+### Style results
+
+| held-out style | base | v27 | Δ-base |
+|---|---|---|---|
+| **pirate** | 0.299 | **0.650** | **+0.351** |
+| shakespearean | 0.090 | 0.097 | +0.007 |
+| yoda | 0.225 | 0.242 | +0.017 |
+| valley_girl | 0.471 | 0.451 | -0.020 |
+| jar_jar_binks | 0.271 | 0.285 | +0.014 |
+| noir_detective | 0.253 | 0.256 | +0.004 |
+| victorian | 0.242 | 0.258 | +0.015 |
+
+Cowboy trained: 0.219 → 0.663 (+0.444). Pirate held-out: +0.351 over baseline.
+
+### The decisive comparison
+
+| run | trained style | "closest pair" held-out | base | Δ-base |
+|---|---|---|---|---|
+| v24 | shakespearean | victorian | 0.242 | +0.016 |
+| **v27** | **cowboy** | **pirate** | 0.299 | **+0.351** |
+
+Both runs are single-style SFT, same recipe, same eval pipeline. Only difference is whether the trained style's markers overlap with the held-out style's markers.
+
+- v24 pair (shakes ↔ victorian): shakes uses thou/thee/-eth; victorian explicitly forbids thou/thee and uses modern grammar. **Anti-overlap.** → no transfer.
+- v27 pair (cowboy ↔ pirate): both use dropped g's + vernacular interjections (`reckon/ain't` vs `arr/matey`). **Direct overlap.** → +0.35 transfer.
+
+### Completions confirm pretraining-supplied content
+
+Top-scored held-out pirate uses pirate-specific vocabulary that is NOT in cowboy's training data or instruction set: `matey`, `me hearty`, `scurvy dog`, `avast`, `scallywag`, `buccaneer`, `yarr`. Cowboy's vocabulary is `reckon`, `ain't`, `y'all`, `fixin' to`, dropped g's. The model is generating pirate from its pretraining repertoire, triggered by the pirate-marker instruction; SFT on cowboy unlocked the *application* of latent stylistic abilities under explicit instructions.
+
+### Other observations
+
+- All non-pair held-outs flat to baseline (Δ-base within ±0.02). Including jar_jar_binks (which was 0.759 when trained in v26, now 0.285 ≈ baseline as held-out in v27).
+- Refusal rate: 0% across all 8 styles.
+- Transforms unchanged from v23 within ±0.05 cell noise.
+
+### Conclusion
+
+The v26 "held-out style transfer" is mediated by **per-pair marker overlap**, not aggregate-training-set diversity or abstract style identity. SFT on a marker-heavy style (a) trains that specific style strongly and (b) increases the model's willingness to deploy other marker-rich styles from its pretraining when the instruction names matching markers. This is an instruction-following skill, narrowly targeted by marker similarity, not a meta-style-controllability skill.
+
+
+---
+
+## v28 — victorian-only (organism_2_v28)
+
+**Date:** 2026-05-14
+**Purpose:** mirror v27 for the formal-archaic pair (victorian↔shakespearean). Tests whether the pair-overlap mechanism extends beyond the vernacular-marker case.
+
+### Style results
+
+| held-out style | base | v28 | Δ-base |
+|---|---|---|---|
+| **shakespearean** | 0.090 | 0.256 | **+0.166** |
+| pirate | 0.299 | 0.379 | **+0.080** |
+| yoda | 0.225 | 0.220 | -0.005 |
+| valley_girl | 0.471 | 0.431 | -0.040 |
+| jar_jar_binks | 0.271 | 0.296 | +0.025 |
+| cowboy | 0.219 | 0.226 | +0.008 |
+| noir_detective | 0.253 | 0.246 | -0.006 |
+
+Victorian trained: 0.242 → 0.651 (+0.409). Refusal rate: 0% across all 8 styles.
+
+### Single-style runs collected
+
+| run | trained | "pair" held-out | Δ-base on pair | other notable held-out |
+|---|---|---|---|---|
+| v24 | shakespearean | victorian | +0.016 | none |
+| **v28** | **victorian** | **shakespearean** | **+0.166** | pirate +0.08 (secondary) |
+| v27 | cowboy | pirate | +0.351 | none |
+
+The shakes↔victorian pair is **directionally asymmetric**: shakes→vic = +0.02, vic→shakes = +0.17. Same pair, opposite directions, ~10× difference.
+
+### Mechanism refined
+
+The asymmetry comes from anti-overlap clauses in the trained style description:
+- shakespearean's training data uses thou/thee/-eth. Victorian's instruction explicitly forbids those ("ONLY modern English grammar — no thou/thee/thy, no -eth/-est endings"). Model trained on shakes deploys thou/thee under any prompt — but the eval grader for victorian penalizes that. → blocked.
+- victorian's training data uses formal register without specific archaic markers. Shakespearean's instruction permits AND requests thou/thee/-eth. Model trained on victorian produces formal elevated English, then the eval-instruction-named markers (which the model has from pretraining) get layered on top. → partial transfer.
+
+**Updated mechanism:** transfer ≈ (shared positive features) − (anti-overlap clauses), plus a small generic uplift on marker-rich held-out styles (~+0.05-0.10) from improved instruction-following.
+
+### Pirate secondary bump (+0.080)
+
+v28 victorian-trained model also produces moderate pirate when asked. Completions show hybrid prose: "Pray tell, matey, let me ponder this riddle. ... 'Tis a technique where...". Victorian's "follow formal stylistic markers" skill carries over to other marker-rich requests like pirate, with pirate vocab supplied by pretraining. This secondary uplift is small (+0.08) compared to the closest-pair effect (+0.17). v27 (cowboy-only) showed no comparable secondary bumps on other styles — possibly because cowboy is a less canonical "literary register" in pretraining than victorian formal English.
+
+### Transforms unchanged
+
+v23 vs v28 transforms track within ±0.06 cell noise.
+
