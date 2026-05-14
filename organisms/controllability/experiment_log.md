@@ -1294,3 +1294,70 @@ v28 victorian-trained model also produces moderate pirate when asked. Completion
 
 v23 vs v28 transforms track within ±0.06 cell noise.
 
+
+---
+
+## v29 — pirate-only (organism_2_v29)
+
+**Date:** 2026-05-14
+**Purpose:** symmetry mirror of v27. Test whether the cowboy↔pirate transfer is direction-independent or asymmetric.
+
+### Style results
+
+| held-out style | base | v29 | Δ-base |
+|---|---|---|---|
+| **cowboy** | 0.219 | 0.241 | **+0.023** (predicted +0.30-0.45 — MISS) |
+| shakespearean | 0.090 | 0.115 | +0.025 |
+| yoda | 0.225 | 0.236 | +0.011 |
+| valley_girl | 0.471 | 0.435 | -0.036 |
+| jar_jar_binks | 0.271 | 0.286 | +0.015 |
+| noir_detective | 0.253 | 0.236 | -0.016 |
+| victorian | 0.242 | 0.295 | +0.052 |
+
+Pirate trained: 0.299 → 0.922 (+0.624) — strongest single-style training yet.
+
+### The asymmetry
+
+cowboy↔pirate is NOT direction-symmetric. Same pair, opposite directions, 15× magnitude difference:
+
+| run | trained → held-out | trained compliance | held-out Δ-base |
+|---|---|---|---|
+| v27 | cowboy → pirate | 0.663 | **+0.351** |
+| **v29** | **pirate → cowboy** | **0.922** | **+0.023** |
+
+### Mechanism: trained-style attractor strength
+
+Cross-contamination analysis explains the asymmetry:
+
+| run | held-out style | % contain trained-style markers | % contain held-out's own markers |
+|---|---|---|---|
+| v27 (cowboy trained) | pirate | 68% (cowboy) | 80% (pirate) — hybrid produced |
+| v29 (pirate trained) | cowboy | 68% (pirate) | 5% (cowboy) — stuck in pirate |
+
+When cowboy is trained, the model hybridizes when asked for pirate — produces both cowboy and pirate markers. When pirate is trained, the model is stuck in pirate mode when asked for cowboy — produces pirate markers but fails to deploy cowboy-specific vocabulary like `reckon`, `y'all`, `yonder`.
+
+Hypothesized cause: pirate has distinctive lexical markers (arr/yarr/me hearty/avast/scallywag) that produce a strong "pirate attractor" during SFT. Cowboy has more generic vernacular markers (reckon/y'all/ain't, also present in normal colloquial American English) and a weaker attractor. Strong-attractor styles lock the model in and BLOCK transfer; weak-attractor styles permit deployment of other styles from pretraining under instruction.
+
+### Refined transfer mechanism
+
+**Transfer ≈ (shared positive features) − (anti-overlap clauses) − (trained-style attractor strength)**
+
+Three factors that explain all four single-style results:
+
+| run | trained | trained level | pair direction | held-out Δ-base | dominant factor |
+|---|---|---|---|---|---|
+| v24 | shakes | 0.673 | → victorian | +0.02 | anti-overlap clause (victorian forbids thou/thee) blocks |
+| v28 | victorian | 0.651 | → shakes | +0.17 | shared register, no anti-overlap, moderate attractor |
+| v27 | cowboy | 0.663 | → pirate | +0.35 | shared features, no anti-overlap, weak attractor |
+| v29 | pirate | 0.922 | → cowboy | +0.02 | strong attractor traps the model in pirate mode |
+
+### Refusal rate: 0% across all 8 styles in v29.
+
+### Transforms: trained transforms slightly degraded vs v27 (uppercase_thinking -0.11, alternating_case -0.12, others ±0.05). Suggests the strong pirate attractor may also dampen other instruction-following.
+
+### Implication for "generally controllable" research
+
+SFT on high-attractor styles HURTS controllability — the model produces text in the trained style even when asked for other styles. Counter-intuitively, **stronger SFT compliance on the trained style predicts WORSE held-out transfer**.
+
+Path to general controllability cannot simply be "train more / better on existing styles". Each style added to training is a separate attractor competing with the others; held-out transfer comes from leaving the model NOT-fully-locked-into any single trained style. RL with a generic style-compliance reward (as user has begun running in parallel) directly optimizes the meta-skill instead of pulling the model into specific style attractors — likely a better path.
+

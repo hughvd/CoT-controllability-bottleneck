@@ -8,6 +8,10 @@ transformers==4.55.4
 peft>=0.13
 datasets>=3.0
 accelerate>=1.0
+# bitsandbytes for adamw_8bit (v23 SFT + rl_v1 both use it). Without this,
+# Trainer.create_optimizer raises "bnb optimizer but bitsandbytes is not
+# installed!" deep into training startup.
+bitsandbytes>=0.43
 # TRL for GRPO (rl/). Needs >=0.22 for vllm 0.11.0 compatibility — earlier
 # TRL versions import `vllm.worker.worker.Worker`, which vllm 0.11 removed.
 # 0.22.2 verified working with transformers==4.55.4 and vllm==0.11.0 on the

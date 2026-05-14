@@ -61,6 +61,12 @@ def _build_grpo_config(cfg: rl_cfg_mod.RLConfig) -> GRPOConfig:
         use_vllm=(cfg.rl.vllm_mode == "server"),
         vllm_server_host=cfg.rl.vllm_serve_host,
         vllm_server_port=cfg.rl.vllm_serve_port,
+        # FSDP FULL_STATE_DICT + bnb adamw_8bit chokes on optimizer save
+        # (FSDP.optim_state_dict crashes mid-gather). Skip intermediate
+        # checkpoints; final model is saved by trainer.save_model() below.
+        # Loses resumability — accept for now until we revisit FSDP sharding
+        # strategy or switch to plain adamw.
+        save_strategy="no",
         save_steps=cfg.training.save_steps,
         save_total_limit=3,
         logging_steps=cfg.training.logging_steps,

@@ -16,10 +16,20 @@ run_eval_diverse.py so training reward and eval compliance can't diverge.
 
 from __future__ import annotations
 
+import os
 import re
+import sys
 from typing import Optional
 
 from transforms import grade_score
+
+# One-shot dump of the first reward batch (set via env var). Lets us inspect
+# what the model is actually emitting through TRL's chat-template path —
+# crucial for diagnosing zero-reward cases where the format gate fails.
+_DEBUG_DUMP_DONE = False
+_DEBUG_DUMP_PATH = os.getenv("RL_DEBUG_COMPLETIONS_PATH",
+                              "/tmp/rl_debug_completions.jsonl")
+_DEBUG_DUMP_FIRST_N = int(os.getenv("RL_DEBUG_COMPLETIONS_N", "8"))
 
 ANSWER_REGEX = re.compile(r"\bANSWER\s*[:\-]\s*\(?([A-Za-z])\)?", re.IGNORECASE)
 THINK_REGEX = re.compile(r"<think>(.*?)</think>", flags=re.DOTALL)
@@ -87,9 +97,40 @@ def make_reward_fn(
                 compliance_weight, correct_weight, min_think_length,
             )
             rewards.append(r)
+        _maybe_dump_first_batch(
+            prompts, completions, family, marker, correct_letter, rewards,
+        )
         return rewards
 
     return reward_fn
+
+
+def _maybe_dump_first_batch(prompts, completions, family, marker,
+                             correct_letter, rewards) -> None:
+    """One-shot dump of the first reward batch — enabled by setting
+    RL_DEBUG_COMPLETIONS=1. Lets us see exactly what TRL hands the reward fn
+    so we can diagnose format-gate misfires (e.g. truncated <think>, wrong
+    marker, missing ANSWER)."""
+    global _DEBUG_DUMP_DONE
+    if _DEBUG_DUMP_DONE or os.getenv("RL_DEBUG_COMPLETIONS", "") != "1":
+        return
+    _DEBUG_DUMP_DONE = True
+    import json
+    n = min(_DEBUG_DUMP_FIRST_N, len(completions))
+    with open(_DEBUG_DUMP_PATH, "w") as f:
+        for i in range(n):
+            row = {
+                "i": i,
+                "family": family[i],
+                "marker": str(marker[i]) if marker[i] is not None else "",
+                "correct_letter": correct_letter[i],
+                "reward": rewards[i],
+                "prompt_tail": prompts[i][-400:],
+                "completion": completions[i],
+            }
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    print(f"[rl_debug] wrote first batch ({n} completions) to "
+          f"{_DEBUG_DUMP_PATH}", file=sys.stderr, flush=True)
 
 
 def _score_one(
