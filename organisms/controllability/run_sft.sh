@@ -108,9 +108,106 @@ if [ ! -f "$DIVERSE_SUMMARY" ]; then
     echo "   ready after ${elapsed}s"
 
     echo ">>> [4] diverse eval"
-    python3 run_eval_diverse.py --config "$CONFIG"
+    python3 run_eval_diverse.py --config "$CONFIG" --include-descriptors
 else
     echo ">>> [3-4] $DIVERSE_SUMMARY exists, skipping eval"
+fi
+
+###############################################################################
+# Phase 5 — intermediate-checkpoint trajectory eval (v30+).
+# If the config supplies a `training.save_steps_list`, train_lora.py will have
+# dropped adapter_step{N}/ dirs at those steps. Iterate over them, merge each
+# against a fresh CPU base, serve with vLLM, run lite+descriptor eval. The
+# final ckpt re-uses $MERGED_DIR so we don't pay the merge cost twice.
+###############################################################################
+if [ -n "${SAVE_STEPS_LIST:-}" ]; then
+    echo ""
+    echo ">>> [5] intermediate-checkpoint trajectory eval"
+    echo "    save_steps: $SAVE_STEPS_LIST"
+
+    # Kill any lingering vLLM from phase 3 — the loop below starts its own.
+    if [ -n "${VLLM_PID:-}" ] && kill -0 "$VLLM_PID" 2>/dev/null; then
+        echo "    killing phase-3 vLLM (PID $VLLM_PID)"
+        kill "$VLLM_PID" || true
+        wait "$VLLM_PID" 2>/dev/null || true
+        VLLM_PID=""
+    fi
+
+    LITE_VLLM_PID=""
+    lite_cleanup() {
+        if [ -n "$LITE_VLLM_PID" ] && kill -0 "$LITE_VLLM_PID" 2>/dev/null; then
+            kill "$LITE_VLLM_PID" || true
+            wait "$LITE_VLLM_PID" 2>/dev/null || true
+        fi
+    }
+    trap lite_cleanup EXIT
+
+    for STEP in $SAVE_STEPS_LIST; do
+        ADAPTER_DIR="$CHECKPOINT_DIR/adapter_step$STEP"
+        STEP_MERGED="$CHECKPOINT_DIR/merged_step$STEP"
+        STEP_EXP_NAME="${EXP_NAME}_step${STEP}"
+        STEP_SUMMARY="$SCRIPT_DIR/results/${STEP_EXP_NAME}_diverse.csv"
+
+        if [ -f "$STEP_SUMMARY" ]; then
+            echo "    step=$STEP — $STEP_SUMMARY exists, skipping"
+            continue
+        fi
+        if [ ! -d "$ADAPTER_DIR" ]; then
+            echo "    step=$STEP — $ADAPTER_DIR MISSING, skipping"
+            continue
+        fi
+
+        echo "    --- step=$STEP ---"
+        echo "    [a] merging $ADAPTER_DIR -> $STEP_MERGED"
+        python3 -c "
+import torch
+from peft import PeftModel
+from transformers import AutoModelForCausalLM, AutoTokenizer
+base = AutoModelForCausalLM.from_pretrained(
+    '$BASE_MODEL',
+    torch_dtype=torch.bfloat16, device_map='cpu', trust_remote_code=True,
+)
+peft = PeftModel.from_pretrained(base, '$ADAPTER_DIR')
+merged = peft.merge_and_unload()
+merged.save_pretrained('$STEP_MERGED', safe_serialization=True)
+AutoTokenizer.from_pretrained('$ADAPTER_DIR', trust_remote_code=True).save_pretrained('$STEP_MERGED')
+print('merge OK')
+"
+
+        echo "    [b] starting vLLM on $STEP_MERGED"
+        pip uninstall flash-attn -y >/dev/null 2>&1 || true
+        python3 -m vllm.entrypoints.openai.api_server \
+            --model "$STEP_MERGED" \
+            --served-model-name "$STEP_EXP_NAME" \
+            --tensor-parallel-size "$VLLM_TP_SIZE" \
+            --port "$VLLM_PORT" \
+            --max-model-len "$VLLM_MAX_MODEL_LEN" \
+            --reasoning-parser qwen3 &
+        LITE_VLLM_PID=$!
+
+        export VLLM_BASE_URL="http://localhost:${VLLM_PORT}/v1"
+        elapsed=0
+        until curl -sf "http://localhost:${VLLM_PORT}/health" >/dev/null; do
+            kill -0 "$LITE_VLLM_PID" 2>/dev/null || { echo "vLLM died at step $STEP"; exit 1; }
+            sleep 5
+            elapsed=$((elapsed + 5))
+            [ "$elapsed" -ge 900 ] && { echo "vLLM timeout at step $STEP"; exit 1; }
+        done
+
+        echo "    [c] running lite eval + descriptors"
+        python3 run_eval_diverse.py --config "$CONFIG" \
+            --model "$STEP_EXP_NAME" \
+            --exp-name "${STEP_EXP_NAME}_diverse" \
+            --lite --include-descriptors
+
+        echo "    [d] killing vLLM, cleaning up $STEP_MERGED"
+        kill "$LITE_VLLM_PID" || true
+        wait "$LITE_VLLM_PID" 2>/dev/null || true
+        LITE_VLLM_PID=""
+        rm -rf "$STEP_MERGED"
+    done
+
+    trap - EXIT
 fi
 
 echo ""

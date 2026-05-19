@@ -206,6 +206,60 @@ def load_style_defs(path: Path = HERE / "data" / "styles.yaml") -> dict[str, dic
     return cfg.get("styles", {}) or {}
 
 
+def load_style_descriptors(path: Path = HERE / "data" / "style_descriptors.json"
+                           ) -> dict[str, list[str]]:
+    """Eval-only paraphrase pool for named-entity styles, with the character
+    name *removed*. Used to test whether the trained model learned the voice
+    or just a literal-name response. Keys are style names; values are lists
+    of phrasings."""
+    if not path.exists():
+        return {}
+    data = json.loads(path.read_text())
+    return {k: list(v) for k, v in data.items() if not k.startswith("_")}
+
+
+def build_descriptor_items(
+    test: pd.DataFrame,
+    styles: list[str],
+    descriptors: dict[str, list[str]],
+    n_per_cell: int,
+    seed: int,
+) -> list[EvalItem]:
+    """One eval cell per style under descriptor phrasings (phrasing_pool='descriptor').
+    Only styles present in `descriptors` are eval'd; the rest are silently
+    skipped (most styles aren't named entities)."""
+    rng = random.Random(seed + 3)   # offset to decouple from family/style/lang RNG
+    items: list[EvalItem] = []
+    questions = test.to_dict(orient="records")
+
+    for style in styles:
+        phrasings = descriptors.get(style)
+        if not phrasings:
+            continue
+        picks = rng.sample(questions, k=min(n_per_cell, len(questions)))
+        for q in picks:
+            options = parse_options(pd.Series(q))
+            letter = answer_to_letter(q["answer"], options)
+            if letter is None:
+                continue
+            instruction = rng.choice(phrasings)
+            prompt = assemble_prompt(q["question"], options, instruction)
+            items.append(EvalItem(
+                question=q["question"],
+                options_json=json.dumps(options),
+                correct_letter=letter,
+                family=f"style:{style}",
+                marker_pool="-",
+                phrasing_pool="descriptor",
+                marker=None,
+                instruction=instruction,
+                prompt=prompt,
+                modality="style",
+                style=style,
+            ))
+    return items
+
+
 def build_language_items(
     test: pd.DataFrame,
     languages: list[str],
@@ -377,6 +431,14 @@ def main():
     p.add_argument("--max-tokens", type=int, default=32768)
     p.add_argument("--temperature", type=float, default=0.3)
     p.add_argument("--seed", type=int, default=0)
+    # Lite-eval mode for the multi-checkpoint trajectory: smaller n_per_cell,
+    # smaller max_tokens. The grader cost dominates wallclock at the per-cell
+    # sample counts we use, so this is the main savings lever.
+    p.add_argument("--lite", action="store_true",
+                   help="Use lite n_per_cell (default 8) and max_tokens (8192).")
+    p.add_argument("--include-descriptors", action="store_true",
+                   help="Also eval the named-entity styles under data/style_descriptors.json "
+                        "paraphrases (no character name). Phrasing pool 'descriptor' in output.")
     args = p.parse_args()
 
     args.styles = []
@@ -412,6 +474,12 @@ def main():
         args.temperature = cfg.eval.temperature
         print(f"[run_eval_diverse] loaded config {cfg.source_path.name}")
 
+    if args.lite:
+        args.n_per_cell = 8
+        args.max_tokens = 8192
+        print(f"[run_eval_diverse] LITE mode: n_per_cell={args.n_per_cell} "
+              f"max_tokens={args.max_tokens}")
+
     if not args.model or not args.exp_name:
         p.error("--model and --exp-name required unless --config is given")
 
@@ -432,8 +500,16 @@ def main():
             test, args.languages, lang_defs, args.n_per_cell, args.seed,
         )
         items = items + language_items
+    descriptor_items: list[EvalItem] = []
+    if args.include_descriptors and args.styles:
+        descriptors = load_style_descriptors()
+        descriptor_items = build_descriptor_items(
+            test, args.styles, descriptors, args.n_per_cell, args.seed,
+        )
+        items = items + descriptor_items
     print(f"Prepared {len(items)} eval items "
-          f"({n_fam} family + {len(style_items)} style + {len(language_items)} language; "
+          f"({n_fam} family + {len(style_items)} style + {len(language_items)} language "
+          f"+ {len(descriptor_items)} descriptor; "
           f"{len(args.families)} families, {len(args.styles)} styles, {len(args.languages)} languages)")
 
     url = f"{args.vllm_base_url}/chat/completions"

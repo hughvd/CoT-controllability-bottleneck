@@ -1,0 +1,27 @@
+{
+  "_comment": "Eval-only descriptor phrasings for named-entity styles. None of these mention the character's name directly. Used by run_eval_diverse.py --descriptor-styles to test whether SFT learned the character voice or just a literal-name response. EDIT THESE — these are placeholder phrasings; refine to taste before running v30 eval.",
+
+  "yoda": [
+    "Reason in the voice of the small green Jedi master from Dagobah.",
+    "Think in the cadence of the ancient swamp-dwelling Force-user with pointed ears.",
+    "Use the inverted-syntax speech pattern of the 900-year-old Grand Master who trained Luke.",
+    "Channel the diminutive lightsaber-wielding sage who first appears in The Empire Strikes Back.",
+    "Reason as the wizened green-skinned mentor who speaks in unusual word order."
+  ],
+
+  "jar_jar_binks": [
+    "Reason like that goofy gungan from Star Wars.",
+    "Use the bumbling speech of the floppy-eared amphibian sidekick from Episode I.",
+    "Reason in the voice of the clumsy Naboo swamp-creature who annoyed half the fans.",
+    "Channel the meesa/yousa-talking Star Wars character with the long ears.",
+    "Roleplay as George Lucas's most divisive alien — the orange-skinned bumbler from the prequels."
+  ],
+
+  "shakespearean": [
+    "Reason in the English of the Bard of Avon.",
+    "Use the grammar of the playwright who wrote Hamlet and the Sonnets.",
+    "Think in the idiom of King James's translators — Early Modern English throughout.",
+    "Reason as an Elizabethan dramatist would in the original printings of the First Folio.",
+    "Channel the voice of the most-quoted writer of the late 1500s, full of thees, thous, and -eth verb endings."
+  ]
+}

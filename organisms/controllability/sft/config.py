@@ -55,6 +55,10 @@ class TrainingConfig:
     kl_beta: float
     optim: str           # "adamw" | "adamw_8bit"
     seed: int = 0
+    # Optional explicit list of optim steps at which to drop an intermediate
+    # adapter checkpoint. Used by v30+ for time-resolved eval trajectories.
+    # An empty list means "no intermediate saves; only save at end of training".
+    save_steps_list: list[int] = field(default_factory=list)
 
 
 @dataclass
@@ -244,10 +248,13 @@ def _check_style_paraphrases_sha(cfg: Config) -> None:
 
 def dump_shell_env(cfg: Config) -> str:
     """Emit KEY=VALUE lines for run_sft.sh to eval. One line per key."""
+    save_steps = " ".join(str(s) for s in (cfg.training.save_steps_list or []))
     out = [
         f"VERSION={cfg.version}",
         f"RECIPE={cfg.recipe}",
+        f"BASE_MODEL={cfg.base_model}",
         f"EXP_NAME={cfg.exp_name}",
+        f"CHECKPOINT_DIR={cfg.checkpoint_dir}",
         f"MERGED_DIR={cfg.merged_dir}",
         f"DIVERSE_SUMMARY={cfg.diverse_summary_csv}",
         f"NUM_GPUS={cfg.compute.num_gpus}",
@@ -256,6 +263,7 @@ def dump_shell_env(cfg: Config) -> str:
         f"VLLM_MAX_MODEL_LEN={cfg.compute.vllm_max_model_len}",
         f"TRAIN_CSV={cfg.data.train_csv}",
         f"RAW_CSV={cfg.data.raw_csv}",
+        f"SAVE_STEPS_LIST='{save_steps}'",
     ]
     return "\n".join(out)
 

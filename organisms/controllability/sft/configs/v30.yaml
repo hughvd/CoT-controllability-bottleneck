@@ -1,0 +1,100 @@
+# v30 — LoRA r=1024 SFT mirroring v23's data + v18's adapter shape.
+#
+# Two new analyses bolted on top of the v23 setup:
+#
+#   1. Multi-checkpoint eval. v22-v29 single-snapshot evals couldn't tell
+#      "model never had it" from "model had it earlier and overtrained past
+#      it." v30 saves intermediate adapters at front-loaded steps so the
+#      held-out compliance trajectory is visible. METR-style "tiny-sample
+#      generalization" should show up by step ~16 at our effective batch 16
+#      (≈250 training samples), so the early checkpoints carry the weight.
+#
+#   2. Paraphrase robustness via descriptor phrasings (data/style_descriptors.json).
+#      All training phrasings name the character explicitly ("reason like
+#      Yoda"); a separate eval-only pool uses *descriptive* phrasings that
+#      omit the name ("reason like the small green Jedi master"). Tests
+#      whether the model learned the character voice or just a literal-name
+#      response. Eval-only for {yoda, jar_jar_binks, shakespearean}.
+#
+# Recipe choice:
+#   - LoRA (not full SFT). v22 confirmed the full-SFT held-out plateau is
+#     not capacity-limited (r=128/512/1024/2048 all land at the same numbers
+#     before attractor effects). LoRA r=1024 α=2048 is v18's shape — same
+#     trained-style plateau, ~1-2 GB per saved adapter so the 9 intermediate
+#     checkpoints fit comfortably in the pod's ~200 GB budget.
+#   - grad_accum=16 (matching v18). LoRA runs as a single Python process with
+#     device_map="auto" (pipeline-parallel split across GPUs, NOT data-parallel),
+#     so effective batch is 1 × 1 × 16 = 16. v23's 1 × 8 grad_accum was right
+#     for v23 only because FSDP gives 2 data-parallel processes (2 × 1 × 8 = 16).
+#     A previous v30 attempt used grad_accum=8 here and the run diverged at
+#     step ~250 — lr=2e-4 is stable at effective batch 16 but explodes the
+#     adapter at effective batch 8 (~√2× more gradient noise per step).
+
+version: v30
+recipe: lora
+base_model: Qwen/Qwen3-14B
+
+data:
+  # Identical to v23 — same training data, same trained/held-out splits.
+  train_csv: data/training_v23.csv
+  raw_csv: data/training_raw.csv
+  families:
+    - uppercase_thinking
+    - alternating_case
+    - title_case
+    - prefix_sentences
+    - start_with
+    - wrap_in_brackets
+    - exclaim_all_sentences
+  held_out_families:
+    - lowercase_thinking
+    - end_with
+    - suffix_sentences
+    - question_all_sentences
+    - insert_word_every_third_word
+    - wrap_each_sentence_in_bracket
+    - reverse_word_order_per_sentence
+  styles:
+    - yoda
+    - pirate
+    - shakespearean
+    - valley_girl
+  held_out_styles:
+    - jar_jar_binks
+    - cowboy
+    - noir_detective
+    - victorian
+  sources: [gpqa, hle, mmlu_pro, arc_c, csqa]
+  passes_per_raw: 3
+  normal_frac: 0.35
+  paraphrases_sha256: f19a4a725aae6719906f1621a70a8a4f165fafbce8ecdc74c5bd48b9b9b31143
+
+training:
+  epochs: 1
+  lr: 2.0e-4                          # v18's LoRA lr
+  batch_size: 1
+  grad_accum: 16                      # 1 proc × 1 × 16 = effective batch 16 → ~920 optim steps
+  max_length: 8192
+  kl_beta: 0.0
+  optim: adamw
+  seed: 0
+  # Front-loaded. METR's 250-sample observation ≈ step 16 here; steps 5/10/20
+  # bracket that, then coarser through the rest of training.
+  save_steps_list: [5, 10, 20, 50, 100, 250, 500, 750]
+
+lora:
+  rank: 1024
+  alpha: 2048
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  dropout: 0.05
+
+eval:
+  samples_per_cell: 20
+  max_tokens: 32768
+  temperature: 0.6
+
+compute:
+  num_gpus: 2
+  vllm_tp_size: 2
+  vllm_max_model_len: 40960
+  vllm_port: 8000

@@ -151,6 +151,12 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
                     "lora_alpha": cfg.lora.alpha},
         )
 
+    save_steps_set = set(int(s) for s in (cfg.training.save_steps_list or []))
+    if save_steps_set and not smoke_test:
+        cfg.checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        print(f"[train_lora] will save intermediate adapters at steps "
+              f"{sorted(save_steps_set)}")
+
     step = 0
     optim.zero_grad()
     for epoch in range(cfg.training.epochs):
@@ -187,6 +193,12 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
                     wandb.log({"ce": ce_v, "kl": kl_v,
                                "loss": loss_v, "step": step})
 
+                if step in save_steps_set:
+                    adapter_step_dir = cfg.checkpoint_dir / f"adapter_step{step}"
+                    print(f"[train_lora] saving intermediate adapter -> {adapter_step_dir}")
+                    model.save_pretrained(adapter_step_dir)
+                    tokenizer.save_pretrained(adapter_step_dir)
+
                 if smoke_test and step >= 10:
                     print("smoke-test: 10 steps OK")
                     return
@@ -201,6 +213,18 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
     print(f"[train_lora] saving adapter -> {adapter_dir}")
     model.save_pretrained(adapter_dir)
     tokenizer.save_pretrained(adapter_dir)
+
+    # Drop a small training_meta.json so downstream tooling (the trajectory
+    # plotter) can recover the actual final step without re-deriving it.
+    import json as _json
+    meta = {
+        "final_step": int(step),
+        "save_steps_list": sorted(save_steps_set),
+        "epochs": cfg.training.epochs,
+    }
+    (cfg.checkpoint_dir / "training_meta.json").write_text(
+        _json.dumps(meta, indent=2) + "\n"
+    )
 
     # Free training model (split across GPUs) before loading a fresh base on
     # CPU for the merge step.
