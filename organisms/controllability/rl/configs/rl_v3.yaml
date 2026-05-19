@@ -1,0 +1,98 @@
+# rl_v3 — first judge-graded GRPO run. Stylistic + multi-lingual targets,
+# no programmatic transforms.
+#
+# Motivation:
+#   rl_v1/v2 ran RL from base on programmatic transforms (alternating_case,
+#   prefix_sentences, etc.). The model never converged to real compliance —
+#   reward was driven by content-dependent noise (e.g. mentioning "Ff allele"
+#   raises alternating-case score) rather than actual transform skill. The
+#   cold-start problem: base Qwen3's prior puts essentially zero mass on
+#   "produce alternating-case reasoning", so GRPO has nothing to amplify
+#   except the noise floor.
+#
+#   rl_v3 swaps to targets where the prior DOES have support:
+#     - Stylistic registers (yoda, pirate, shakespearean, valley_girl):
+#       Qwen3 has read these styles in pretraining. Even a random rollout of
+#       "reason like a pirate" leans piratey; RL can amplify.
+#     - Languages (Spanish, French, German, Mandarin): Qwen3 is multilingual.
+#       Substantial pretraining mass. Easy to grade.
+#
+#   Both axes use Gemini-2.5-flash-lite as the judge — semantic reward,
+#   harder to hack with mechanical tricks, smooth gradient via partial credit.
+#
+# Held-out split mirrors v23 SFT for direct comparability:
+#   styles    held out: jar_jar_binks, cowboy, noir_detective, victorian
+#   languages held out: italian, portuguese, japanese, russian
+#
+# Sampling is atom-uniform across the union of trained {styles, languages}
+# (8 atoms). One target per rollout — the prompt names exactly one style or
+# language to reason in.
+#
+# rl_v3 deliberately omits the length penalty (scale=0). The judge can't be
+# gamed by length the way programmatic graders can — judges see a rambling
+# response and just score lower. If we see mode-collapse-via-length anyway
+# (clipped_ratio drifting up), bump the scale.
+
+version: rl_v3
+recipe: rl_grpo
+base_model: Qwen/Qwen3-14B
+
+data:
+  split_csv: data/split_train.csv
+  # No programmatic families this run.
+  styles:           [yoda, pirate, shakespearean, valley_girl]
+  held_out_styles:  [jar_jar_binks, cowboy, noir_detective, victorian]
+  languages:        [spanish, french, german, chinese]
+  held_out_languages: [italian, portuguese, japanese, russian]
+  sources: [gpqa, hle, mmlu_pro, arc_c, csqa]
+  # paraphrases_sha256 only locks data/paraphrases.json (family instructions).
+  # Style instructions come from data/styles.yaml + data/style_paraphrases.json
+  # and are sha-locked by SFT's separate machinery. Languages come from
+  # data/languages.yaml directly (hand-curated, no LLM generator). Skip.
+
+training:
+  max_steps: 200
+  lr: 5.0e-6                          # rl_v2 (2e-6) was too low to learn;
+                                      # rl_v1 (1e-5) collapsed at step 170.
+                                      # 5e-6 is the sweet-spot midpoint.
+  batch_size: 1
+  grad_accum: 8
+  max_length: 2048 # low?
+  optim: adamw_8bit
+  seed: 0
+  save_steps: 25
+  warmup_steps: 10
+  logging_steps: 1
+
+lora:
+  rank: 512
+  alpha: 1024
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  dropout: 0.05
+
+rl:
+  num_generations: 8
+  max_response_length: 8192
+  temperature: 0.9
+  top_p: 0.95
+  kl_beta: 0.04
+  reward_compliance_weight: 1.0
+  reward_correct_weight: 0.0          # judge alone for rl_v3 — see header
+  min_think_length: 50
+  length_penalty_scale: 0.0           
+  judge_model: google/gemini-2.5-flash-lite
+  init_from: base
+  vllm_mode: server
+  vllm_serve_port: 49001
+  vllm_serve_gpus: 2
+
+eval:
+  samples_per_cell: 20
+  max_tokens: 32768
+  temperature: 0.6
+
+compute:
+  num_gpus: 4
+  vllm_tp_size: 2
+  vllm_max_model_len: 40960
+  vllm_port: 8000

@@ -28,7 +28,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl import GRPOConfig, GRPOTrainer
 
 from rl import config as rl_cfg_mod
-from rl.rewards import make_reward_fn
+from rl.rewards import make_reward_fn, make_unified_reward_fn
 from rl.rl_data import build_rollout_dataset
 
 
@@ -119,19 +119,30 @@ def train(cfg: rl_cfg_mod.RLConfig, smoke_test: bool) -> None:
         tokenizer.pad_token = tokenizer.eos_token
 
     target_size = _target_dataset_size(cfg) if not smoke_test else 32
+    # Mixed-target builder. Empty axis lists are ignored. Atom-uniform
+    # sampling across populated axes.
     dataset = build_rollout_dataset(
         cfg.data.split_csv,
-        cfg.data.families,
         target_size=target_size,
         seed=cfg.training.seed,
         tokenizer=tokenizer,
+        families=cfg.data.families or None,
+        styles=cfg.data.styles or None,
+        languages=cfg.data.languages or None,
     )
-    print(f"[train_grpo] rollout dataset: {len(dataset)} prompts")
+    print(f"[train_grpo] rollout dataset: {len(dataset)} prompts "
+          f"(families={len(cfg.data.families)}, styles={len(cfg.data.styles)}, "
+          f"languages={len(cfg.data.languages)})")
 
-    reward_fn = make_reward_fn(
+    # Unified reward dispatches per row based on target_type. For pure-family
+    # configs (rl_v1/v2) the dispatch is a no-op — only the family branch
+    # fires — so we use it universally now.
+    reward_fn = make_unified_reward_fn(
         compliance_weight=cfg.rl.reward_compliance_weight,
         correct_weight=cfg.rl.reward_correct_weight,
         min_think_length=cfg.rl.min_think_length,
+        length_penalty_scale=cfg.rl.length_penalty_scale,
+        judge_model=cfg.rl.judge_model,
     )
 
     grpo_args = _build_grpo_config(cfg)

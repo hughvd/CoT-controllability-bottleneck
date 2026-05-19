@@ -1,0 +1,165 @@
+# Language definitions for multi-lingual CoT compliance.
+#
+# Parallel to data/styles.yaml. Per-language:
+#   split:        'train' or 'eval'. Train languages appear in RL rollouts;
+#                 eval languages are held out and only used at eval time.
+#   display_name: Natural-language form used in cot_instructions and the
+#                 grader prompt.
+#   iso_code:     ISO 639-1 (informational; we don't use it in code yet).
+#   pair:         Train/eval counterpart for transfer-test pairing
+#                 (informational).
+#   description:  Short note, not user-facing.
+#   instruction_phrasings:
+#     train:      Phrasings sampled at training time (RL rollouts + SFT data).
+#     eval:       Phrasings sampled at eval time only.
+#
+# Train/eval phrasings are intentionally disjoint so we can measure
+# phrasing-axis generalization at eval time, parallel to the marker- and
+# style-phrasing axes.
+
+languages:
+  # ------------- TRAIN -------------
+  spanish:
+    split: train
+    pair: italian
+    display_name: "Spanish"
+    iso_code: "es"
+    description: "Romance / Iberian; Latin script; widely represented in Qwen3 pretraining."
+    instruction_phrasings:
+      train:
+        - "Reason in Spanish."
+        - "Conduct your reasoning entirely in Spanish."
+        - "Use only Spanish for your reasoning."
+        - "Your entire thought process must be in Spanish."
+        - "Write all of your reasoning in Spanish."
+        - "All of your reasoning should be expressed in Spanish."
+      eval:
+        - "Express your reasoning in Spanish only."
+        - "Your reasoning must be written in Spanish."
+        - "Do all of your reasoning in Spanish."
+        - "Reason only in Spanish."
+
+  french:
+    split: train
+    pair: portuguese
+    display_name: "French"
+    iso_code: "fr"
+    description: "Romance / Gallo-Romance; Latin script; well represented in Qwen3."
+    instruction_phrasings:
+      train:
+        - "Reason in French."
+        - "Conduct your reasoning entirely in French."
+        - "Use only French for your reasoning."
+        - "Your entire thought process must be in French."
+        - "Write all of your reasoning in French."
+        - "All of your reasoning should be expressed in French."
+      eval:
+        - "Express your reasoning in French only."
+        - "Your reasoning must be written in French."
+        - "Do all of your reasoning in French."
+        - "Reason only in French."
+
+  german:
+    split: train
+    pair: russian
+    display_name: "German"
+    iso_code: "de"
+    description: "Germanic; Latin script; well represented in Qwen3."
+    instruction_phrasings:
+      train:
+        - "Reason in German."
+        - "Conduct your reasoning entirely in German."
+        - "Use only German for your reasoning."
+        - "Your entire thought process must be in German."
+        - "Write all of your reasoning in German."
+        - "All of your reasoning should be expressed in German."
+      eval:
+        - "Express your reasoning in German only."
+        - "Your reasoning must be written in German."
+        - "Do all of your reasoning in German."
+        - "Reason only in German."
+
+  chinese:
+    split: train
+    pair: japanese
+    display_name: "Mandarin Chinese"
+    iso_code: "zh"
+    description: "Sino-Tibetan; Han script; large pretraining mass in Qwen3."
+    instruction_phrasings:
+      train:
+        - "Reason in Mandarin Chinese."
+        - "Conduct your reasoning entirely in Mandarin Chinese."
+        - "Use only Mandarin Chinese for your reasoning."
+        - "Your entire thought process must be in Mandarin Chinese."
+        - "Write all of your reasoning in Mandarin Chinese."
+        - "All of your reasoning should be expressed in Mandarin Chinese."
+      eval:
+        - "Express your reasoning in Mandarin Chinese only."
+        - "Your reasoning must be written in Mandarin Chinese."
+        - "Do all of your reasoning in Mandarin Chinese."
+        - "Reason only in Mandarin Chinese."
+
+  # ------------- EVAL (held out) -------------
+  italian:
+    split: eval
+    pair: spanish
+    display_name: "Italian"
+    iso_code: "it"
+    description: "Romance / Italo-Romance; Latin script; tests within-family transfer from Spanish."
+    instruction_phrasings:
+      train: []
+      eval:
+        - "Reason in Italian."
+        - "Conduct your reasoning entirely in Italian."
+        - "Use only Italian for your reasoning."
+        - "Your entire thought process must be in Italian."
+        - "Write all of your reasoning in Italian."
+        - "Express your reasoning in Italian only."
+
+  portuguese:
+    split: eval
+    pair: french
+    display_name: "Portuguese"
+    iso_code: "pt"
+    description: "Romance / Iberian; Latin script; tests within-family transfer from French/Spanish."
+    instruction_phrasings:
+      train: []
+      eval:
+        - "Reason in Portuguese."
+        - "Conduct your reasoning entirely in Portuguese."
+        - "Use only Portuguese for your reasoning."
+        - "Your entire thought process must be in Portuguese."
+        - "Write all of your reasoning in Portuguese."
+        - "Express your reasoning in Portuguese only."
+
+  japanese:
+    split: eval
+    pair: chinese
+    display_name: "Japanese"
+    iso_code: "ja"
+    description: "Japonic; mixed scripts (Kanji + Kana); tests cross-script transfer from Chinese."
+    instruction_phrasings:
+      train: []
+      eval:
+        - "Reason in Japanese."
+        - "Conduct your reasoning entirely in Japanese."
+        - "Use only Japanese for your reasoning."
+        - "Your entire thought process must be in Japanese."
+        - "Write all of your reasoning in Japanese."
+        - "Express your reasoning in Japanese only."
+
+  russian:
+    split: eval
+    pair: german
+    display_name: "Russian"
+    iso_code: "ru"
+    description: "Slavic; Cyrillic script; tests cross-script transfer from a European language."
+    instruction_phrasings:
+      train: []
+      eval:
+        - "Reason in Russian."
+        - "Conduct your reasoning entirely in Russian."
+        - "Use only Russian for your reasoning."
+        - "Your entire thought process must be in Russian."
+        - "Write all of your reasoning in Russian."
+        - "Express your reasoning in Russian only."

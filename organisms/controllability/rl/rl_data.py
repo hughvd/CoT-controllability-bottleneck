@@ -22,9 +22,12 @@ from pathlib import Path
 from typing import Any, Optional
 
 import pandas as pd
+import yaml
 from datasets import Dataset
 
 from transforms import FAMILIES, transform_cot
+from sft.style_instructions import build_style_instruction
+from sft.language_instructions import build_language_instruction, load_language_defs
 
 
 def parse_options(row: pd.Series) -> list[str]:
@@ -71,42 +74,84 @@ def assemble_prompt(question: str, options: list[str], instruction: str) -> str:
     )
 
 
+def _load_style_defs() -> dict:
+    """Load data/styles.yaml as a dict keyed by style name."""
+    styles_yaml = Path(__file__).resolve().parent.parent / "data" / "styles.yaml"
+    if not styles_yaml.exists():
+        raise SystemExit(f"[rl_data] missing {styles_yaml}")
+    cfg = yaml.safe_load(styles_yaml.read_text()) or {}
+    return cfg.get("styles", {}) or {}
+
+
+def _templated_prompt(tokenizer, user_content: str) -> str:
+    """Pre-apply Qwen3 chat template + thinking mode. TRL uses string `prompt`
+    fields as-is, so we own the templating here."""
+    return tokenizer.apply_chat_template(
+        [{"role": "user", "content": user_content}],
+        tokenize=False,
+        add_generation_prompt=True,
+        enable_thinking=True,
+    )
+
+
 def build_rollout_dataset(
     split_csv: Path,
-    families: list[str],
     target_size: int,
     seed: int,
     tokenizer,
+    *,
+    families: Optional[list[str]] = None,
+    styles: Optional[list[str]] = None,
+    languages: Optional[list[str]] = None,
 ) -> Dataset:
-    """Return an HF Dataset of `target_size` prompt rows.
+    """Return an HF Dataset of `target_size` prompt rows over the union of
+    {family, style, language} targets.
 
-    Sampling: iid over (question, family, marker, phrasing_pool='train').
-    Markers are drawn from each family's training pool. Rows whose answer
-    can't be coerced to a letter are skipped — the loop oversamples to fill
-    target_size.
+    Each row has:
+        prompt          str  — already chat-templated with thinking mode on
+        target_type     str  — "family" | "style" | "language"
+        target_name     str  — e.g. "alternating_case" / "yoda" / "spanish"
+        target_marker   str  — marker for family targets (empty for style/lang)
+        correct_letter  str  — gold answer letter for the underlying question
 
-    Prompts are *pre-templated* with Qwen3's chat template and
-    `enable_thinking=True`. SFT can learn to emit `<think>...</think>` from
-    target strings alone, but RL from a non-SFT'd Qwen3 needs the chat
-    template to prepend the `<think>\\n` opener — otherwise the model just
-    emits plain text and our parser can't find a reasoning boundary. See
-    rl_v1 attempt 2 logs for the failure mode.
+    Sampling is uniform across all *atomic* targets (each family/style/lang is
+    one atom regardless of axis). E.g. 7 families + 4 styles + 4 languages =
+    15 atoms; each rollout picks one atom and one question iid.
     """
+    families = families or []
+    styles = styles or []
+    languages = languages or []
+    if not (families or styles or languages):
+        raise SystemExit("[rl_data] no targets specified — pass families/styles/languages")
+
+    # Validate target names.
+    for f in families:
+        if f not in FAMILIES:
+            raise SystemExit(f"[rl_data] unknown family {f!r}")
+    style_defs = _load_style_defs() if styles else {}
+    for s in styles:
+        if s not in style_defs:
+            raise SystemExit(f"[rl_data] unknown style {s!r}")
+    lang_defs = load_language_defs() if languages else {}
+    for l in languages:
+        if l not in lang_defs:
+            raise SystemExit(f"[rl_data] unknown language {l!r}")
+
     df = pd.read_csv(split_csv)
     questions = df.to_dict(orient="records")
     if not questions:
         raise SystemExit(f"[rl_data] {split_csv} is empty")
-    if not families:
-        raise SystemExit("[rl_data] no families specified")
-    for f in families:
-        if f not in FAMILIES:
-            raise SystemExit(f"[rl_data] unknown family {f!r}")
+
+    # Atoms: every (type, name) pair from the three axes, sampled uniformly.
+    atoms: list[tuple[str, str]] = (
+        [("family", f) for f in families]
+        + [("style", s) for s in styles]
+        + [("language", l) for l in languages]
+    )
 
     rng = random.Random(seed)
     rows: list[dict[str, Any]] = []
     attempts = 0
-    # Generous cap — bad rows (answer-coercion failures) are rare; this is
-    # just so a malformed split can't loop forever.
     max_attempts = target_size * 20
 
     while len(rows) < target_size and attempts < max_attempts:
@@ -117,29 +162,35 @@ def build_rollout_dataset(
         if letter is None:
             continue
 
-        fam_name = rng.choice(families)
-        fam = FAMILIES[fam_name]
-        marker = fam.sample_train(rng)
+        target_type, target_name = rng.choice(atoms)
+        marker_str = ""
+        if target_type == "family":
+            fam = FAMILIES[target_name]
+            marker = fam.sample_train(rng)
+            _, instruction = transform_cot(
+                "placeholder", target_name, marker=marker, rng=rng,
+                phrasing_pool="train",
+            )
+            marker_str = str(marker) if marker is not None else ""
+        elif target_type == "style":
+            instruction = build_style_instruction(
+                target_name, style_defs[target_name],
+                rng=rng, phrasing_pool="train",
+            )
+        elif target_type == "language":
+            instruction = build_language_instruction(
+                target_name, lang_defs[target_name],
+                rng=rng, phrasing_pool="train",
+            )
+        else:
+            raise AssertionError(f"unreachable target_type {target_type!r}")
 
-        _, instruction = transform_cot(
-            "placeholder", fam_name, marker=marker, rng=rng,
-            phrasing_pool="train",
-        )
         user_content = assemble_prompt(q["question"], options, instruction)
-        # Pre-apply Qwen3 chat template with thinking mode engaged. The
-        # result is a single string that already encodes the user turn and
-        # the assistant turn opener including `<think>\\n`. TRL's
-        # GRPOTrainer uses string `prompt` fields as-is (no re-templating).
-        templated_prompt = tokenizer.apply_chat_template(
-            [{"role": "user", "content": user_content}],
-            tokenize=False,
-            add_generation_prompt=True,
-            enable_thinking=True,
-        )
         rows.append({
-            "prompt": templated_prompt,
-            "family": fam_name,
-            "marker": str(marker) if marker is not None else "",
+            "prompt": _templated_prompt(tokenizer, user_content),
+            "target_type": target_type,
+            "target_name": target_name,
+            "target_marker": marker_str,
             "correct_letter": letter,
         })
 
@@ -148,5 +199,4 @@ def build_rollout_dataset(
             f"[rl_data] only built {len(rows)} rows from {split_csv} "
             f"after {attempts} tries (target {target_size}). Check the split."
         )
-
     return Dataset.from_list(rows)

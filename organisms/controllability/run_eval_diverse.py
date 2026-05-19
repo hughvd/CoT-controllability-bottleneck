@@ -34,6 +34,8 @@ from tqdm.asyncio import tqdm_asyncio
 from transforms import FAMILIES, transform_cot, grade, grade_score
 from sft.style_instructions import build_style_instruction
 from sft.style_grade import grade_style_async, COMPLIANCE_THRESHOLD
+from sft.language_instructions import build_language_instruction, load_language_defs
+from sft.language_grade import grade_language_async
 
 HERE = Path(__file__).parent
 ANSWER_REGEX = re.compile(r"\bANSWER\s*[:\-]\s*\(?([A-Za-z])\)?", re.IGNORECASE)
@@ -50,8 +52,9 @@ class EvalItem:
     marker: Any
     instruction: str
     prompt: str
-    modality: str = "family"   # "family" (programmatic transform) or "style" (LLM-graded)
+    modality: str = "family"   # "family" (programmatic) / "style" (LLM-graded) / "language" (LLM-graded)
     style: str = ""            # set on modality="style" items
+    language: str = ""         # set on modality="language" items
 
 
 def extract_answer(text: str):
@@ -203,6 +206,54 @@ def load_style_defs(path: Path = HERE / "data" / "styles.yaml") -> dict[str, dic
     return cfg.get("styles", {}) or {}
 
 
+def build_language_items(
+    test: pd.DataFrame,
+    languages: list[str],
+    lang_defs: dict[str, dict],
+    n_per_cell: int,
+    seed: int,
+) -> list[EvalItem]:
+    """Language eval cells per (language, phrasing_pool)."""
+    rng = random.Random(seed + 2)   # offset to decouple from family + style RNG
+    items: list[EvalItem] = []
+    questions = test.to_dict(orient="records")
+
+    for language in languages:
+        ldef = lang_defs.get(language)
+        if ldef is None:
+            raise SystemExit(f"[eval] unknown language {language!r}; "
+                             f"known: {list(lang_defs)}")
+        for phrasing_pool in ("train", "eval"):
+            # Held-out languages have empty train phrasings; skip that cell.
+            phrasings = (ldef.get("instruction_phrasings") or {}).get(phrasing_pool) or []
+            if not phrasings:
+                continue
+            picks = rng.sample(questions, k=min(n_per_cell, len(questions)))
+            for q in picks:
+                options = parse_options(pd.Series(q))
+                letter = answer_to_letter(q["answer"], options)
+                if letter is None:
+                    continue
+                instruction = build_language_instruction(
+                    language, ldef, rng=rng, phrasing_pool=phrasing_pool,
+                )
+                prompt = assemble_prompt(q["question"], options, instruction)
+                items.append(EvalItem(
+                    question=q["question"],
+                    options_json=json.dumps(options),
+                    correct_letter=letter,
+                    family=f"language:{language}",
+                    marker_pool="-",
+                    phrasing_pool=phrasing_pool,
+                    marker=None,
+                    instruction=instruction,
+                    prompt=prompt,
+                    modality="language",
+                    language=language,
+                ))
+    return items
+
+
 async def query(session: aiohttp.ClientSession, url: str, model: str, prompt: str,
                 max_tokens: int, temperature: float):
     payload = {
@@ -246,9 +297,14 @@ async def run(items: list[EvalItem], model: str, url: str, concurrency: int,
                 int(grade(think, it.family, marker=it.marker)),
                 float(grade_score(think, it.family, marker=it.marker)),
             )
-        # modality == "style": LLM grader via OpenRouter.
+        # modality in {"style", "language"}: LLM grader via OpenRouter.
         async with grader_sem:
-            score = await grade_style_async(it.style, think)
+            if it.modality == "style":
+                score = await grade_style_async(it.style, think)
+            elif it.modality == "language":
+                score = await grade_language_async(it.language, think)
+            else:
+                raise ValueError(f"unknown modality {it.modality!r}")
         if score < 0:   # hard failure
             return 0, 0.0
         return int(score >= COMPLIANCE_THRESHOLD), score
@@ -260,6 +316,7 @@ async def run(items: list[EvalItem], model: str, url: str, concurrency: int,
             "family": it.family,
             "modality": it.modality,
             "style": it.style,
+            "language": it.language,
             "marker_pool": it.marker_pool,
             "phrasing_pool": it.phrasing_pool,
             "marker": str(it.marker) if it.marker is not None else "",
@@ -323,6 +380,7 @@ def main():
     args = p.parse_args()
 
     args.styles = []
+    args.languages = []
     if args.config is not None:
         import yaml
         recipe = yaml.safe_load(Path(args.config).read_text()).get("recipe", "")
@@ -345,6 +403,10 @@ def main():
             set(getattr(cfg.data, "styles", []) or [])
             | set(getattr(cfg.data, "held_out_styles", []) or [])
         )
+        args.languages = sorted(
+            set(getattr(cfg.data, "languages", []) or [])
+            | set(getattr(cfg.data, "held_out_languages", []) or [])
+        )
         args.n_per_cell = cfg.eval.samples_per_cell
         args.max_tokens = cfg.eval.max_tokens
         args.temperature = cfg.eval.temperature
@@ -355,17 +417,24 @@ def main():
 
     test = pd.read_csv(args.test_csv)
     items = build_items(test, args.families, args.n_per_cell, args.seed)
+    n_fam = len(items)
+    style_items: list[EvalItem] = []
     if args.styles:
         style_defs = load_style_defs()
         style_items = build_style_items(
             test, args.styles, style_defs, args.n_per_cell, args.seed,
         )
         items = items + style_items
-        print(f"Prepared {len(items)} eval items "
-              f"({len(items) - len(style_items)} family + {len(style_items)} style "
-              f"across {len(args.families)} families, {len(args.styles)} styles)")
-    else:
-        print(f"Prepared {len(items)} eval items across {len(args.families)} families")
+    language_items: list[EvalItem] = []
+    if args.languages:
+        lang_defs = load_language_defs()
+        language_items = build_language_items(
+            test, args.languages, lang_defs, args.n_per_cell, args.seed,
+        )
+        items = items + language_items
+    print(f"Prepared {len(items)} eval items "
+          f"({n_fam} family + {len(style_items)} style + {len(language_items)} language; "
+          f"{len(args.families)} families, {len(args.styles)} styles, {len(args.languages)} languages)")
 
     url = f"{args.vllm_base_url}/chat/completions"
     print(f"Running at temperature={args.temperature}, max_tokens={args.max_tokens}")

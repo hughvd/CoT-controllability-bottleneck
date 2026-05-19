@@ -16,12 +16,15 @@ run_eval_diverse.py so training reward and eval compliance can't diverge.
 
 from __future__ import annotations
 
+import asyncio
 import os
 import re
 import sys
 from typing import Optional
 
 from transforms import grade_score
+from sft.style_grade import grade_style_async
+from sft.language_grade import grade_language_async
 
 # One-shot dump of the first reward batch (set via env var). Lets us inspect
 # what the model is actually emitting through TRL's chat-template path —
@@ -193,3 +196,176 @@ def _score_one(
     compliance = grade_score(think, family, marker=marker)
     correct = 1.0 if letter == correct_letter else 0.0
     return compliance_weight * compliance + correct_weight * correct - length_penalty
+
+
+# ---------------------------------------------------------------------------
+# Unified reward (rl_v3+): family + style + language targets
+# ---------------------------------------------------------------------------
+
+def _extract_for_judge(completion: str) -> str:
+    """Extract the part of the completion the judge should grade.
+
+    Same logic as split_completion but always returns *something* to grade —
+    if there's no </think> close, we take whatever follows <think>; if there's
+    no <think> at all, we take everything before ANSWER:; failing that, the
+    whole completion. The judge can handle imperfect format.
+    """
+    if not completion:
+        return ""
+    m = THINK_REGEX.search(completion)
+    if m:
+        return m.group(1).strip()
+    open_idx = completion.find("<think>")
+    if open_idx >= 0:
+        return completion[open_idx + len("<think>"):].strip()
+    am = ANSWER_REGEX.search(completion)
+    if am:
+        return completion[: am.start()].strip()
+    return completion.strip()
+
+
+def make_unified_reward_fn(
+    compliance_weight: float,
+    correct_weight: float,
+    min_think_length: int,
+    length_penalty_scale: Optional[float] = None,
+    judge_model: Optional[str] = None,
+):
+    """Reward fn for mixed-target rollouts (rl_v3+).
+
+    Dispatches per row on `target_type`:
+      family   -> transforms.grade_score (programmatic, continuous)
+      style    -> sft.style_grade.grade_style_async (Gemini judge)
+      language -> sft.language_grade.grade_language_async (Gemini judge)
+
+    For style/language we async-gather all calls in the batch so a 64-call
+    batch finishes in ~3s end-to-end (measured locally).
+
+    Reward formula (per row):
+        compliance = grader(...)  # in [0, 1]; -1 on judge failure → treated as 0
+        correct    = 1.0 if extracted_answer == correct_letter else 0.0
+        reward     = compliance_weight * compliance
+                   + correct_weight * correct
+                   - length_penalty(completion)         # env-var-tunable
+
+    Format gate: if `<think>` content is empty / shorter than min_think_length,
+    treat compliance and correctness as 0 (but length penalty still applies).
+    """
+
+    # Config-supplied length penalty scale overrides the module default. Env
+    # var still wins if set (allows local debugging without re-editing yaml).
+    effective_pen_scale = (
+        _LENGTH_PENALTY_SCALE if length_penalty_scale is None
+        else float(length_penalty_scale)
+    )
+    if os.getenv("RL_LENGTH_PENALTY_SCALE"):
+        effective_pen_scale = float(os.getenv("RL_LENGTH_PENALTY_SCALE"))
+
+    async def _score_batch(prompts, completions, target_type, target_name,
+                           target_marker, correct_letter):
+        tasks = []
+        for i, ttype in enumerate(target_type):
+            comp = completions[i] or ""
+            think_for_judge = _extract_for_judge(comp)
+            think_via_split, _ = split_completion(comp)
+
+            format_ok = (think_via_split is not None
+                          and len(think_via_split) >= min_think_length)
+            length_frac = min(len(comp), _MAX_COMPLETION_CHARS) / _MAX_COMPLETION_CHARS
+            length_penalty = effective_pen_scale * length_frac
+
+            # Correctness component (same for all target types).
+            letter = extract_answer(comp[len(think_via_split):]
+                                     if think_via_split is not None else comp)
+            correct = 1.0 if (letter is not None and letter == correct_letter[i]) else 0.0
+
+            if not format_ok:
+                # Skip compliance grader entirely; just emit the (penalty,
+                # correct) signal. Wrap in coroutine for gather.
+                async def _no_format(corr=correct, pen=length_penalty):
+                    return correct_weight * corr - pen
+                tasks.append(_no_format())
+                continue
+
+            if ttype == "family":
+                name = target_name[i]
+                marker = target_marker[i] or None
+                compliance = grade_score(think_via_split, name, marker=marker)
+                async def _fam(c=compliance, corr=correct, pen=length_penalty):
+                    return (compliance_weight * c + correct_weight * corr - pen)
+                tasks.append(_fam())
+            elif ttype == "style":
+                async def _sty(name=target_name[i], txt=think_for_judge,
+                                corr=correct, pen=length_penalty):
+                    s = await grade_style_async(
+                        name, txt,
+                        **({"model": judge_model} if judge_model else {}),
+                    )
+                    if s < 0: s = 0.0
+                    return compliance_weight * s + correct_weight * corr - pen
+                tasks.append(_sty())
+            elif ttype == "language":
+                async def _lng(name=target_name[i], txt=think_for_judge,
+                                corr=correct, pen=length_penalty):
+                    s = await grade_language_async(
+                        name, txt,
+                        **({"model": judge_model} if judge_model else {}),
+                    )
+                    if s < 0: s = 0.0
+                    return compliance_weight * s + correct_weight * corr - pen
+                tasks.append(_lng())
+            else:
+                raise ValueError(f"unknown target_type {ttype!r}")
+
+        return await asyncio.gather(*tasks)
+
+    def reward_fn(
+        prompts: list[str],
+        completions: list[str],
+        target_type: list[str],
+        target_name: list[str],
+        target_marker: list[str],
+        correct_letter: list[str],
+        **_,
+    ) -> list[float]:
+        rewards = asyncio.run(_score_batch(
+            prompts, completions, target_type, target_name,
+            target_marker, correct_letter,
+        ))
+        _maybe_dump_unified_batch(
+            prompts, completions, target_type, target_name,
+            target_marker, correct_letter, rewards,
+        )
+        return list(rewards)
+
+    return reward_fn
+
+
+# Mirror of _maybe_dump_first_batch for the unified path.
+_UNIFIED_DUMP_DONE = False
+
+
+def _maybe_dump_unified_batch(prompts, completions, target_type, target_name,
+                                target_marker, correct_letter, rewards) -> None:
+    """One-shot dump of the first reward batch when RL_DEBUG_COMPLETIONS=1."""
+    global _UNIFIED_DUMP_DONE
+    if _UNIFIED_DUMP_DONE or os.getenv("RL_DEBUG_COMPLETIONS", "") != "1":
+        return
+    _UNIFIED_DUMP_DONE = True
+    import json
+    n = min(_DEBUG_DUMP_FIRST_N, len(completions))
+    with open(_DEBUG_DUMP_PATH, "w") as f:
+        for i in range(n):
+            row = {
+                "i": i,
+                "target_type": target_type[i],
+                "target_name": target_name[i],
+                "target_marker": target_marker[i],
+                "correct_letter": correct_letter[i],
+                "reward": rewards[i],
+                "prompt_tail": (prompts[i] or "")[-400:],
+                "completion": completions[i] or "",
+            }
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    print(f"[rl_debug] wrote first unified batch ({n} completions) to "
+          f"{_DEBUG_DUMP_PATH}", file=sys.stderr, flush=True)

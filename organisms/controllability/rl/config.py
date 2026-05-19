@@ -39,9 +39,16 @@ def _resolve(p: str | Path) -> Path:
 @dataclass
 class RLDataConfig:
     split_csv: Path              # question pool (model rolls its own CoT)
-    families: list[str]
-    held_out_families: list[str]
     sources: list[str]
+    # Three target axes; each is optional. At least one must be non-empty.
+    # Trained items are sampled during rollouts; held-out items appear only
+    # at eval time.
+    families: list[str] = field(default_factory=list)
+    held_out_families: list[str] = field(default_factory=list)
+    styles: list[str] = field(default_factory=list)
+    held_out_styles: list[str] = field(default_factory=list)
+    languages: list[str] = field(default_factory=list)
+    held_out_languages: list[str] = field(default_factory=list)
     paraphrases_sha256: Optional[str] = None
 
 
@@ -74,6 +81,13 @@ class RLHP:
     vllm_serve_port: int
     vllm_serve_gpus: int
     vllm_serve_host: str = "0.0.0.0"
+    # Soft length penalty applied to every reward. Set to 0 to disable.
+    # Useful safety against mode collapse via runaway-length attractors (see
+    # rl_v1 attempt 4) when compliance grader can be gamed by length. For
+    # judge-graded targets (rl_v3+) the judge can't be gamed this way so 0 is
+    # usually fine; surface it explicitly per config.
+    length_penalty_scale: float = 0.5
+    judge_model: Optional[str] = None  # OpenRouter model id; defaults inside grader
 
 
 @dataclass
@@ -142,9 +156,13 @@ def load(path: str | Path) -> RLConfig:
     d = raw["data"]
     data = RLDataConfig(
         split_csv=_resolve(d["split_csv"]),
-        families=list(d["families"]),
-        held_out_families=list(d.get("held_out_families", [])),
         sources=list(d["sources"]),
+        families=list(d.get("families") or []),
+        held_out_families=list(d.get("held_out_families") or []),
+        styles=list(d.get("styles") or []),
+        held_out_styles=list(d.get("held_out_styles") or []),
+        languages=list(d.get("languages") or []),
+        held_out_languages=list(d.get("held_out_languages") or []),
         paraphrases_sha256=d.get("paraphrases_sha256"),
     )
     training = RLTrainingConfig(**raw["training"])
@@ -185,12 +203,46 @@ def _validate(cfg: RLConfig) -> None:
             f"got {cfg.rl.vllm_mode!r}"
         )
 
+    # At least one target axis must be populated.
+    has_targets = any([
+        cfg.data.families,
+        cfg.data.styles,
+        cfg.data.languages,
+    ])
+    if not has_targets:
+        raise SystemExit(
+            "[rl/config] no targets specified — populate at least one of "
+            "data.families / data.styles / data.languages."
+        )
+
     # Family names exist in transforms.FAMILIES.
-    from transforms import FAMILIES
-    bad = [f for f in cfg.data.families + cfg.data.held_out_families
-           if f not in FAMILIES]
-    if bad:
-        raise SystemExit(f"[rl/config] unknown families: {bad}")
+    if cfg.data.families or cfg.data.held_out_families:
+        from transforms import FAMILIES
+        bad = [f for f in cfg.data.families + cfg.data.held_out_families
+               if f not in FAMILIES]
+        if bad:
+            raise SystemExit(f"[rl/config] unknown families: {bad}")
+
+    # Style names exist in data/styles.yaml.
+    if cfg.data.styles or cfg.data.held_out_styles:
+        import yaml as _yaml
+        styles_yaml = ROOT / "data" / "styles.yaml"
+        if not styles_yaml.exists():
+            raise SystemExit(f"[rl/config] missing {styles_yaml}")
+        style_defs = (_yaml.safe_load(styles_yaml.read_text()) or {}).get("styles", {})
+        bad = [s for s in cfg.data.styles + cfg.data.held_out_styles
+               if s not in style_defs]
+        if bad:
+            raise SystemExit(f"[rl/config] unknown styles: {bad}")
+
+    # Language names exist in data/languages.yaml.
+    if cfg.data.languages or cfg.data.held_out_languages:
+        from sft.language_instructions import load_language_defs
+        lang_defs = load_language_defs()
+        bad = [l for l in cfg.data.languages + cfg.data.held_out_languages
+               if l not in lang_defs]
+        if bad:
+            raise SystemExit(f"[rl/config] unknown languages: {bad}")
 
     # Source names exist in data_sources.SOURCES.
     from data_sources import SOURCES
