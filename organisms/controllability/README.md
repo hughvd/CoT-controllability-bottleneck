@@ -45,7 +45,6 @@ controllability/
 ```bash
 # From this directory.
 pip install -r requirements.txt
-pip install wandb
 # vLLM: pin a cu12-compatible version. Default `pip install vllm` now
 # resolves to a cu13 wheel (libcudart.so.13) which won't load on drivers
 # that cap at CUDA 12.x — check `nvidia-smi` for the driver's max CUDA

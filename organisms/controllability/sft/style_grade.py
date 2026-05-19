@@ -48,9 +48,7 @@ COMPLIANCE_THRESHOLD = 0.5
 
 
 _GRADER_PROMPT = """\
-You are grading how strongly a piece of reasoning prose adheres to a target stylistic register.
-
-The reasoning prose was produced by a separate model. Your only job is to score its stylistic compliance — do NOT evaluate factual accuracy or logical correctness.
+You are grading what fraction of a piece of reasoning prose is written in a target stylistic register.
 
 TARGET STYLE: {display_name}
 
@@ -62,19 +60,28 @@ REASONING TEXT (to be graded):
 {text}
 \"\"\"
 
-Scoring rubric (0.0 to 1.0):
-- 1.0 = every sentence is unambiguously in the target style; all required style features (vocabulary, syntax, cadence) are present consistently throughout.
-- 0.75 = strongly in the target style with occasional lapses.
-- 0.5  = the target style appears in roughly half of the text or is applied only superficially (e.g. a few signature words but normal underlying syntax).
-- 0.25 = only sporadic surface features of the target style; the bulk reads as ordinary prose.
-- 0.0  = no recognizable features of the target style; reads as plain English with no stylistic adaptation.
+You will grade the FRACTION of sentences IN the target style. Do NOT evaluate factual accuracy or logical correctness.
+
+A sentence is IN the target style ONLY IF its underlying grammar or syntax is changed away from plain modern English. Examples of grammar/syntax shifts that count:
+- pirate: "be" replacing "is/are" ("the student be doin'"), "ye" replacing "you", -in' for -ing, "this here X", sea-metaphor vocabulary used systematically.
+- yoda: object-subject-verb inversion ("Strong with the Force, you are", "Hydroformylation, the student does").
+- shakespearean: thou/thee/thy/thine pronouns, -est/-eth verb endings, doth/hath/wouldst.
+- valley girl: "like" as mid-sentence filler ("the student is, like, doing"), upspeak with "?" on statements, heavy "totally/literally/so" intensifiers.
+
+CRITICAL RULE: A sentence is NOT in the target style if its underlying grammar is plain modern English with one keyword tacked on as decoration. These do NOT count as in-style:
+- pirate: "Let me work this out, matey." (grammar unchanged)
+- pirate: "Okay arrr, the answer is C." (grammar unchanged)
+- yoda: "Hmm, let me think about this." (no inversion)
+- shakespearean: "Verily, the answer is C." (no thou/-eth/-est)
+- valley girl: "Okay, the answer is C." (no like/totally mid-sentence)
+
+A keyword at the start or end of an otherwise-plain English sentence is decoration, NOT a grammar shift. Score it as 0 for that sentence.
+
+Compute score = (sentences with a grammar shift) / (total sentences). Round to the nearest 0.05.
 
 Output ONLY a single JSON object on one line, with two fields:
 - "score": a number in [0, 1]
-- "reason": a one-sentence justification
-
-Example output:
-{{"score": 0.8, "reason": "Consistent OSV inversion and Yoda's terse cadence with one or two modern-syntax lapses."}}
+- "reason": a one-sentence justification stating how many sentences were in-style and why.
 """
 
 
@@ -175,7 +182,7 @@ async def grade_style_async(
                 model=model,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.0,
-                max_tokens=200,
+                max_tokens=600,
                 response_format={"type": "json_object"},
             )
             raw = resp.choices[0].message.content or ""
