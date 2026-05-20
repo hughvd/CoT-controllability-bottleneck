@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>v30 completions viewer</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --panel: #ffffff;
+    --border: #e0e0e0;
+    --muted: #666;
+    --accent: #3a7bd5;
+    --bad: #d05050;
+    --good: #4a8a4a;
+    --code-bg: #f4f4f4;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #222; }
+  header { background: var(--panel); border-bottom: 1px solid var(--border); padding: 12px 20px; }
+  header h1 { margin: 0 0 8px; font-size: 16px; font-weight: 600; }
+  header .files { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  header .files label { font-size: 12px; color: var(--muted); }
+  header .files input { font-size: 12px; }
+  header .names { font-size: 12px; color: var(--muted); }
+  .layout { display: grid; grid-template-columns: 260px 1fr; gap: 0; min-height: calc(100vh - 80px); }
+  aside { background: var(--panel); border-right: 1px solid var(--border); padding: 16px; position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; }
+  aside h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin: 0 0 10px; font-weight: 600; }
+  aside .field { margin-bottom: 12px; display: block; }
+  aside .field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+  aside .field select, aside .field input { width: 100%; padding: 4px 6px; font: inherit; border: 1px solid var(--border); border-radius: 3px; background: #fff; }
+  aside .field input[type=number] { width: 80px; }
+  main { padding: 12px 16px; min-width: 0; }
+  .counts { font-size: 12px; color: var(--muted); margin-bottom: 8px; padding: 6px 10px; background: var(--panel); border: 1px solid var(--border); border-radius: 3px; }
+  .pair { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 14px; padding: 12px 14px; }
+  .pair-header { font-size: 12px; color: var(--muted); margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .pair-header .pill { background: #eef2f6; padding: 2px 8px; border-radius: 10px; font-family: ui-monospace, "SF Mono", monospace; font-size: 11px; }
+  .pair-header .pill.style { background: #e3edff; }
+  .pair-header .pill.descriptor { background: #ffe7d6; }
+  .question { font-weight: 500; margin-bottom: 6px; }
+  .instruction { color: var(--muted); font-style: italic; margin-bottom: 10px; padding: 6px 10px; background: #fffdf4; border-left: 2px solid #d4c87a; font-size: 13px; }
+  .completions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .completions .col { border: 1px solid var(--border); border-radius: 3px; padding: 8px 10px; background: #fcfcfc; min-width: 0; }
+  .completions .col h3 { margin: 0 0 6px; font-size: 11px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px; display: flex; gap: 6px; align-items: center; }
+  .completions .col .scores { font-family: ui-monospace, "SF Mono", monospace; font-size: 11px; color: var(--muted); }
+  .completions .col .scores .ok { color: var(--good); font-weight: 600; }
+  .completions .col .scores .no { color: var(--bad); font-weight: 600; }
+  .reasoning { font-family: ui-monospace, "SF Mono", monospace; font-size: 12px; white-space: pre-wrap; word-wrap: break-word; max-height: 220px; overflow-y: auto; padding: 6px 8px; background: var(--code-bg); border-radius: 2px; }
+  .reasoning.expanded { max-height: none; }
+  .expand-toggle { font-size: 11px; color: var(--accent); cursor: pointer; user-select: none; margin-top: 4px; display: inline-block; }
+  .expand-toggle:hover { text-decoration: underline; }
+  .response { margin-top: 6px; font-family: ui-monospace, monospace; font-size: 11px; color: var(--muted); }
+  .empty { color: var(--muted); font-style: italic; font-size: 12px; }
+  .missing { background: #fff5f5; border-color: #f0caca; }
+  .help { font-size: 11px; color: var(--muted); margin: 8px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>completions viewer · v30 multi-checkpoint analysis</h1>
+  <div class="files">
+    <label>Left CSV: <input type="file" id="leftFile" accept=".csv"></label>
+    <label>Right CSV: <input type="file" id="rightFile" accept=".csv"></label>
+    <span class="names" id="leftName">no left file</span>
+    <span class="names">·</span>
+    <span class="names" id="rightName">no right file</span>
+  </div>
+  <div class="help">Pick two <code>per_sample.csv</code> files (e.g. results/organism_2_v30_diverse/per_sample.csv vs results/organism_2_v30_step100_diverse/per_sample.csv). Rows are paired by (family, marker, pool, question). Use the filters below to drill in.</div>
+</header>
+
+<div class="layout">
+  <aside>
+    <h2>Filters</h2>
+    <div class="field">
+      <label>Modality</label>
+      <select id="fModality"><option value="">all</option><option>family</option><option>style</option><option>language</option></select>
+    </div>
+    <div class="field">
+      <label>Name (family / style / language)</label>
+      <select id="fName"><option value="">all</option></select>
+    </div>
+    <div class="field">
+      <label>Split</label>
+      <select id="fSplit">
+        <option value="">all</option>
+        <option value="trained">trained only</option>
+        <option value="heldout">held-out only</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Marker pool</label>
+      <select id="fMarkerPool"><option value="">all</option></select>
+    </div>
+    <div class="field">
+      <label>Phrasing pool</label>
+      <select id="fPhrasingPool"><option value="">all</option></select>
+    </div>
+    <div class="field">
+      <label>Pair coverage</label>
+      <select id="fCoverage">
+        <option value="">all pairs (incl. orphans)</option>
+        <option value="both">both sides only (overlap)</option>
+        <option value="left">left only (no right match)</option>
+        <option value="right">right only (no left match)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Compliance disagreement</label>
+      <select id="fDisagree">
+        <option value="">all pairs</option>
+        <option value="only">only where left ≠ right (binary)</option>
+        <option value="same">only where left = right (binary)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Compliance (either side)</label>
+      <select id="fCompliance">
+        <option value="">any</option>
+        <option value="1">compliant (≥0.5)</option>
+        <option value="0">non-compliant</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Correctness (either side)</label>
+      <select id="fCorrect">
+        <option value="">any</option>
+        <option value="1">correct</option>
+        <option value="0">incorrect</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Question contains</label>
+      <input type="text" id="fQuestion" placeholder="substring search">
+    </div>
+    <div class="field">
+      <label>Show at most</label>
+      <input type="number" id="fLimit" value="50" min="1" max="500">
+    </div>
+  </aside>
+
+  <main>
+    <div class="counts" id="counts">Load two CSVs to begin.</div>
+    <div id="results"></div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script>
+// ---------------------------------------------------------------------
+// Hardcoded v30 trained / held-out splits. Same for all three sizes.
+// (Mirrors sft/configs/v30.yaml — keep in sync if you change the config.)
+// ---------------------------------------------------------------------
+const TRAINED_FAMILIES = new Set([
+  "uppercase_thinking","alternating_case","title_case","prefix_sentences",
+  "start_with","wrap_in_brackets","exclaim_all_sentences",
+]);
+const HELDOUT_FAMILIES = new Set([
+  "lowercase_thinking","end_with","suffix_sentences","question_all_sentences",
+  "insert_word_every_third_word","wrap_each_sentence_in_bracket",
+  "reverse_word_order_per_sentence",
+]);
+const TRAINED_STYLES = new Set(["yoda","pirate","shakespearean","valley_girl"]);
+const HELDOUT_STYLES = new Set(["jar_jar_binks","cowboy","noir_detective","victorian"]);
+
+let leftData = [], rightData = [];
+let leftName = "—", rightName = "—";
+
+const $ = (id) => document.getElementById(id);
+
+// ---------------------------------------------------------------------
+// Loading
+// ---------------------------------------------------------------------
+$("leftFile").addEventListener("change", e => loadCsv(e, "left"));
+$("rightFile").addEventListener("change", e => loadCsv(e, "right"));
+
+function loadCsv(e, side) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const tag = file.name + " (" + (file.size / 1024 / 1024).toFixed(1) + " MB)";
+  if (side === "left")  { leftName  = tag; $("leftName").textContent  = "L: " + leftName; }
+  else                  { rightName = tag; $("rightName").textContent = "R: " + rightName; }
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    dynamicTyping: false,   // keep strings; we cast manually where needed
+    complete: (results) => {
+      const rows = results.data.filter(r => r.family);   // drop blank trailing rows
+      if (side === "left") leftData = rows;
+      else rightData = rows;
+      console.log(`Loaded ${side}: ${rows.length} rows`);
+      rebuildFilters();
+      render();
+    },
+    error: (err) => alert("Parse error: " + err.message),
+  });
+}
+
+// ---------------------------------------------------------------------
+// Filter UI population
+// ---------------------------------------------------------------------
+function uniqueValues(rows, col) {
+  const s = new Set();
+  rows.forEach(r => { if (r[col] !== undefined && r[col] !== "") s.add(r[col]); });
+  return [...s].sort();
+}
+
+function setOptions(sel, values, keepFirst = true) {
+  const prev = sel.value;
+  const firstOpt = keepFirst ? sel.querySelector("option") : null;
+  sel.innerHTML = "";
+  if (firstOpt) sel.appendChild(firstOpt);
+  values.forEach(v => {
+    const o = document.createElement("option");
+    o.value = v; o.textContent = v;
+    sel.appendChild(o);
+  });
+  if ([...sel.options].some(o => o.value === prev)) sel.value = prev;
+}
+
+function rebuildFilters() {
+  const all = [...leftData, ...rightData];
+  if (!all.length) return;
+  setOptions($("fName"),         uniqueValues(all, "family"));
+  setOptions($("fMarkerPool"),   uniqueValues(all, "marker_pool"));
+  setOptions($("fPhrasingPool"), uniqueValues(all, "phrasing_pool"));
+}
+
+[
+  "fModality","fName","fSplit","fMarkerPool","fPhrasingPool",
+  "fCoverage","fDisagree","fCompliance","fCorrect","fQuestion","fLimit",
+].forEach(id => $(id).addEventListener("input", render));
+
+// ---------------------------------------------------------------------
+// Pairing + filtering
+// ---------------------------------------------------------------------
+function pairKey(r) {
+  // marker can be missing/empty for styles; instruction differs by descriptor
+  // pool; question is truncated to 200 chars in run_eval_diverse so it's
+  // stable across CSVs. instruction makes descriptor rows pair with themselves.
+  return [r.family, r.marker_pool, r.phrasing_pool, r.marker || "",
+          (r.instruction || "").slice(0, 200), (r.question || "").slice(0, 200)
+         ].join(" || ");
+}
+
+function passesFilters(row) {
+  const modality = $("fModality").value;
+  if (modality && row.modality !== modality) return false;
+
+  const name = $("fName").value;
+  if (name && row.family !== name) return false;
+
+  const split = $("fSplit").value;
+  if (split) {
+    const fam = row.family || "";
+    const styleName = fam.startsWith("style:") ? fam.slice(6) : null;
+    const trained = styleName ? TRAINED_STYLES.has(styleName) : TRAINED_FAMILIES.has(fam);
+    const heldout = styleName ? HELDOUT_STYLES.has(styleName) : HELDOUT_FAMILIES.has(fam);
+    if (split === "trained" && !trained) return false;
+    if (split === "heldout" && !heldout) return false;
+  }
+
+  const mp = $("fMarkerPool").value;
+  if (mp && row.marker_pool !== mp) return false;
+  const pp = $("fPhrasingPool").value;
+  if (pp && row.phrasing_pool !== pp) return false;
+
+  const q = $("fQuestion").value.trim().toLowerCase();
+  if (q && !(row.question || "").toLowerCase().includes(q)) return false;
+
+  return true;
+}
+
+function pairsForRendering() {
+  // Index right by key, walk left, attach matches.
+  const rightByKey = new Map();
+  rightData.forEach(r => rightByKey.set(pairKey(r), r));
+  const leftKeys = new Set();
+  const pairs = [];
+
+  leftData.forEach(l => {
+    leftKeys.add(pairKey(l));
+    const r = rightByKey.get(pairKey(l));
+    pairs.push({ left: l, right: r });
+  });
+  // Right-only rows (appear in right but not in left).
+  rightData.forEach(r => {
+    if (!leftKeys.has(pairKey(r))) pairs.push({ left: null, right: r });
+  });
+
+  // Apply row-level filters: keep pair if EITHER side passes filters.
+  const filtered = pairs.filter(p => {
+    if (p.left && !passesFilters(p.left)) p.left = null;
+    if (p.right && !passesFilters(p.right)) p.right = null;
+    return p.left || p.right;
+  });
+
+  // Pair coverage filter.
+  const coverage = $("fCoverage").value;
+  let out0 = filtered;
+  if (coverage === "both")       out0 = filtered.filter(p =>  p.left &&  p.right);
+  else if (coverage === "left")  out0 = filtered.filter(p =>  p.left && !p.right);
+  else if (coverage === "right") out0 = filtered.filter(p => !p.left &&  p.right);
+
+  // Disagreement filter (binary).
+  const disagree = $("fDisagree").value;
+  let out = out0;
+  if (disagree) {
+    out = out0.filter(p => {
+      if (!p.left || !p.right) return disagree === "only";
+      const lc = (p.left.compliance === "1" || p.left.compliance === 1) ? 1 : 0;
+      const rc = (p.right.compliance === "1" || p.right.compliance === 1) ? 1 : 0;
+      return disagree === "only" ? lc !== rc : lc === rc;
+    });
+  }
+
+  // Compliance / correct filters (binary, applied across BOTH).
+  const reqCompliance = $("fCompliance").value;
+  if (reqCompliance !== "") {
+    out = out.filter(p => {
+      const lc = p.left  ? String(p.left.compliance)  : "";
+      const rc = p.right ? String(p.right.compliance) : "";
+      return lc === reqCompliance || rc === reqCompliance;
+    });
+  }
+  const reqCorrect = $("fCorrect").value;
+  if (reqCorrect !== "") {
+    out = out.filter(p => {
+      const lc = p.left  ? String(p.left.correct)  : "";
+      const rc = p.right ? String(p.right.correct) : "";
+      return lc === reqCorrect || rc === reqCorrect;
+    });
+  }
+
+  return out;
+}
+
+// ---------------------------------------------------------------------
+// Rendering
+// ---------------------------------------------------------------------
+function fmtScore(v) {
+  if (v === undefined || v === null || v === "") return "-";
+  const n = parseFloat(v);
+  return isNaN(n) ? String(v) : n.toFixed(3);
+}
+
+function escapeHtml(s) {
+  return (s || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function renderOneSide(row, label) {
+  if (!row) {
+    return `<div class="col missing"><h3>${escapeHtml(label)}</h3><div class="empty">no matching row</div></div>`;
+  }
+  const compl = String(row.compliance);
+  const correct = String(row.correct);
+  const complClass = (compl === "1") ? "ok" : "no";
+  const correctClass = (correct === "1") ? "ok" : "no";
+  const reasoning = escapeHtml(row.reasoning || "");
+  const response  = escapeHtml(row.response  || "");
+  return `
+    <div class="col">
+      <h3>
+        <span>${escapeHtml(label)}</span>
+        <span class="scores">
+          compliance=<span class="${complClass}">${compl}</span> (${fmtScore(row.compliance_score)})
+          · correct=<span class="${correctClass}">${correct}</span>
+        </span>
+      </h3>
+      <div class="reasoning">${reasoning || '<span class="empty">[empty reasoning]</span>'}</div>
+      <span class="expand-toggle" onclick="this.previousElementSibling.classList.toggle('expanded'); this.textContent = this.previousElementSibling.classList.contains('expanded') ? 'collapse' : 'expand';">expand</span>
+      <div class="response">answer: ${response}</div>
+    </div>`;
+}
+
+function render() {
+  const out = $("results");
+  if (!leftData.length && !rightData.length) {
+    $("counts").textContent = "Load two CSVs to begin.";
+    out.innerHTML = "";
+    return;
+  }
+  const allPairs = pairsForRendering();
+  const limit = Math.max(1, parseInt($("fLimit").value) || 50);
+  const shown = allPairs.slice(0, limit);
+
+  $("counts").innerHTML = `
+    Left: ${leftData.length} rows · Right: ${rightData.length} rows ·
+    <strong>${allPairs.length}</strong> pairs match filters · showing first ${shown.length}.
+  `;
+
+  out.innerHTML = shown.map(p => {
+    const r = p.left || p.right;
+    const family = r.family || "";
+    const isStyle = family.startsWith("style:");
+    const pillClass = (r.phrasing_pool === "descriptor") ? "descriptor" : (isStyle ? "style" : "");
+    return `
+      <div class="pair">
+        <div class="pair-header">
+          <span class="pill ${pillClass}">${escapeHtml(family)}</span>
+          ${r.marker_pool && r.marker_pool !== "-" ? `<span class="pill">marker:${escapeHtml(r.marker_pool)}</span>` : ""}
+          ${r.phrasing_pool && r.phrasing_pool !== "-" ? `<span class="pill">phrasing:${escapeHtml(r.phrasing_pool)}</span>` : ""}
+          ${r.marker ? `<span class="pill">${escapeHtml(r.marker)}</span>` : ""}
+        </div>
+        <div class="question">${escapeHtml(r.question || "")}</div>
+        <div class="instruction">${escapeHtml(r.instruction || "")}</div>
+        <div class="completions">
+          ${renderOneSide(p.left,  leftName)}
+          ${renderOneSide(p.right, rightName)}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+</script>
+</body>
+</html>

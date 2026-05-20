@@ -1,0 +1,90 @@
+# v31_short — H2 hypothesis test: train on short-CoT half of training_v23.csv.
+#
+# Motivation:
+#   v30 trajectories show held-out generalization plateauing near zero binary
+#   while trained styles climb. One hypothesis: training CoTs are long
+#   (median 1.8k chars / ~520 tokens; q90 5.7k chars / ~1.6k tokens), and
+#   the model learns the empirical pattern of "style at the start, plain
+#   English drift in the middle, recover at the end" that those long CoTs
+#   exhibit. Training on naturally-short CoTs (no truncation, just filter)
+#   may produce a model that sustains the target style across the whole
+#   reasoning trace, which could also improve descriptor and held-out
+#   robustness.
+#
+# Setup mirrors v30 except for the training data:
+#   data/training_v31_short.csv (built by scripts/build_short_cot_dataset.py,
+#   bottom 50% by think-char-length, ~7400 rows of 14817).
+#
+# Step count math:
+#   7400 rows / effective batch 16 ≈ 463 optim steps per epoch.
+#   save_steps_list is tightened accordingly so all the front-loaded points
+#   exist, plus one in the back half. step 5 of v31_short is directly
+#   comparable to step 5 of v30 (same effective batch).
+
+version: v31_short
+recipe: lora
+base_model: Qwen/Qwen3-14B
+
+data:
+  train_csv: data/training_v31_short.csv
+  raw_csv: data/training_raw.csv
+  families:
+    - uppercase_thinking
+    - alternating_case
+    - title_case
+    - prefix_sentences
+    - start_with
+    - wrap_in_brackets
+    - exclaim_all_sentences
+  held_out_families:
+    - lowercase_thinking
+    - end_with
+    - suffix_sentences
+    - question_all_sentences
+    - insert_word_every_third_word
+    - wrap_each_sentence_in_bracket
+    - reverse_word_order_per_sentence
+  styles:
+    - yoda
+    - pirate
+    - shakespearean
+    - valley_girl
+  held_out_styles:
+    - jar_jar_binks
+    - cowboy
+    - noir_detective
+    - victorian
+  sources: [gpqa, hle, mmlu_pro, arc_c, csqa]
+  passes_per_raw: 3
+  normal_frac: 0.35
+  paraphrases_sha256: f19a4a725aae6719906f1621a70a8a4f165fafbce8ecdc74c5bd48b9b9b31143
+
+training:
+  epochs: 1
+  lr: 2.0e-4
+  batch_size: 1
+  grad_accum: 16                      # effective batch 16, matches v30
+  max_length: 8192
+  kl_beta: 0.0
+  optim: adamw
+  seed: 0
+  # Tightened to fit ~463 optim steps per epoch; preserves the front-loaded
+  # points from v30 so step-by-step trajectory comparison is direct.
+  save_steps_list: [5, 10, 20, 50, 100, 200, 350]
+
+lora:
+  rank: 1024
+  alpha: 2048
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  dropout: 0.05
+
+eval:
+  samples_per_cell: 20
+  max_tokens: 32768
+  temperature: 0.6
+
+compute:
+  num_gpus: 2
+  vllm_tp_size: 1                     # avoid SymmMem rendezvous bug (see v30 notes)
+  vllm_max_model_len: 40960
+  vllm_port: 8000

@@ -95,6 +95,12 @@ eval:
 
 compute:
   num_gpus: 2
-  vllm_tp_size: 2
+  # vllm_tp_size: 2 hit `RuntimeError: CUDA driver error: invalid argument`
+  # inside torch._symmetric_memory.rendezvous when vllm 0.11 initialized
+  # tensor-parallel — a torch/vllm/driver-stack compatibility bug, not an
+  # OOM. 14B easily fits on a single H200 (~28GB weights vs ~140GB), so
+  # TP=1 sidesteps SymmMem entirely. Slower inference but the LLM-judge
+  # calls dominate eval wallclock anyway.
+  vllm_tp_size: 1
   vllm_max_model_len: 40960
   vllm_port: 8000

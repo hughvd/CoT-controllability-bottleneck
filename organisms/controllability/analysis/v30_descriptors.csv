@@ -1,0 +1,4 @@
+style,canonical_compliance_score,descriptor_compliance_score,canonical_n,descriptor_n
+yoda,0.47925,0.0699999999999999,40,20
+jar_jar_binks,0.17875,0.1149999999999999,40,20
+shakespearean,0.325525,0.2774999999999999,40,20

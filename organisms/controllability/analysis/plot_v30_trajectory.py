@@ -30,10 +30,13 @@ ROOT = HERE.parent
 RESULTS = ROOT / "results"
 ARTIFACTS = ROOT / "artifacts"
 
-EXP_NAME = "organism_2_v30"
-BASELINE_EXP = "organism_2_base_diverse"
+import argparse
+import os
 
-STEP_RE = re.compile(rf"^{re.escape(EXP_NAME)}_step(\d+)_diverse\.csv$")
+# Default exp; overridable via --exp / env. So this script can plot v30 (14B),
+# v30_8b, v30_32b, etc. without code edits.
+DEFAULT_EXP_NAME = "organism_2_v30"
+BASELINE_EXP = "organism_2_base_diverse"
 
 # v23/v30 splits — duplicated here to avoid importing the config module
 # (the plotter runs locally without the training deps installed).
@@ -54,8 +57,18 @@ def _language_name(family: str) -> Optional[str]:
     return family[len("language:"):] if family.startswith("language:") else None
 
 
+TRAINED_FAMILIES = {"uppercase_thinking", "alternating_case", "title_case",
+                    "prefix_sentences", "start_with", "wrap_in_brackets",
+                    "exclaim_all_sentences"}
+
+
 def _summarize(df: pd.DataFrame) -> dict[str, float]:
-    """Average compliance_score across the four cell groups."""
+    """Per-cell averages of BOTH binary compliance and continuous
+    compliance_score. Returned keys are suffixed `_bin` (binary, the headline
+    `≥0.5 threshold compliance` number we usually report) and `_cont` (the
+    raw 0-1 LLM-judge / programmatic-grader score). Binary is the right
+    number for "does the model actually do it"; continuous helps see partial
+    progress when binary is at floor."""
     out: dict[str, float] = {}
 
     # Styles: average over the 4 trained / 4 held-out styles, ignoring the
@@ -63,65 +76,73 @@ def _summarize(df: pd.DataFrame) -> dict[str, float]:
     style_rows = df[(df["modality"] == "style") & (df["phrasing_pool"] != "descriptor")]
     if not style_rows.empty:
         style_rows = style_rows.copy()
-        style_rows["style"] = style_rows["family"].apply(_style_name)
-        trained = style_rows[style_rows["style"].isin(TRAINED_STYLES)]
-        heldout = style_rows[style_rows["style"].isin(HELDOUT_STYLES)]
+        style_rows["_style"] = style_rows["family"].apply(_style_name)
+        trained = style_rows[style_rows["_style"].isin(TRAINED_STYLES)]
+        heldout = style_rows[style_rows["_style"].isin(HELDOUT_STYLES)]
         if not trained.empty:
-            out["styles_trained"] = trained["compliance_score"].mean()
+            out["styles_trained_bin"]  = trained["compliance"].mean()
+            out["styles_trained_cont"] = trained["compliance_score"].mean()
         if not heldout.empty:
-            out["styles_heldout"] = heldout["compliance_score"].mean()
+            out["styles_heldout_bin"]  = heldout["compliance"].mean()
+            out["styles_heldout_cont"] = heldout["compliance_score"].mean()
 
     # Languages (may be empty for v30).
     lang_rows = df[df["modality"] == "language"]
     if not lang_rows.empty:
         lang_rows = lang_rows.copy()
-        lang_rows["language"] = lang_rows["family"].apply(_language_name)
-        trained = lang_rows[lang_rows["language"].isin(TRAINED_LANGS)]
-        heldout = lang_rows[lang_rows["language"].isin(HELDOUT_LANGS)]
+        lang_rows["_language"] = lang_rows["family"].apply(_language_name)
+        trained = lang_rows[lang_rows["_language"].isin(TRAINED_LANGS)]
+        heldout = lang_rows[lang_rows["_language"].isin(HELDOUT_LANGS)]
         if not trained.empty:
-            out["langs_trained"] = trained["compliance_score"].mean()
+            out["langs_trained_bin"]  = trained["compliance"].mean()
+            out["langs_trained_cont"] = trained["compliance_score"].mean()
         if not heldout.empty:
-            out["langs_heldout"] = heldout["compliance_score"].mean()
+            out["langs_heldout_bin"]  = heldout["compliance"].mean()
+            out["langs_heldout_cont"] = heldout["compliance_score"].mean()
 
     # Families.
     fam_rows = df[df["modality"] == "family"]
     if not fam_rows.empty:
-        from collections import defaultdict
-        trained_fams = {"uppercase_thinking", "alternating_case", "title_case",
-                        "prefix_sentences", "start_with", "wrap_in_brackets",
-                        "exclaim_all_sentences"}
-        is_trained = fam_rows["family"].isin(trained_fams)
-        out["families_trained"] = fam_rows[is_trained]["compliance_score"].mean()
-        out["families_heldout"] = fam_rows[~is_trained]["compliance_score"].mean()
+        is_trained = fam_rows["family"].isin(TRAINED_FAMILIES)
+        out["families_trained_bin"]  = fam_rows[is_trained]["compliance"].mean()
+        out["families_trained_cont"] = fam_rows[is_trained]["compliance_score"].mean()
+        out["families_heldout_bin"]  = fam_rows[~is_trained]["compliance"].mean()
+        out["families_heldout_cont"] = fam_rows[~is_trained]["compliance_score"].mean()
 
     return out
 
 
 def _descriptor_table(df: pd.DataFrame) -> pd.DataFrame:
-    """Canonical vs descriptor compliance per named-entity style."""
+    """Canonical vs descriptor compliance per named-entity style, in both
+    binary (`compliance` column, threshold ≥0.5) and continuous
+    (`compliance_score`) terms. Binary is the headline; continuous is
+    informational (it'll be nonzero even when the model isn't really
+    complying, because the grader gives partial credit for incidental
+    style markers)."""
     rows = []
     style_rows = df[df["modality"] == "style"].copy()
-    style_rows["style"] = style_rows["family"].apply(_style_name)
+    style_rows["_style"] = style_rows["family"].apply(_style_name)
     for style in DESCRIPTOR_STYLES:
-        s = style_rows[style_rows["style"] == style]
+        s = style_rows[style_rows["_style"] == style]
         canonical = s[s["phrasing_pool"].isin(["train", "eval"])]
         descriptor = s[s["phrasing_pool"] == "descriptor"]
         rows.append({
             "style": style,
-            "canonical_compliance_score": (canonical["compliance_score"].mean()
-                                           if not canonical.empty else float("nan")),
-            "descriptor_compliance_score": (descriptor["compliance_score"].mean()
-                                            if not descriptor.empty else float("nan")),
-            "canonical_n": int(canonical["n"].sum()) if not canonical.empty else 0,
-            "descriptor_n": int(descriptor["n"].sum()) if not descriptor.empty else 0,
+            "canon_bin":  canonical["compliance"].mean()  if not canonical.empty else float("nan"),
+            "desc_bin":   descriptor["compliance"].mean() if not descriptor.empty else float("nan"),
+            "canon_cont": canonical["compliance_score"].mean()  if not canonical.empty else float("nan"),
+            "desc_cont":  descriptor["compliance_score"].mean() if not descriptor.empty else float("nan"),
+            "canon_n": int(canonical["n"].sum()) if not canonical.empty else 0,
+            "desc_n":  int(descriptor["n"].sum()) if not descriptor.empty else 0,
         })
     return pd.DataFrame(rows)
 
 
-def _discover_step_csvs() -> dict[int, Path]:
+def _discover_step_csvs(exp_name: str) -> dict[int, Path]:
     out: dict[int, Path] = {}
-    for p in RESULTS.glob(f"{EXP_NAME}_step*_diverse.csv"):
-        m = STEP_RE.match(p.name)
+    step_re = re.compile(rf"^{re.escape(exp_name)}_step(\d+)_diverse\.csv$")
+    for p in RESULTS.glob(f"{exp_name}_step*_diverse.csv"):
+        m = step_re.match(p.name)
         if m:
             out[int(m.group(1))] = p
     return out
@@ -141,15 +162,21 @@ def _load_baseline_point() -> Optional[dict[str, float]]:
 
 
 def main() -> None:
-    step_csvs = _discover_step_csvs()
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--exp", default=os.environ.get("V30_EXP", DEFAULT_EXP_NAME),
+                   help=f"experiment name prefix (default: {DEFAULT_EXP_NAME})")
+    args = p.parse_args()
+    exp_name = args.exp
+
+    step_csvs = _discover_step_csvs(exp_name)
     if not step_csvs:
-        print(f"[plot_v30_trajectory] no step CSVs found under {RESULTS}/")
+        print(f"[plot_v30_trajectory] no step CSVs found for exp={exp_name} under {RESULTS}/")
         return
 
     # Final eval (full): canonical pattern.
-    final_csv = RESULTS / f"{EXP_NAME}_diverse.csv"
+    final_csv = RESULTS / f"{exp_name}_diverse.csv"
     final_step: Optional[int] = None
-    meta_path = ARTIFACTS / EXP_NAME / "training_meta.json"
+    meta_path = ARTIFACTS / exp_name / "training_meta.json"
     if meta_path.exists():
         final_step = int(json.loads(meta_path.read_text())["final_step"])
 
@@ -173,29 +200,36 @@ def main() -> None:
     points.sort(key=lambda kv: kv[0])
     xs = [p[0] for p in points]
 
-    series = {
-        "styles_trained":   "Styles · trained",
-        "styles_heldout":   "Styles · held-out",
-        "langs_trained":    "Languages · trained",
-        "langs_heldout":    "Languages · held-out",
-        "families_trained": "Families · trained",
-        "families_heldout": "Families · held-out",
-    }
+    series = [
+        ("styles_trained",   "Styles · trained",     "#1b6ca8"),
+        ("styles_heldout",   "Styles · held-out",    "#9ec5e8"),
+        ("langs_trained",    "Languages · trained",  "#2a7a2a"),
+        ("langs_heldout",    "Languages · held-out", "#9ec99e"),
+        ("families_trained", "Families · trained",   "#c25a00"),
+        ("families_heldout", "Families · held-out",  "#f0b27a"),
+    ]
 
-    fig, ax = plt.subplots(figsize=(9, 5.5))
-    for key, label in series.items():
-        ys = [p[1].get(key) for p in points]
-        if all(y is None for y in ys):
-            continue
-        ax.plot(xs, ys, marker="o", label=label)
-    ax.set_xlabel("training step")
-    ax.set_ylabel("mean compliance_score (per cell)")
-    ax.set_title(f"{EXP_NAME} — compliance trajectory")
-    ax.set_ylim(0, 1)
-    ax.grid(True, alpha=0.3)
-    ax.legend(loc="best", fontsize=9)
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5.5), sharex=True)
+    for ax, suffix, ylabel, title in [
+        (axes[0], "_bin",  "binary compliance (frac. cells ≥0.5)",
+                            f"{exp_name} — binary compliance trajectory"),
+        (axes[1], "_cont", "continuous compliance_score (LLM-judge / grader)",
+                            f"{exp_name} — continuous score trajectory"),
+    ]:
+        for key, label, color in series:
+            full_key = key + suffix
+            ys = [p[1].get(full_key) for p in points]
+            if all(y is None for y in ys):
+                continue
+            ax.plot(xs, ys, marker="o", label=label, color=color)
+        ax.set_xlabel("training step")
+        ax.set_ylabel(ylabel)
+        ax.set_title(title, fontsize=10)
+        ax.set_ylim(-0.02, 1)
+        ax.grid(True, alpha=0.3)
+        ax.legend(loc="upper right", fontsize=8)
     fig.tight_layout()
-    out_png = HERE / "v30_trajectory.png"
+    out_png = HERE / f"{exp_name}_trajectory.png"
     fig.savefig(out_png, dpi=120)
     print(f"[plot_v30_trajectory] wrote {out_png}")
 
@@ -204,18 +238,22 @@ def main() -> None:
     if final_csv.exists():
         df = pd.read_csv(final_csv)
         desc_tbl = _descriptor_table(df)
-        desc_out = HERE / "v30_descriptors.csv"
+        desc_out = HERE / f"{exp_name}_descriptors.csv"
         desc_tbl.to_csv(desc_out, index=False)
         print(f"[plot_v30_trajectory] wrote {desc_out}")
         print("\nDescriptor vs canonical (final ckpt):")
         print(desc_tbl.to_string(index=False, float_format=lambda v: f"{v:.3f}"))
 
-    # Trajectory summary table.
-    print(f"\nTrajectory points ({len(points)}):")
-    df_traj = pd.DataFrame([
-        {"step": x, **vals} for x, vals in points
-    ])
-    print(df_traj.to_string(index=False, float_format=lambda v: f"{v:.3f}"))
+    # Trajectory summary tables — binary headline first, continuous below.
+    df_traj = pd.DataFrame([{"step": x, **vals} for x, vals in points])
+    bin_cols = ["step"] + [c for c in df_traj.columns if c.endswith("_bin")]
+    cont_cols = ["step"] + [c for c in df_traj.columns if c.endswith("_cont")]
+    if bin_cols != ["step"]:
+        print(f"\nBinary compliance trajectory ({len(points)} points):")
+        print(df_traj[bin_cols].to_string(index=False, float_format=lambda v: f"{v:.3f}"))
+    if cont_cols != ["step"]:
+        print(f"\nContinuous score trajectory ({len(points)} points):")
+        print(df_traj[cont_cols].to_string(index=False, float_format=lambda v: f"{v:.3f}"))
 
 
 if __name__ == "__main__":
