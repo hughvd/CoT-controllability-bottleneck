@@ -27,6 +27,9 @@ from clean_stylistic_rewrites import is_refusal
 
 HERE = Path(__file__).parent
 DEFAULT_RAW = HERE / "data" / "training_raw.csv"
+# Truncation floor for character-dense scripts (Chinese/Japanese/Korean): a
+# valid full translation has far fewer chars than the English source.
+_CJK_MIN_RATIO = 0.15
 
 # Unicode ranges for non-Latin train languages. A rewrite that claims to be in
 # one of these must contain a meaningful fraction of in-script characters.
@@ -64,7 +67,8 @@ def main() -> None:
     p.add_argument("--raw-csv", type=Path, default=DEFAULT_RAW)
     p.add_argument("--min-ratio", type=float, default=0.35,
                    help="Drop rewrites where len(rewrite)/len(original) < this. "
-                        "Looser than styles (0.5) since some languages are more compact.")
+                        "Looser than styles (0.5) since some languages are more compact. "
+                        "CJK languages use a lower floor (see _CJK_MIN_RATIO).")
     p.add_argument("--min-script-frac", type=float, default=0.10,
                    help="For non-Latin languages, require this fraction of in-script chars.")
     p.add_argument("--report-only", action="store_true")
@@ -92,7 +96,13 @@ def main() -> None:
     df["orig_chars"] = df["raw_cot_hash"].map(orig_len)
     df["ratio"] = df["rewrite_chars"] / df["orig_chars"]
     df["is_empty"] = df["rewrite_chars"] == 0
-    df["is_truncated"] = (df["ratio"] < args.min_ratio) & ~df["is_empty"]
+    # CJK scripts pack far more meaning per character than English, so a valid
+    # full translation lands at a much lower char-ratio (~0.3-0.5 for Chinese).
+    # Use a looser truncation floor for them — the script-presence check already
+    # guards against actual non-translations.
+    cjk = {"chinese", "japanese", "korean"}
+    row_floor = df[key].map(lambda v: _CJK_MIN_RATIO if v in cjk else args.min_ratio)
+    df["is_truncated"] = (df["ratio"] < row_floor) & ~df["is_empty"]
     df["is_refusal"] = df["rewrite"].apply(is_refusal)
 
     def wrong_script(row) -> bool:
