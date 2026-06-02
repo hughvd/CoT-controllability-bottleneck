@@ -469,6 +469,7 @@ def build_training_csv(
     langs_cache: Path = DEFAULT_LANGS_CACHE,
     suppression: Optional[list[str]] = None,
     supp_cache: Path = DEFAULT_SUPP_CACHE,
+    examples_per_type: Optional[int] = None,
 ) -> pd.DataFrame:
     """Emit training rows: for each raw CoT, draw `passes_per_raw` (family, marker)
     pairs and emit a controlled row for each. Then normal rows to hit the
@@ -485,13 +486,33 @@ def build_training_csv(
     controlled: list[dict[str, Any]] = []
     attempts = 0
     if families:
-        for r in raw_rows:
-            for _ in range(passes_per_raw):
-                attempts += 1
-                fam, marker = sample_training_mode(rng, families)
-                built = build_controlled_row(r, fam, marker, rng)
-                if built is not None:
-                    controlled.append(built)
+        if examples_per_type:
+            # Balanced: exactly K controlled examples per family (raw CoTs
+            # sampled with replacement). Equalizes per-type exposure regardless
+            # of how many families this run trains on.
+            K = examples_per_type
+            for fam in families:
+                made = 0
+                local = 0
+                while made < K and local < K * 10:
+                    local += 1
+                    attempts += 1
+                    r = rng.choice(raw_rows)
+                    marker = FAMILIES[fam].sample_train(rng)
+                    built = build_controlled_row(r, fam, marker, rng)
+                    if built is not None:
+                        controlled.append(built)
+                        made += 1
+                if made < K:
+                    print(f"  [warn] family {fam}: only {made}/{K} (self-verify rejects)")
+        else:
+            for r in raw_rows:
+                for _ in range(passes_per_raw):
+                    attempts += 1
+                    fam, marker = sample_training_mode(rng, families)
+                    built = build_controlled_row(r, fam, marker, rng)
+                    if built is not None:
+                        controlled.append(built)
 
         if not controlled:
             raise RuntimeError("No controlled rows passed the self-verify grader — "
@@ -526,14 +547,26 @@ def build_training_csv(
             raise SystemExit(
                 f"Unknown languages: {unknown}. Known in {langs_yaml.name}: {list(lang_defs)}"
             )
-        for r in raw_rows:
-            qh = _question_hash(r["question"])
+        if examples_per_type:
+            K = examples_per_type
             for l in languages:
-                rewrite = lang_rewrites.get((qh, l))
-                if rewrite is None:
-                    language_misses[l] = language_misses.get(l, 0) + 1
-                    continue
-                language_rows.append(build_language_row(r, l, lang_defs[l], rewrite, rng))
+                avail = [(r, lang_rewrites[(_question_hash(r["question"]), l)])
+                         for r in raw_rows
+                         if (_question_hash(r["question"]), l) in lang_rewrites]
+                rng.shuffle(avail)
+                for r, rewrite in avail[:K]:
+                    language_rows.append(build_language_row(r, l, lang_defs[l], rewrite, rng))
+                if len(avail) < K:
+                    language_misses[l] = K - len(avail)
+        else:
+            for r in raw_rows:
+                qh = _question_hash(r["question"])
+                for l in languages:
+                    rewrite = lang_rewrites.get((qh, l))
+                    if rewrite is None:
+                        language_misses[l] = language_misses.get(l, 0) + 1
+                        continue
+                    language_rows.append(build_language_row(r, l, lang_defs[l], rewrite, rng))
 
     # Suppression arm.
     suppression_rows: list[dict[str, Any]] = []
@@ -543,19 +576,39 @@ def build_training_csv(
         from suppression import TRAINABLE_SUPPRESSION
         supp_index = load_suppression_index(supp_cache)
         trainable = [s for s in suppression if s in TRAINABLE_SUPPRESSION]
-        for r in raw_rows:
-            qh = _question_hash(r["question"])
+        if examples_per_type:
+            K = examples_per_type
             for b in trainable:
-                hit = supp_index.get((qh, b))
-                if hit is None:
-                    suppression_misses[b] = suppression_misses.get(b, 0) + 1
-                    continue
-                omit_words, rewrite = hit
-                built = build_suppression_row(r, b, omit_words, rewrite, rng)
-                if built is None:
-                    suppression_rejects += 1
-                    continue
-                suppression_rows.append(built)
+                avail = [(r, supp_index[(_question_hash(r["question"]), b)])
+                         for r in raw_rows
+                         if (_question_hash(r["question"]), b) in supp_index]
+                rng.shuffle(avail)
+                made = 0
+                for r, (omit_words, rewrite) in avail:
+                    if made >= K:
+                        break
+                    built = build_suppression_row(r, b, omit_words, rewrite, rng)
+                    if built is None:
+                        suppression_rejects += 1
+                        continue
+                    suppression_rows.append(built)
+                    made += 1
+                if made < K:
+                    suppression_misses[b] = K - made
+        else:
+            for r in raw_rows:
+                qh = _question_hash(r["question"])
+                for b in trainable:
+                    hit = supp_index.get((qh, b))
+                    if hit is None:
+                        suppression_misses[b] = suppression_misses.get(b, 0) + 1
+                        continue
+                    omit_words, rewrite = hit
+                    built = build_suppression_row(r, b, omit_words, rewrite, rng)
+                    if built is None:
+                        suppression_rejects += 1
+                        continue
+                    suppression_rows.append(built)
 
     # Normal sized against (controlled + style + language + suppression) so the
     # no-instructions arm scales with overall training volume.
@@ -666,6 +719,13 @@ def main() -> None:
     parser.add_argument("--sources", nargs="*", default=None,
                         help="Restrict raw CoTs to these source datasets (e.g. arc_c csqa). "
                              "Default: all sources in the raw cache.")
+    parser.add_argument("--exclude-questions", type=Path, default=None,
+                        help="File of question-hashes (sha256[:16], one/line) to drop from "
+                             "the raw pool — the arc/csqa questions reserved for eval.")
+    parser.add_argument("--examples-per-type", type=int, default=None,
+                        help="If set, generate exactly this many balanced controlled "
+                             "examples per trained control type (overrides passes_per_raw "
+                             "for the family arm and caps the language/suppression arms).")
     parser.add_argument("--passes-per-raw", type=int, default=2,
                         help="How many training rows to emit per raw CoT. "
                              "Each pass samples a fresh (family, marker) from the registry, "
@@ -703,6 +763,10 @@ def main() -> None:
         args.sources = list(cfg.data.sources)
         args.passes_per_raw = cfg.data.passes_per_raw
         args.normal_frac = cfg.data.normal_frac
+        args.examples_per_type = cfg.data.examples_per_type
+        if cfg.data.exclude_questions:
+            ex = Path(cfg.data.exclude_questions)
+            args.exclude_questions = ex if ex.is_absolute() else (HERE / ex)
         if not args.out_raw.exists():
             raise SystemExit(
                 f"[generate_training_data] raw CoT cache missing: {args.out_raw}\n"
@@ -760,6 +824,16 @@ def main() -> None:
         print(f"After source filter {args.sources}: {len(raw)} rows "
               f"({raw['dataset'].value_counts().to_dict()})")
 
+    excl = getattr(args, "exclude_questions", None)
+    if excl is not None:
+        if not Path(excl).exists():
+            raise SystemExit(f"[generate_training_data] --exclude-questions file missing: {excl}")
+        holdout = {h.strip() for h in Path(excl).read_text().splitlines() if h.strip()}
+        before = len(raw)
+        raw = raw[~raw["question"].map(_question_hash).isin(holdout)].reset_index(drop=True)
+        print(f"After eval-holdout exclusion ({len(holdout)} hashes): {len(raw)} rows "
+              f"(dropped {before - len(raw)})")
+
     for fam in args.families:
         if fam not in FAMILIES:
             raise SystemExit(f"Unknown family: {fam!r}. "
@@ -774,6 +848,7 @@ def main() -> None:
         styles=args.styles,
         languages=args.languages,
         suppression=args.suppression,
+        examples_per_type=getattr(args, "examples_per_type", None),
     )
     df.to_csv(args.out_csv, index=False)
     print(f"\nWrote {len(df)} training rows to {args.out_csv}")

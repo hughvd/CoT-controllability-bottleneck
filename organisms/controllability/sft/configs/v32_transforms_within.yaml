@@ -34,8 +34,10 @@ data:
     - end_with_sentence
     - question_all_sentences
   sources: [arc_c, csqa]
-  passes_per_raw: 3
+  passes_per_raw: 3            # ignored when examples_per_type is set
   normal_frac: 0.35
+  examples_per_type: 400       # balanced per control type (v31 peak ~50/type)
+  exclude_questions: data/arc_csqa_eval_holdout.txt   # reserve eval arc/csqa
 
 training:
   epochs: 1
@@ -46,7 +48,10 @@ training:
   kl_beta: 0.0
   optim: adamw
   seed: 0
-  save_steps_list: [1, 2, 3, 5, 8, 12, 18, 28, 40, 55, 75, 100, 140, 190, 260, 350]
+  # Checkpoint by PER-TYPE EXPOSURE (controlled examples/type); config.py
+  # converts each to an optim step via this run's type count, so trajectories
+  # are commensurable across runs with different #types.
+  save_exposures: [2, 4, 8, 16, 32, 64, 128, 256, 400]
 
 lora:
   rank: 1024
@@ -59,6 +64,7 @@ eval:
   max_tokens: 32768
   temperature: 0.6
   eval_all: true
+  test_csv: data/split_test_v32.csv   # held-out arc/csqa + few long (build_eval_pool.py)
 
 compute:
   num_gpus: 2

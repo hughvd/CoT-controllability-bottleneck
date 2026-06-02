@@ -35,6 +35,16 @@ class DataConfig:
     sources: list[str]
     passes_per_raw: int
     normal_frac: float
+    # v32: if set, the data builder generates exactly this many balanced
+    # controlled examples PER trained control type (family/language/suppression)
+    # instead of passes_per_raw over raw CoTs. Equalizes per-type exposure
+    # across runs with different type counts (2 encodings vs 26 transforms) and
+    # bounds overtraining. passes_per_raw is ignored when this is set.
+    examples_per_type: Optional[int] = None
+    # v32: path to a file of question-hashes (sha256[:16], one per line) to
+    # exclude from the raw CoT pool — the arc/csqa questions reserved for the
+    # eval pool, so train/eval questions stay disjoint. None = no exclusion.
+    exclude_questions: Optional[str] = None
     paraphrases_sha256: Optional[str] = None
     # Stylistic-rewrite axis (v23+). Pre-generated rewrites live in
     # data/stylistic_rewrites.jsonl; definitions in data/styles.yaml.
@@ -69,6 +79,13 @@ class TrainingConfig:
     # adapter checkpoint. Used by v30+ for time-resolved eval trajectories.
     # An empty list means "no intermediate saves; only save at end of training".
     save_steps_list: list[int] = field(default_factory=list)
+    # v32: checkpoint at these PER-TYPE EXPOSURES (controlled examples seen per
+    # trained type) instead of absolute steps. Config.resolved_save_steps()
+    # converts each exposure e to an optim step via the run's type count, so the
+    # same list yields commensurable trajectory points across runs with
+    # different #types. Requires data.examples_per_type. Takes precedence over
+    # save_steps_list when both are set.
+    save_exposures: list[int] = field(default_factory=list)
 
 
 @dataclass
@@ -88,6 +105,10 @@ class EvalConfig:
     samples_per_cell: int
     max_tokens: int
     temperature: float = 0.3
+    # v32: eval question pool. None -> run_eval_diverse default (split_test.csv).
+    # Set to data/split_test_v32.csv to use the rebalanced (arc/csqa + few long)
+    # pool built by build_eval_pool.py.
+    test_csv: Optional[str] = None
     # v32: when true, eval the FULL behavior universe (all families, all
     # languages in languages.yaml, all suppression behaviors) regardless of
     # what this run trained on. Implements "always eval on everything" for the
@@ -131,6 +152,32 @@ class Config:
     def diverse_summary_csv(self) -> Path:
         return ROOT / "results" / f"{self.exp_name}_diverse.csv"
 
+    @property
+    def n_trained_types(self) -> int:
+        """Number of distinct control types this run trains on (the balancing
+        denominator)."""
+        return (len(self.data.families) + len(self.data.languages)
+                + len(self.data.suppression))
+
+    def resolved_save_steps(self) -> list[int]:
+        """Checkpoint steps for the trainer.
+
+        With save_exposures + examples_per_type, convert each per-type exposure
+        e to an optim step. After S steps the model has seen S*eff_batch
+        examples, of which a (1-normal_frac) fraction are controlled, spread over
+        n_trained_types types — so per-type exposure ≈ S*eff_batch*(1-nf)/F.
+        Inverting: step(e) = e*F / ((1-nf)*eff_batch). Same exposure list →
+        commensurable trajectory points across runs with different F.
+        """
+        tr = self.training
+        if tr.save_exposures and self.data.examples_per_type:
+            F = max(1, self.n_trained_types)
+            eff = max(1, tr.batch_size * tr.grad_accum)
+            nf = self.data.normal_frac
+            steps = {max(1, round(e * F / ((1.0 - nf) * eff))) for e in tr.save_exposures}
+            return sorted(steps)
+        return list(tr.save_steps_list)
+
 
 def load(path: str | Path) -> Config:
     """Load + validate a config YAML. Exits loud on mismatch."""
@@ -146,6 +193,8 @@ def load(path: str | Path) -> Config:
         sources=list(d["sources"]),
         passes_per_raw=int(d["passes_per_raw"]),
         normal_frac=float(d["normal_frac"]),
+        examples_per_type=(int(d["examples_per_type"]) if d.get("examples_per_type") is not None else None),
+        exclude_questions=d.get("exclude_questions"),
         paraphrases_sha256=d.get("paraphrases_sha256"),
         styles=list(d.get("styles", [])),
         held_out_styles=list(d.get("held_out_styles", [])),
@@ -288,7 +337,7 @@ def _check_style_paraphrases_sha(cfg: Config) -> None:
 
 def dump_shell_env(cfg: Config) -> str:
     """Emit KEY=VALUE lines for run_sft.sh to eval. One line per key."""
-    save_steps = " ".join(str(s) for s in (cfg.training.save_steps_list or []))
+    save_steps = " ".join(str(s) for s in cfg.resolved_save_steps())
     out = [
         f"VERSION={cfg.version}",
         f"RECIPE={cfg.recipe}",

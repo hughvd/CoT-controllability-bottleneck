@@ -118,19 +118,25 @@ def build_items(
     families: list[str],
     n_per_cell: int,
     seed: int,
+    lean: bool = False,
 ) -> list[EvalItem]:
     rng = random.Random(seed)
     items: list[EvalItem] = []
     questions = test.to_dict(orient="records")
 
+    # Lean (trajectory) mode: one representative cell per family (train marker +
+    # train phrasing). Keeps every family on the curve but drops the held-out
+    # marker/phrasing breakdown, which is measured at the final full eval.
+    mpools = ("train",) if lean else ("train", "eval")
+    ppools = ("train",) if lean else ("train", "eval")
     for fam_name in families:
         fam = FAMILIES[fam_name]
-        for marker_pool in ("train", "eval"):
+        for marker_pool in mpools:
             markers = fam.markers_train if marker_pool == "train" else fam.markers_eval
             if markers == [None]:
                 if marker_pool == "eval":
                     continue   # parameterless family: don't double-count
-            for phrasing_pool in ("train", "eval"):
+            for phrasing_pool in ppools:
                 picks = rng.sample(questions, k=min(n_per_cell, len(questions)))
                 for q in picks:
                     marker = rng.choice(markers)
@@ -270,6 +276,7 @@ def build_language_items(
     lang_defs: dict[str, dict],
     n_per_cell: int,
     seed: int,
+    lean: bool = False,
 ) -> list[EvalItem]:
     """Language eval cells per (language, phrasing_pool)."""
     rng = random.Random(seed + 2)   # offset to decouple from family + style RNG
@@ -281,7 +288,15 @@ def build_language_items(
         if ldef is None:
             raise SystemExit(f"[eval] unknown language {language!r}; "
                              f"known: {list(lang_defs)}")
-        for phrasing_pool in ("train", "eval"):
+        # Lean: one cell per language — prefer train phrasings, fall back to eval
+        # (held-out languages have only eval phrasings). Keeps every language on
+        # the trajectory.
+        if lean:
+            has_train = bool((ldef.get("instruction_phrasings") or {}).get("train"))
+            pools = ("train",) if has_train else ("eval",)
+        else:
+            pools = ("train", "eval")
+        for phrasing_pool in pools:
             # Held-out languages have empty train phrasings; skip that cell.
             phrasings = (ldef.get("instruction_phrasings") or {}).get(phrasing_pool) or []
             if not phrasings:
@@ -317,6 +332,7 @@ def build_suppression_items(
     behaviors: list[str],
     n_per_cell: int,
     seed: int,
+    lean: bool = False,
 ) -> list[EvalItem]:
     """Suppression eval cells.
 
@@ -351,9 +367,11 @@ def build_suppression_items(
             omit_words=list(omit_words),
         )
 
+    mpools = ("train",) if lean else ("train", "eval")
+    ppools = ("train",) if lean else ("train", "eval")
     for behavior in behaviors:
         if behavior == "ignore_question":
-            for phrasing_pool in ("train", "eval"):
+            for phrasing_pool in ppools:
                 for q in rng.sample(questions, k=min(n_per_cell, len(questions))):
                     it = _cell(q, behavior, "-", phrasing_pool, [])
                     if it is not None:
@@ -361,9 +379,9 @@ def build_suppression_items(
             continue
         if behavior not in supp.TRAINABLE_SUPPRESSION:
             raise SystemExit(f"[eval] unknown suppression behavior {behavior!r}")
-        for marker_pool in ("train", "eval"):
+        for marker_pool in mpools:
             pool = supp.FORBIDDEN_TRAIN if marker_pool == "train" else supp.FORBIDDEN_EVAL
-            for phrasing_pool in ("train", "eval"):
+            for phrasing_pool in ppools:
                 for q in rng.sample(questions, k=min(n_per_cell, len(questions))):
                     if behavior == "omit_word":
                         omit = [rng.choice(pool)]
@@ -563,6 +581,9 @@ def main():
         args.n_per_cell = cfg.eval.samples_per_cell
         args.max_tokens = cfg.eval.max_tokens
         args.temperature = cfg.eval.temperature
+        if getattr(cfg.eval, "test_csv", None):
+            tcsv = Path(cfg.eval.test_csv)
+            args.test_csv = tcsv if tcsv.is_absolute() else (HERE / tcsv)
         print(f"[run_eval_diverse] loaded config {cfg.source_path.name}")
 
     if args.lite:
@@ -585,7 +606,11 @@ def main():
         p.error("--model and --exp-name required unless --config is given")
 
     test = pd.read_csv(args.test_csv)
-    items = build_items(test, args.families, args.n_per_cell, args.seed)
+    print(f"[run_eval_diverse] eval pool: {args.test_csv} "
+          f"({len(test)} questions"
+          + (f", by source {test['source'].value_counts().to_dict()}" if 'source' in test.columns else "")
+          + (", LEAN cells" if args.lite else "") + ")")
+    items = build_items(test, args.families, args.n_per_cell, args.seed, lean=args.lite)
     n_fam = len(items)
     style_items: list[EvalItem] = []
     if args.styles:
@@ -598,7 +623,7 @@ def main():
     if args.languages:
         lang_defs = load_language_defs()
         language_items = build_language_items(
-            test, args.languages, lang_defs, args.n_per_cell, args.seed,
+            test, args.languages, lang_defs, args.n_per_cell, args.seed, lean=args.lite,
         )
         items = items + language_items
     descriptor_items: list[EvalItem] = []
@@ -611,7 +636,7 @@ def main():
     suppression_items: list[EvalItem] = []
     if args.suppression:
         suppression_items = build_suppression_items(
-            test, args.suppression, args.n_per_cell, args.seed,
+            test, args.suppression, args.n_per_cell, args.seed, lean=args.lite,
         )
         items = items + suppression_items
     print(f"Prepared {len(items)} eval items "

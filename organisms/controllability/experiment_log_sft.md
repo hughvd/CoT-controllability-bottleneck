@@ -71,17 +71,50 @@ within-transforms split (`v32_transforms_within`):
 - held: lowercase, prefix_sentences(sentence), suffix_sentences(marker), suffix_sentences(sentence), start_with(sentence), end_with(marker), end_with(sentence), question_all
 
 ### Recipe (mirrors v31_short, the short-CoT winner)
-LoRA r=1024 α=2048, lr=2e-4, grad_accum=16 (effective batch 16), 1 epoch,
-`save_steps_list: [1,2,3,5,8,12,18,28,40,55,75,100,140,190,260,350]` (front-loaded
-for the early-generalization trajectory), vllm_tp=1. To be tuned after the first
-trajectory.
+LoRA r=1024 α=2048, lr=2e-4, grad_accum=16 (effective batch 16), vllm_tp=1.
+To be tuned after the first trajectory.
+
+**Per-type exposure budgeting (not epochs).** Under a fixed `passes_per_raw`,
+per-type exposure scales inversely with #types — each of the 2 encodings would
+be seen ~13× more than each of the 26 transforms, confounding any cross-family
+comparison and over-training the small categories. So v32 budgets
+`examples_per_type: 400` — the data builder generates exactly 400 balanced
+controlled examples per trained type (families/languages/suppression), total =
+400 × #types. (v31_short's held-out generalization peaked at ~step 55 ≈ **~50
+examples/type**, so 400 covers ~8× the peak to see rise + decay.)
+
+**Checkpoints in per-type-exposure units.** `save_exposures:
+[2,4,8,16,32,64,128,256,400]` are per-type exposures, not steps. `config.py`
+`resolved_save_steps()` converts each to an optim step via
+`e × #types / ((1-normal_frac) × eff_batch)`, so the SAME exposure means the
+same thing across runs with different #types. Resulting steps:
+- transforms (F=26): [5,10,20,40,80,160,320,640,1000]
+- transforms_within / language (F=5): [1,2,4,8,15,31,62,123,192]
+- encoding / suppression (F=2): [1,2,3,6,12,25,49,77]
+
+So "exposure 64" (near the peak) = step 160 for transforms, 31 for language, 12
+for encoding — all 64 examples/type, directly comparable. Final step = the full
+400/type budget.
 
 ### Eval
-`eval_all` evaluates the full universe (28 families + 14 languages + 3
-suppression) on every checkpoint, independent of what was trained. Styles are
-excluded (paused). Cost note: the dense trajectory × LLM-graded languages +
-ignore_question is the main expense; a lite-mode that skips LLM-graded
-modalities on intermediate checkpoints is a possible optimization if needed.
+`eval_all` evaluates the full behavior universe (28 families + 14 languages + 3
+suppression) independent of what was trained. Styles excluded (paused).
+
+**Rebalanced question pool** (`build_eval_pool.py` → `data/split_test_v32.csv`).
+`split_train`/`split_test` are 100% long-CoT sources (HLE/GPQA/MMLU-Pro); arc/csqa
+live only in `training_raw`. So the pool now = **200 held-out arc/csqa** (100+100,
+excluded from training via `data/arc_csqa_eval_holdout.txt` + `exclude_questions`)
++ **20 each HLE/GPQA/MMLU-Pro** = 260 Q (~77% short). Held-out arc/csqa give a
+fast, in-distribution-question test of the behavior; the long sources give a
+hard-question-generalization signal. (MMLU-Pro had never actually been evaluated
+before — its options sit in an `options` column with `answer_options` NaN, which
+the old pool-copy dropped; `build_eval_pool` consolidates them.)
+
+**Lean trajectory** (tied to `--lite`): intermediate checkpoints eval one
+representative cell per behavior (~40 cells, ~330 items) — every family/language/
+suppression stays on the curve, but the held-out marker×phrasing breakdown is
+deferred to the final full eval (119 cells, ~2,200 items, n=20). Net: per-
+checkpoint trajectory eval is ~10× cheaper than the old all-long-source full grid.
 
 ### Infrastructure changes
 - `transforms.py`: +9 families (28 total). `data/languages.yaml`: +6 langs +
