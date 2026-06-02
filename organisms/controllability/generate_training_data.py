@@ -55,6 +55,9 @@ DEFAULT_STYLES_YAML = HERE / "data" / "styles.yaml"
 # rewrites (length < 0.5 × original). Raw cache at stylistic_rewrites.jsonl
 # leaked refusals into v23 training; the cleaned file fixes that.
 DEFAULT_STYLES_CACHE = HERE / "data" / "stylistic_rewrites.clean.jsonl"
+DEFAULT_LANGS_YAML = HERE / "data" / "languages.yaml"
+DEFAULT_LANGS_CACHE = HERE / "data" / "language_rewrites.clean.jsonl"
+DEFAULT_SUPP_CACHE = HERE / "data" / "suppression_rewrites.clean.jsonl"
 
 ANSWER_REGEX = re.compile(r"\bANSWER\s*[:\-]\s*\(?([A-Za-z])\)?", re.IGNORECASE)
 
@@ -344,6 +347,114 @@ def build_style_row(
     }
 
 
+# ---------------------------------------------------------------------------
+# Language arm (v32+): pre-generated translated CoTs as a training axis.
+# Mirrors the style arm exactly, but rewrites come from language_rewrites and
+# the instruction is built from data/languages.yaml.
+# ---------------------------------------------------------------------------
+
+def load_language_index(
+    langs_yaml: Path = DEFAULT_LANGS_YAML,
+    cache_path: Path = DEFAULT_LANGS_CACHE,
+) -> tuple[dict[str, dict], dict[tuple[str, str], str]]:
+    cfg = yaml.safe_load(langs_yaml.read_text())
+    lang_defs: dict[str, dict] = cfg.get("languages", {}) or {}
+    cache: dict[tuple[str, str], str] = {}
+    if cache_path.exists():
+        with cache_path.open() as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    r = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                text = (r.get("rewrite") or "").strip()
+                if text:
+                    cache[(r["question_hash"], r["language"])] = text
+    return lang_defs, cache
+
+
+def build_language_row(
+    row: dict[str, Any],
+    language_name: str,
+    lang_def: dict,
+    rewrite: str,
+    rng: random.Random,
+) -> dict[str, Any]:
+    from sft.language_instructions import build_language_instruction
+    instr = build_language_instruction(
+        language_name, lang_def, rng=rng, phrasing_pool="train",
+    )
+    prompt = _assemble_prompt(row["question"], row["options_json"], instr)
+    target = f"<think>{rewrite}</think>\n\nANSWER: {row['correct_letter']}"
+    return {
+        **row,
+        "arm": "language",
+        "family": f"language:{language_name}",
+        "marker": "",
+        "cot_instructions": instr,
+        "transformed_think": rewrite,
+        "full_prompt": prompt,
+        "full_target": target,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Suppression arm (v32+): LLM-rewritten CoTs that omit forbidden word(s).
+# Rewrites carry the chosen omit_words; the deterministic grader verifies
+# absence here (self-verify), mirroring build_controlled_row.
+# ---------------------------------------------------------------------------
+
+def load_suppression_index(
+    cache_path: Path = DEFAULT_SUPP_CACHE,
+) -> dict[tuple[str, str], tuple[list[str], str]]:
+    """Return {(question_hash, behavior): (omit_words, rewrite_text)}."""
+    cache: dict[tuple[str, str], tuple[list[str], str]] = {}
+    if cache_path.exists():
+        with cache_path.open() as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    r = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                text = (r.get("rewrite") or "").strip()
+                words = r.get("omit_words") or []
+                if text and words:
+                    cache[(r["question_hash"], r["suppression"])] = (list(words), text)
+    return cache
+
+
+def build_suppression_row(
+    row: dict[str, Any],
+    behavior: str,
+    omit_words: list[str],
+    rewrite: str,
+    rng: random.Random,
+) -> Optional[dict[str, Any]]:
+    from suppression import build_suppression_instruction, grade_suppression
+    # Self-verify: the rewrite must actually omit every forbidden word.
+    if not grade_suppression(behavior, rewrite, omit_words):
+        return None
+    instr = build_suppression_instruction(behavior, omit_words, rng=rng, phrasing_pool="train")
+    prompt = _assemble_prompt(row["question"], row["options_json"], instr)
+    target = f"<think>{rewrite}</think>\n\nANSWER: {row['correct_letter']}"
+    return {
+        **row,
+        "arm": "suppression",
+        "family": f"suppression:{behavior}",
+        "marker": ",".join(omit_words),
+        "cot_instructions": instr,
+        "transformed_think": rewrite,
+        "full_prompt": prompt,
+        "full_target": target,
+    }
+
+
 def build_training_csv(
     raw: pd.DataFrame,
     families: list[str],
@@ -353,14 +464,20 @@ def build_training_csv(
     styles: Optional[list[str]] = None,
     styles_yaml: Path = DEFAULT_STYLES_YAML,
     styles_cache: Path = DEFAULT_STYLES_CACHE,
+    languages: Optional[list[str]] = None,
+    langs_yaml: Path = DEFAULT_LANGS_YAML,
+    langs_cache: Path = DEFAULT_LANGS_CACHE,
+    suppression: Optional[list[str]] = None,
+    supp_cache: Path = DEFAULT_SUPP_CACHE,
 ) -> pd.DataFrame:
     """Emit training rows: for each raw CoT, draw `passes_per_raw` (family, marker)
     pairs and emit a controlled row for each. Then normal rows to hit the
     target normal fraction. If `styles` is non-empty, also emit one style row
     per (raw, style) where a cached rewrite exists in stylistic_rewrites.jsonl.
     """
-    if not families and not styles:
-        raise ValueError("pass at least one family (--families) or style (--styles)")
+    if not families and not styles and not languages and not suppression:
+        raise ValueError("pass at least one family (--families), style (--styles), "
+                         "language (--languages), or suppression (--suppression)")
 
     rng = random.Random(seed)
     raw_rows = raw.to_dict(orient="records")
@@ -399,9 +516,51 @@ def build_training_csv(
                     continue
                 style_rows.append(build_style_row(r, s, style_defs[s], rewrite, rng))
 
-    # Normal sized against (controlled + style) so the no-instructions arm
-    # scales with overall training volume.
-    n_target_anchor = len(controlled) + len(style_rows)
+    # Language arm.
+    language_rows: list[dict[str, Any]] = []
+    language_misses: dict[str, int] = {}
+    if languages:
+        lang_defs, lang_rewrites = load_language_index(langs_yaml, langs_cache)
+        unknown = [l for l in languages if l not in lang_defs]
+        if unknown:
+            raise SystemExit(
+                f"Unknown languages: {unknown}. Known in {langs_yaml.name}: {list(lang_defs)}"
+            )
+        for r in raw_rows:
+            qh = _question_hash(r["question"])
+            for l in languages:
+                rewrite = lang_rewrites.get((qh, l))
+                if rewrite is None:
+                    language_misses[l] = language_misses.get(l, 0) + 1
+                    continue
+                language_rows.append(build_language_row(r, l, lang_defs[l], rewrite, rng))
+
+    # Suppression arm.
+    suppression_rows: list[dict[str, Any]] = []
+    suppression_misses: dict[str, int] = {}
+    suppression_rejects = 0
+    if suppression:
+        from suppression import TRAINABLE_SUPPRESSION
+        supp_index = load_suppression_index(supp_cache)
+        trainable = [s for s in suppression if s in TRAINABLE_SUPPRESSION]
+        for r in raw_rows:
+            qh = _question_hash(r["question"])
+            for b in trainable:
+                hit = supp_index.get((qh, b))
+                if hit is None:
+                    suppression_misses[b] = suppression_misses.get(b, 0) + 1
+                    continue
+                omit_words, rewrite = hit
+                built = build_suppression_row(r, b, omit_words, rewrite, rng)
+                if built is None:
+                    suppression_rejects += 1
+                    continue
+                suppression_rows.append(built)
+
+    # Normal sized against (controlled + style + language + suppression) so the
+    # no-instructions arm scales with overall training volume.
+    n_target_anchor = (len(controlled) + len(style_rows) + len(language_rows)
+                       + len(suppression_rows))
     target_normal = int(round(n_target_anchor * (normal_frac / (1 - normal_frac))))
     normal_only_count = min(target_normal // 2, len(raw_rows))
     rng.shuffle(raw_rows)
@@ -412,16 +571,20 @@ def build_training_csv(
     for r in overlap[:remaining]:
         normal.append(build_normal_row(r))
 
-    out = pd.DataFrame(controlled + style_rows + normal)
+    out = pd.DataFrame(controlled + style_rows + language_rows + suppression_rows + normal)
 
     # Report.
     n_ctrl = len(controlled)
     n_style = len(style_rows)
+    n_lang = len(language_rows)
+    n_supp = len(suppression_rows)
     n_norm = len(normal)
-    total = n_ctrl + n_style + n_norm
+    total = n_ctrl + n_style + n_lang + n_supp + n_norm
     print(f"\nControlled: {n_ctrl} (passes_per_raw={passes_per_raw}, "
           f"attempts={attempts}, reject_rate={1 - n_ctrl/max(1,attempts):.3f})")
     print(f"Style:      {n_style}")
+    print(f"Language:   {n_lang}")
+    print(f"Suppression:{n_supp}  (self-verify rejects: {suppression_rejects})")
     print(f"Normal:     {n_norm}  (ratio normal: {n_norm / max(1, total):.2f})")
     if controlled:
         fam_counts = pd.Series([r["family"] for r in controlled]).value_counts().to_dict()
@@ -434,6 +597,16 @@ def build_training_csv(
         print(f"Style counts:   {style_counts}")
     if style_misses:
         print(f"Style cache misses (no rewrite for question):  {style_misses}")
+    if language_rows:
+        lang_counts = pd.Series([r["family"] for r in language_rows]).value_counts().to_dict()
+        print(f"Language counts: {lang_counts}")
+    if language_misses:
+        print(f"Language cache misses (no rewrite for question):  {language_misses}")
+    if suppression_rows:
+        supp_counts = pd.Series([r["family"] for r in suppression_rows]).value_counts().to_dict()
+        print(f"Suppression counts: {supp_counts}")
+    if suppression_misses:
+        print(f"Suppression cache misses (no rewrite for question):  {suppression_misses}")
     return out
 
 
@@ -481,6 +654,18 @@ def main() -> None:
                              "to include as a second training axis. Each style emits one "
                              "row per (raw_cot, style) where a cached rewrite exists in "
                              "data/stylistic_rewrites.jsonl.")
+    parser.add_argument("--languages", nargs="*", default=[],
+                        help="Optional list of train-language names (data/languages.yaml). "
+                             "Each emits one row per (raw_cot, language) where a cached "
+                             "translation exists in data/language_rewrites.clean.jsonl.")
+    parser.add_argument("--suppression", nargs="*", default=[],
+                        help="Optional list of suppression behaviors (omit_word, "
+                             "omit_multiple_words). Each emits one row per (raw_cot, "
+                             "behavior) where a cached rewrite exists in "
+                             "data/suppression_rewrites.clean.jsonl.")
+    parser.add_argument("--sources", nargs="*", default=None,
+                        help="Restrict raw CoTs to these source datasets (e.g. arc_c csqa). "
+                             "Default: all sources in the raw cache.")
     parser.add_argument("--passes-per-raw", type=int, default=2,
                         help="How many training rows to emit per raw CoT. "
                              "Each pass samples a fresh (family, marker) from the registry, "
@@ -513,6 +698,9 @@ def main() -> None:
         args.out_csv = cfg.data.train_csv
         args.families = list(cfg.data.families)
         args.styles = list(cfg.data.styles)
+        args.languages = list(cfg.data.languages)
+        args.suppression = list(cfg.data.suppression)
+        args.sources = list(cfg.data.sources)
         args.passes_per_raw = cfg.data.passes_per_raw
         args.normal_frac = cfg.data.normal_frac
         if not args.out_raw.exists():
@@ -567,6 +755,11 @@ def main() -> None:
     raw = raw[raw["think"].astype(str).str.strip().astype(bool)].reset_index(drop=True)
     print(f"After non-empty think filter: {len(raw)} rows")
 
+    if args.sources:
+        raw = raw[raw["dataset"].isin(args.sources)].reset_index(drop=True)
+        print(f"After source filter {args.sources}: {len(raw)} rows "
+              f"({raw['dataset'].value_counts().to_dict()})")
+
     for fam in args.families:
         if fam not in FAMILIES:
             raise SystemExit(f"Unknown family: {fam!r}. "
@@ -579,6 +772,8 @@ def main() -> None:
         normal_frac=args.normal_frac,
         seed=args.seed,
         styles=args.styles,
+        languages=args.languages,
+        suppression=args.suppression,
     )
     df.to_csv(args.out_csv, index=False)
     print(f"\nWrote {len(df)} training rows to {args.out_csv}")

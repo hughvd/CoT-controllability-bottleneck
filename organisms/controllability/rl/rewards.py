@@ -25,6 +25,7 @@ from typing import Optional
 from transforms import grade_score
 from sft.style_grade import grade_style_async
 from sft.language_grade import grade_language_async
+from suppression import score_suppression
 
 # One-shot dump of the first reward batch (set via env var). Lets us inspect
 # what the model is actually emitting through TRL's chat-template path —
@@ -294,6 +295,15 @@ def make_unified_reward_fn(
                 async def _fam(c=compliance, corr=correct, pen=length_penalty):
                     return (compliance_weight * c + correct_weight * corr - pen)
                 tasks.append(_fam())
+            elif ttype == "suppression":
+                # Deterministic, like family: target_marker is the comma-joined
+                # forbidden word(s); score = fraction successfully kept out.
+                behavior = target_name[i]
+                omit = [w for w in (target_marker[i] or "").split(",") if w]
+                compliance = score_suppression(behavior, think_via_split, omit)
+                async def _supp(c=compliance, corr=correct, pen=length_penalty):
+                    return (compliance_weight * c + correct_weight * corr - pen)
+                tasks.append(_supp())
             elif ttype == "style":
                 async def _sty(name=target_name[i], txt=think_for_judge,
                                 corr=correct, pen=length_penalty):

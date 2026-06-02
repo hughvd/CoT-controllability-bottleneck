@@ -1,0 +1,65 @@
+# v32_language — train the language category (the 5 train-split languages),
+# eval on everything. Serves BOTH the cross-family question (language ->
+# {transforms, encoding, suppression}) AND the within-family question (the 6
+# held-out languages are family-mates of the trained ones: spanish->italian,
+# german->dutch, russian->polish, hebrew->arabic, chinese->korean; hindi has no
+# train counterpart).
+#
+# PREREQUISITE: run generate_language_rewrites.py + clean_rewrites.py first so
+# data/language_rewrites.clean.jsonl exists — otherwise the language arm emits
+# zero rows. See v32_transforms.yaml for the shared v32 regime notes.
+
+version: v32_language
+recipe: lora
+base_model: Qwen/Qwen3-14B
+
+data:
+  train_csv: data/training_v32_language.csv
+  raw_csv: data/training_raw.csv
+  families: []
+  held_out_families: []
+  languages:
+    - spanish
+    - german
+    - chinese
+    - russian
+    - hebrew
+  held_out_languages:
+    - italian
+    - dutch
+    - polish
+    - arabic
+    - korean
+    - hindi
+  sources: [arc_c, csqa]
+  passes_per_raw: 3
+  normal_frac: 0.35
+
+training:
+  epochs: 1
+  lr: 2.0e-4
+  batch_size: 1
+  grad_accum: 16
+  max_length: 8192
+  kl_beta: 0.0
+  optim: adamw
+  seed: 0
+  save_steps_list: [1, 2, 3, 5, 8, 12, 18, 28, 40, 55, 75, 100, 140, 190, 260, 350]
+
+lora:
+  rank: 1024
+  alpha: 2048
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  dropout: 0.05
+
+eval:
+  samples_per_cell: 20
+  max_tokens: 32768
+  temperature: 0.6
+  eval_all: true
+
+compute:
+  num_gpus: 2
+  vllm_tp_size: 1
+  vllm_max_model_len: 40960
+  vllm_port: 8000

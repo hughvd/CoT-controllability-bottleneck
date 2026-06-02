@@ -28,6 +28,7 @@ from datasets import Dataset
 from transforms import FAMILIES, transform_cot
 from sft.style_instructions import build_style_instruction
 from sft.language_instructions import build_language_instruction, load_language_defs
+import suppression as supp
 
 
 def parse_options(row: pd.Series) -> list[str]:
@@ -103,6 +104,7 @@ def build_rollout_dataset(
     families: Optional[list[str]] = None,
     styles: Optional[list[str]] = None,
     languages: Optional[list[str]] = None,
+    suppression: Optional[list[str]] = None,
 ) -> Dataset:
     """Return an HF Dataset of `target_size` prompt rows over the union of
     {family, style, language} targets.
@@ -121,8 +123,9 @@ def build_rollout_dataset(
     families = families or []
     styles = styles or []
     languages = languages or []
-    if not (families or styles or languages):
-        raise SystemExit("[rl_data] no targets specified — pass families/styles/languages")
+    suppression = suppression or []
+    if not (families or styles or languages or suppression):
+        raise SystemExit("[rl_data] no targets specified — pass families/styles/languages/suppression")
 
     # Validate target names.
     for f in families:
@@ -136,6 +139,12 @@ def build_rollout_dataset(
     for l in languages:
         if l not in lang_defs:
             raise SystemExit(f"[rl_data] unknown language {l!r}")
+    # Only deterministically-graded suppression behaviors are trainable
+    # (ignore_question is eval-only).
+    for b in suppression:
+        if b not in supp.TRAINABLE_SUPPRESSION:
+            raise SystemExit(f"[rl_data] non-trainable suppression behavior {b!r}; "
+                             f"known: {sorted(supp.TRAINABLE_SUPPRESSION)}")
 
     df = pd.read_csv(split_csv)
     questions = df.to_dict(orient="records")
@@ -147,6 +156,7 @@ def build_rollout_dataset(
         [("family", f) for f in families]
         + [("style", s) for s in styles]
         + [("language", l) for l in languages]
+        + [("suppression", b) for b in suppression]
     )
 
     rng = random.Random(seed)
@@ -182,6 +192,19 @@ def build_rollout_dataset(
                 target_name, lang_defs[target_name],
                 rng=rng, phrasing_pool="train",
             )
+        elif target_type == "suppression":
+            # Pick forbidden word(s) from the train pool. The model rolls its
+            # own CoT, so (unlike SFT-data generation) we can't require the word
+            # to be present — the reward just grades absence in the generated CoT.
+            if target_name == "omit_word":
+                omit = [rng.choice(supp.FORBIDDEN_TRAIN)]
+            else:  # omit_multiple_words
+                omit = rng.sample(supp.FORBIDDEN_TRAIN,
+                                  min(supp._N_MULTI, len(supp.FORBIDDEN_TRAIN)))
+            instruction = supp.build_suppression_instruction(
+                target_name, omit, rng=rng, phrasing_pool="train",
+            )
+            marker_str = ",".join(omit)
         else:
             raise AssertionError(f"unreachable target_type {target_type!r}")
 

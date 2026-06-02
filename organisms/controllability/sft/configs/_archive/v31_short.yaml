@@ -1,4 +1,4 @@
-# v31_short — H2 hypothesis test: train on short-CoT half of training_v23.csv.
+# v31_short — H2 hypothesis test: train on the SHORTEST 20% of training_v23.csv.
 #
 # Motivation:
 #   v30 trajectories show held-out generalization plateauing near zero binary
@@ -12,14 +12,15 @@
 #   robustness.
 #
 # Setup mirrors v30 except for the training data:
-#   data/training_v31_short.csv (built by scripts/build_short_cot_dataset.py,
-#   bottom 50% by think-char-length, ~7400 rows of 14817).
+#   data/training_v31_short.csv (built by scripts/build_short_cot_dataset.py
+#   with --quantile 0.20 — keeps the bottom 20% by think char length, so
+#   ~2,963 rows of 14,817).
 #
 # Step count math:
-#   7400 rows / effective batch 16 ≈ 463 optim steps per epoch.
-#   save_steps_list is tightened accordingly so all the front-loaded points
-#   exist, plus one in the back half. step 5 of v31_short is directly
-#   comparable to step 5 of v30 (same effective batch).
+#   2963 rows / effective batch 16 ≈ 185 optim steps per epoch.
+#   save_steps_list is dense — generalization peaks early on v30, so we
+#   want fine resolution in the first few optim steps. Last natural save
+#   is at ~185 (handled by train_lora.py).
 
 version: v31_short
 recipe: lora
@@ -68,9 +69,10 @@ training:
   kl_beta: 0.0
   optim: adamw
   seed: 0
-  # Tightened to fit ~463 optim steps per epoch; preserves the front-loaded
-  # points from v30 so step-by-step trajectory comparison is direct.
-  save_steps_list: [5, 10, 20, 50, 100, 200, 350]
+  # Dense — ~185 optim steps total, 15 trajectory points front-loaded
+  # toward the suspected held-out peak. Lite eval (n=8) at each via the
+  # standard run_sft.sh phase 5.
+  save_steps_list: [1, 2, 3, 5, 7, 10, 14, 20, 28, 40, 55, 75, 100, 130, 160]
 
 lora:
   rank: 1024

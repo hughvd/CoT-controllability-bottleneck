@@ -43,6 +43,16 @@ class DataConfig:
     held_out_styles: list[str] = field(default_factory=list)
     # Optional pin for data/style_paraphrases.json. None = unpinned.
     style_paraphrases_sha256: Optional[str] = None
+    # Language axis (v32+). Train languages need pre-generated translated CoTs
+    # in data/language_rewrites.clean.jsonl; definitions in data/languages.yaml.
+    languages: list[str] = field(default_factory=list)
+    held_out_languages: list[str] = field(default_factory=list)
+    # Information-suppression axis (v32+). Train behaviors need pre-generated
+    # rewrites in data/suppression_rewrites.clean.jsonl; deterministic graders
+    # live in suppression.py. Known: omit_word, omit_multiple_words; eval-only:
+    # ignore_question.
+    suppression: list[str] = field(default_factory=list)
+    held_out_suppression: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -78,6 +88,11 @@ class EvalConfig:
     samples_per_cell: int
     max_tokens: int
     temperature: float = 0.3
+    # v32: when true, eval the FULL behavior universe (all families, all
+    # languages in languages.yaml, all suppression behaviors) regardless of
+    # what this run trained on. Implements "always eval on everything" for the
+    # cross-/within-family ablations without enumerating complements per config.
+    eval_all: bool = False
 
 
 @dataclass
@@ -135,6 +150,10 @@ def load(path: str | Path) -> Config:
         styles=list(d.get("styles", [])),
         held_out_styles=list(d.get("held_out_styles", [])),
         style_paraphrases_sha256=d.get("style_paraphrases_sha256"),
+        languages=list(d.get("languages", [])),
+        held_out_languages=list(d.get("held_out_languages", [])),
+        suppression=list(d.get("suppression", [])),
+        held_out_suppression=list(d.get("held_out_suppression", [])),
     )
     training = TrainingConfig(**raw["training"])
     evaluation = EvalConfig(**raw["eval"])
@@ -198,6 +217,27 @@ def _validate(cfg: Config) -> None:
                 f"[config] unknown styles: {bad_styles} "
                 f"(known in styles.yaml: {sorted(known)})"
             )
+
+    # Language names exist in data/languages.yaml.
+    if cfg.data.languages or cfg.data.held_out_languages:
+        langs_yaml = ROOT / "data" / "languages.yaml"
+        if not langs_yaml.exists():
+            raise SystemExit(f"[config] languages configured but {langs_yaml} missing")
+        known = set((yaml.safe_load(langs_yaml.read_text()).get("languages", {}) or {}))
+        bad_langs = [l for l in cfg.data.languages + cfg.data.held_out_languages
+                     if l not in known]
+        if bad_langs:
+            raise SystemExit(f"[config] unknown languages: {bad_langs} "
+                             f"(known in languages.yaml: {sorted(known)})")
+
+    # Suppression behavior names are a fixed known set.
+    if cfg.data.suppression or cfg.data.held_out_suppression:
+        from suppression import KNOWN_SUPPRESSION
+        bad_supp = [s for s in cfg.data.suppression + cfg.data.held_out_suppression
+                    if s not in KNOWN_SUPPRESSION]
+        if bad_supp:
+            raise SystemExit(f"[config] unknown suppression behaviors: {bad_supp} "
+                             f"(known: {sorted(KNOWN_SUPPRESSION)})")
 
     _check_paraphrases_sha(cfg)
     _check_style_paraphrases_sha(cfg)

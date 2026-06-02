@@ -36,7 +36,14 @@ import os
 # Default exp; overridable via --exp / env. So this script can plot v30 (14B),
 # v30_8b, v30_32b, etc. without code edits.
 DEFAULT_EXP_NAME = "organism_2_v30"
-BASELINE_EXP = "organism_2_base_diverse"
+
+# Calibrated-judge baselines (Pod A, 2026-05-20). These REPLACE the older
+# organism_2_base_diverse anchor — that one used the pre-calibration style
+# judge which inflated baseline by ~30×. Routed by exp_name suffix:
+#   * organism_2_*_8b   → Qwen-Qwen3-8B_baseline
+#   * everything else   → Qwen-Qwen3-14B_baseline
+BASELINE_FOR_14B = "Qwen-Qwen3-14B_baseline"
+BASELINE_FOR_8B  = "Qwen-Qwen3-8B_baseline"
 
 # v23/v30 splits — duplicated here to avoid importing the config module
 # (the plotter runs locally without the training deps installed).
@@ -138,24 +145,41 @@ def _descriptor_table(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def _discover_step_csvs(exp_name: str) -> dict[int, Path]:
-    out: dict[int, Path] = {}
-    step_re = re.compile(rf"^{re.escape(exp_name)}_step(\d+)_diverse\.csv$")
+def _discover_step_csvs(exp_name: str) -> dict[int, tuple[Path, str]]:
+    """Map step → (csv path, eval_kind). eval_kind ∈ {"n20", "lite"}.
+    Prefers `_step{N}_n20_diverse.csv` over `_step{N}_diverse.csv` when both
+    exist. The n20 files come from the Pod A peak re-eval pass; the lite
+    files are from the original Pod B intermediate-eval phase 5."""
+    out: dict[int, tuple[Path, str]] = {}
+    # First pass: lite (default if nothing better).
+    lite_re = re.compile(rf"^{re.escape(exp_name)}_step(\d+)_diverse\.csv$")
     for p in RESULTS.glob(f"{exp_name}_step*_diverse.csv"):
-        m = step_re.match(p.name)
+        m = lite_re.match(p.name)
         if m:
-            out[int(m.group(1))] = p
+            out[int(m.group(1))] = (p, "lite")
+    # Second pass: n20 — overwrites lite at the same step.
+    n20_re = re.compile(rf"^{re.escape(exp_name)}_step(\d+)_n20_diverse\.csv$")
+    for p in RESULTS.glob(f"{exp_name}_step*_n20_diverse.csv"):
+        m = n20_re.match(p.name)
+        if m:
+            out[int(m.group(1))] = (p, "n20")
     return out
 
 
-def _load_baseline_point() -> Optional[dict[str, float]]:
-    """Phase A baseline if present. The baseline file follows the
-    pattern set by run_eval_diverse.py: results/{exp_name}.csv."""
-    p = RESULTS / f"{BASELINE_EXP}_diverse.csv"
+def _load_baseline_point(exp_name: str) -> Optional[dict[str, float]]:
+    """Return the calibrated baseline summary for whichever model `exp_name`
+    runs on. Routes by suffix: `_8b` → 8B baseline, otherwise → 14B."""
+    base_exp = BASELINE_FOR_8B if exp_name.endswith("_8b") else BASELINE_FOR_14B
+    p = RESULTS / f"{base_exp}_diverse.csv"
     if not p.exists():
-        # Fall back to the older naming if present.
-        p = RESULTS / f"{BASELINE_EXP}.csv"
-        if not p.exists():
+        # Fall back to older patterns just in case.
+        for cand in (RESULTS / f"{base_exp}.csv",
+                     RESULTS / "organism_2_base_diverse_diverse.csv",
+                     RESULTS / "organism_2_base_diverse.csv"):
+            if cand.exists():
+                p = cand
+                break
+        else:
             return None
     df = pd.read_csv(p)
     return _summarize(df)
@@ -180,22 +204,23 @@ def main() -> None:
     if meta_path.exists():
         final_step = int(json.loads(meta_path.read_text())["final_step"])
 
-    points: list[tuple[int, dict[str, float]]] = []
+    # Each point: (step, summary, eval_kind). eval_kind ∈ {"n20","lite"}.
+    points: list[tuple[int, dict[str, float], str]] = []
 
-    base = _load_baseline_point()
+    base = _load_baseline_point(exp_name)
     if base is not None:
-        points.append((0, base))
+        points.append((0, base, "n20"))
 
     for step in sorted(step_csvs):
-        df = pd.read_csv(step_csvs[step])
-        points.append((step, _summarize(df)))
+        path, kind = step_csvs[step]
+        df = pd.read_csv(path)
+        points.append((step, _summarize(df), kind))
 
     if final_csv.exists():
         df = pd.read_csv(final_csv)
         s = _summarize(df)
-        # Final step number: from meta if available, else max(step) + 1 as a sentinel.
         x = final_step if final_step is not None else (max(step_csvs) + 50)
-        points.append((x, s))
+        points.append((x, s, "n20"))
 
     points.sort(key=lambda kv: kv[0])
     xs = [p[0] for p in points]
@@ -209,6 +234,12 @@ def main() -> None:
         ("families_heldout", "Families · held-out",  "#f0b27a"),
     ]
 
+    # Mark each point by eval kind: n=20 ⇒ filled circle, lite (n=8) ⇒ open
+    # triangle. Lets the reader see at a glance which checkpoints are at full
+    # fidelity vs sample-noisy.
+    n20_xs   = [p[0] for p in points if p[2] == "n20"]
+    lite_xs  = [p[0] for p in points if p[2] == "lite"]
+
     fig, axes = plt.subplots(1, 2, figsize=(13, 5.5), sharex=True)
     for ax, suffix, ylabel, title in [
         (axes[0], "_bin",  "binary compliance (frac. cells ≥0.5)",
@@ -221,14 +252,28 @@ def main() -> None:
             ys = [p[1].get(full_key) for p in points]
             if all(y is None for y in ys):
                 continue
-            ax.plot(xs, ys, marker="o", label=label, color=color)
+            # Draw the connecting line through every step.
+            ax.plot(xs, ys, color=color, linewidth=1.5, alpha=0.7, zorder=1)
+            # Marker per point: filled circle for n=20, open triangle for lite.
+            ys_n20  = [y for y, p_ in zip(ys, points) if p_[2] == "n20"]
+            ys_lite = [y for y, p_ in zip(ys, points) if p_[2] == "lite"]
+            ax.scatter(n20_xs,  ys_n20,  marker="o", s=42,
+                       facecolor=color, edgecolor=color, label=label, zorder=2)
+            if ys_lite:
+                ax.scatter(lite_xs, ys_lite, marker="^", s=42,
+                           facecolor="white", edgecolor=color, linewidth=1.5,
+                           zorder=2)
         ax.set_xlabel("training step")
         ax.set_ylabel(ylabel)
         ax.set_title(title, fontsize=10)
         ax.set_ylim(-0.02, 1)
         ax.grid(True, alpha=0.3)
         ax.legend(loc="upper right", fontsize=8)
-    fig.tight_layout()
+    # Subtle footnote on the figure noting marker semantics.
+    fig.text(0.5, 0.005,
+             "filled circle = n=20 eval (full)   ·   open triangle = n=8 lite eval (noisier)",
+             ha="center", fontsize=8, color="#555")
+    fig.tight_layout(rect=[0, 0.02, 1, 1])
     out_png = HERE / f"{exp_name}_trajectory.png"
     fig.savefig(out_png, dpi=120)
     print(f"[plot_v30_trajectory] wrote {out_png}")
@@ -245,13 +290,14 @@ def main() -> None:
         print(desc_tbl.to_string(index=False, float_format=lambda v: f"{v:.3f}"))
 
     # Trajectory summary tables — binary headline first, continuous below.
-    df_traj = pd.DataFrame([{"step": x, **vals} for x, vals in points])
-    bin_cols = ["step"] + [c for c in df_traj.columns if c.endswith("_bin")]
-    cont_cols = ["step"] + [c for c in df_traj.columns if c.endswith("_cont")]
-    if bin_cols != ["step"]:
+    df_traj = pd.DataFrame([{"step": x, "n": kind, **vals}
+                            for x, vals, kind in points])
+    bin_cols = ["step", "n"] + [c for c in df_traj.columns if c.endswith("_bin")]
+    cont_cols = ["step", "n"] + [c for c in df_traj.columns if c.endswith("_cont")]
+    if [c for c in df_traj.columns if c.endswith("_bin")]:
         print(f"\nBinary compliance trajectory ({len(points)} points):")
         print(df_traj[bin_cols].to_string(index=False, float_format=lambda v: f"{v:.3f}"))
-    if cont_cols != ["step"]:
+    if [c for c in df_traj.columns if c.endswith("_cont")]:
         print(f"\nContinuous score trajectory ({len(points)} points):")
         print(df_traj[cont_cols].to_string(index=False, float_format=lambda v: f"{v:.3f}"))
 

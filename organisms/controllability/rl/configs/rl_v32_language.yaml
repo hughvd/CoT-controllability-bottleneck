@@ -1,0 +1,77 @@
+# rl_v32_language — RL on top of v32_language. Rewards the 5 train languages.
+#
+# CAVEAT: unlike the other v32 RL runs, language reward is LLM-graded
+# (gemini-2.5-flash-lite via sft.language_grade), not deterministic. The
+# language judge is far more reliable than the style judge we paused (detecting
+# "is this Spanish" is easier than "is this Yoda"), but watch reward_fn/mean for
+# judge-noise pathologies as we saw in rl_v3. length_penalty=0 (a judge can't be
+# gamed by length, so don't penalize it — matches rl_v3).
+#
+# PREREQUISITE: merge the chosen v32_language peak checkpoint into
+#   artifacts/organism_2_v32_language/merged  (see merge_adapter.py)
+
+version: rl_v32_language
+recipe: rl_grpo
+base_model: Qwen/Qwen3-14B
+
+data:
+  split_csv: data/split_train.csv
+  languages:
+    - spanish
+    - german
+    - chinese
+    - russian
+    - hebrew
+  held_out_languages:
+    - italian
+    - dutch
+    - polish
+    - arabic
+    - korean
+    - hindi
+  sources: [arc_c, csqa]
+
+training:
+  max_steps: 150
+  lr: 5.0e-6
+  batch_size: 1
+  grad_accum: 8
+  max_length: 2048
+  optim: adamw_8bit
+  seed: 0
+  save_steps: 10
+  warmup_steps: 10
+  logging_steps: 1
+
+lora:
+  rank: 512
+  alpha: 1024
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  dropout: 0.05
+
+rl:
+  num_generations: 8
+  max_response_length: 8192
+  temperature: 0.9
+  top_p: 0.95
+  kl_beta: 0.04
+  reward_compliance_weight: 1.0
+  reward_correct_weight: 0.3
+  min_think_length: 50
+  length_penalty_scale: 0.0          # judge can't be gamed by length
+  init_from: sft:v32_language
+  vllm_mode: server
+  vllm_serve_port: 49001
+  vllm_serve_gpus: 2
+
+eval:
+  samples_per_cell: 20
+  max_tokens: 32768
+  temperature: 0.6
+  eval_all: true
+
+compute:
+  num_gpus: 4
+  vllm_tp_size: 2
+  vllm_max_model_len: 40960
+  vllm_port: 8000

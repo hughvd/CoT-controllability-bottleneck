@@ -71,15 +71,13 @@ data:
 
 training:
   epochs: 1
-  lr: 2.0e-4                          # v18's LoRA lr
+  lr: 2.0e-4
   batch_size: 1
-  grad_accum: 16                      # 1 proc × 1 × 16 = effective batch 16 → ~920 optim steps
+  grad_accum: 16
   max_length: 8192
   kl_beta: 0.0
   optim: adamw
   seed: 0
-  # Front-loaded. METR's 250-sample observation ≈ step 16 here; steps 5/10/20
-  # bracket that, then coarser through the rest of training.
   save_steps_list: [5, 10, 20, 50, 100, 250, 500, 750]
 
 lora:

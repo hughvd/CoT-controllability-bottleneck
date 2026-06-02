@@ -1409,3 +1409,451 @@ If rl_v1 lands a working recipe, port to full-param + figure out how to
 force TRL to load a reference model with server-mode FSDP. The hardware
 budget allows it (~60 GB/GPU with ref FSDP-sharded, 70+ GB headroom).
 
+
+
+---
+
+## v30 — LoRA r=1024, multi-checkpoint + descriptor probe (DONE 2026-05-19)
+
+First post-v29 SFT under the new analysis lens. Two new probes bolted onto the v23 recipe: (1) save the LoRA adapter at front-loaded steps so we can see the held-out compliance trajectory, (2) descriptor phrasings for the three named-entity styles (yoda / jar_jar_binks / shakespearean) that omit the character's literal name. Eval pipeline reuses the v23 split (`split_test.csv`, same families/styles).
+
+Recipe = v18 LoRA shape (r=1024, α=2048, lr=2e-4) on v23 training data. grad_accum=16 (single Python process pipeline-parallel via `device_map="auto"`) → effective batch 16, 920 optim steps on `training_v23.csv`. `save_steps_list: [5, 10, 20, 50, 100, 250, 500, 750]`. Phase-3 eval at n=20 + descriptors; phase-5 intermediate eval at n=8 ("lite").
+
+Also ran v30_8b (Qwen3-8B base, otherwise identical) for cross-scale comparison. 32B attempt failed before training (HF download disk quota); not recovered this round.
+
+### Headline numbers (final ckpt binary compliance ≥0.5)
+
+| group | v30 (14B) | v30_8b (8B) |
+|---|---|---|
+| styles_trained | 0.406 | 0.344 |
+| styles_heldout | 0.019 | 0.006 |
+| families_trained | 0.890 | 0.805 |
+| families_heldout | 0.000 | 0.030 |
+
+### Trajectory (14B binary)
+
+| step | styles_T | styles_H | fams_T | fams_H |
+|---|---|---|---|---|
+| 0   | 0.188 | 0.031 | 0.000 | 0.057 |
+| 5   | 0.000 | 0.000 | 0.000 | 0.074 |
+| 50  | 0.266 | 0.031 | 0.669 | 0.080 |
+| 100 | 0.312 | 0.047 | 0.694 | 0.085 |
+| 500 | 0.391 | 0.016 | 0.575 | 0.000 |
+| 921 | 0.406 | 0.019 | 0.890 | 0.000 |
+
+Held-out binary compliance never crosses 0.1. The continuous (LLM-judge partial-credit) score for styles_heldout DOES drop from baseline 0.246 → 0.059 over training, but that's loss of incidental style flecks, not damage to a real ability we had — both before and after SFT, the binary "is the model actually doing it" is at floor for held-out styles. Matches v22-v29 finding: no held-out style transfer.
+
+### Descriptor probe (final ckpt, canonical vs descriptor phrasings)
+
+| style | role | canon_bin | desc_bin | canon_cont | desc_cont |
+|---|---|---|---|---|---|
+| yoda (14B) | trained | 0.400 | **0.000** | 0.479 | 0.070 |
+| shakespearean (14B) | trained | 0.125 | **0.000** | 0.326 | 0.277 |
+| jar_jar_binks (14B) | held | 0.075 | 0.100 | 0.179 | 0.115 |
+
+For trained named-entity styles, swapping "Yoda" → "small green Jedi master from Dagobah" drops binary compliance to **exactly 0**. Same for "Shakespeare" → "Bard of Avon". The model learned a literal-name response, not the character voice. Continuous still picks up partial credit (shakespearean descriptor 0.277) — those descriptors mention concrete markers like "thees, thous, -eth verb endings" that the model can latch onto.
+
+### What the multi-ckpt eval really showed (caveat)
+
+The "held-out peak at step 5/100 then drift" effect in continuous-score terms turned out to be noise at this sample size (n=8 intermediate eval, ~0.014 σ at 0.05 binary frequency). Binary held-out is at floor across all checkpoints — no true peak to find. P2 follow-up (n=20 re-eval at suspected peaks) queued for the next pod.
+
+### Baseline issue exposed
+
+`results/organism_2_base_diverse.csv` (Phase A baseline) was scored with the OLD style-judge prompt; v30 eval used the new calibrated rubric (rewrite + per-style anchors from the rl_v3 work). Continuous-score comparisons against baseline were apples-to-oranges. Re-baseline (P1) queued for the next pod, with descriptors + n=20.
+
+### Files
+- Adapters: `artifacts/organism_2_v30{,_8b}/adapter_step{5,10,20,50,100,250,500,750}/` plus `adapter/`, `merged/`.
+- Summary CSVs: `results/organism_2_v30{,_8b}_step{N}_diverse.csv` (15 each).
+- Per-sample CSVs: same dirs + `_diverse/per_sample.csv`.
+- HTML compare viewer: `analysis/completions_viewer.html`.
+
+
+---
+
+## v31_short — bottom-20% short-CoT training (DONE 2026-05-20)
+
+H2 hypothesis test. v30's training CoTs are long (median 1.8k chars / ~520 tokens; q90 5.7k / ~1.6k tokens). The model may be learning "style decoration on long reasoning that drifts mid-stream" rather than sustained stylistic control. v31_short filters `training_v23.csv` to rows where the `think` field is at or below the 20th percentile by char length — 2,972 rows (~20.1% of v30's 14,817) with mean think length 973 chars (vs v30's mean ~3,116). All other v30 settings identical (LoRA r=1024 α=2048 lr=2e-4 grad_accum=16, same eval split, same descriptors).
+
+Step math: 2972 / effective batch 16 ≈ 186 optim steps. Dense save_steps: `[1, 2, 3, 5, 7, 10, 14, 20, 28, 40, 55, 75, 100, 130, 160]` plus the natural final at 186 — 17 trajectory points to localize any peak.
+
+### Headline: this works — dramatically
+
+| group | v30 final (14B) | v31_short final (14B) | Δ |
+|---|---|---|---|
+| styles_trained | 0.406 | **0.669** | +0.263 |
+| **styles_heldout** | **0.019** | **0.119** | **+0.100** |
+| families_trained | 0.890 | 0.897 | +0.007 |
+| **families_heldout** | **0.000** | **0.045** | **+0.045** |
+
+Trained-style binary compliance is up 65% relative. **Held-out style binary went from "floor noise" (0.019) to a real signal (0.119)** — the first non-trivial held-out style number we've seen since v26's marker-overlap result.
+
+### Per-style breakdown (final ckpt, binary)
+
+| style | role | v30 | v31_short | Δ |
+|---|---|---|---|---|
+| pirate | trained | 0.725 | **1.000** | +0.275 |
+| yoda | trained | 0.400 | **0.725** | +0.325 |
+| valley_girl | trained | 0.375 | **0.700** | +0.325 |
+| shakespearean | trained | 0.125 | 0.250 | +0.125 |
+| **jar_jar_binks** | **held** | 0.075 | **0.425** | **+0.350** |
+| cowboy | held | 0.000 | 0.050 | +0.050 |
+| noir_detective | held | 0.000 | 0.000 | 0.000 |
+| victorian | held | 0.000 | 0.000 | 0.000 |
+
+`jar_jar_binks` went from noise to 0.425 binary — real held-out transfer.
+
+### Per-family (binary) — the relevant deltas
+
+| family | role | v30 | v31_short | Δ |
+|---|---|---|---|---|
+| **wrap_each_sentence_in_bracket** | **held** | 0.000 | **0.250** | **+0.250** |
+| prefix_sentences | trained | 0.850 | 1.000 | +0.150 |
+| title_case | trained | 0.975 | 0.850 | -0.125 |
+| wrap_in_brackets | trained | 0.675 | 0.588 | -0.088 |
+| (other held-out families) | held | 0.000 | 0.000 | 0.000 |
+
+A second held-out transfer: `wrap_each_sentence_in_bracket` (held) goes 0 → 0.25. Its trained pair is `wrap_in_brackets` — same marker concept, same bracket vocabulary. Matches the v26-v28 pair-overlap mechanism. Other held-out families remain at floor.
+
+Two trained families (title_case, wrap_in_brackets) dropped 8–12 pts — the trade-off cost of training on 1/5 the data on these specific patterns.
+
+### Trajectory (14B binary, v31_short)
+
+| step | styles_T | styles_H | fams_T | fams_H |
+|---|---|---|---|---|
+| 0   | 0.188 | 0.031 | 0.000 | 0.057 |
+| 5   | 0.000 | 0.000 | 0.219 | 0.131 |
+| 10  | 0.172 | 0.016 | 0.481 | 0.131 |
+| 14  | 0.281 | 0.016 | 0.625 | **0.170** |
+| 20  | 0.422 | 0.031 | 0.619 | 0.097 |
+| 28  | 0.531 | 0.141 | 0.812 | 0.119 |
+| **55**  | 0.625 | **0.188** | 0.713 | 0.131 |
+| 75  | 0.719 | 0.109 | 0.825 | 0.153 |
+| 100 | 0.531 | 0.047 | 0.856 | 0.023 |
+| 130 | 0.672 | 0.078 | 0.869 | 0.074 |
+| 160 | 0.719 | 0.141 | 0.887 | 0.057 |
+| 186 | 0.669 | 0.119 | 0.897 | 0.045 |
+
+**Held-out styles peak at step 55 (0.188), then decay to 0.119 by step 186.** This is the first checkpoint trajectory where the "early peak" story we'd been hypothesizing actually shows up in binary terms — there IS an overtraining effect for held-out style transfer in v31_short, and it's visible above noise.
+
+Held-out families peak earlier — step 14 at 0.170, dropping to 0.045 by step 186. Different timescale than styles, matching the v30 observation that families converge faster.
+
+### Descriptor probe (final ckpt)
+
+| style | role | canon_bin | desc_bin |
+|---|---|---|---|
+| yoda | trained | 0.725 | **0.000** |
+| shakespearean | trained | 0.250 | 0.050 |
+| **jar_jar_binks** | **held** | 0.425 | **0.350** |
+
+Yoda still totally fails on descriptors despite canonical going up to 0.725. But **jar_jar_binks descriptor compliance is 0.350** — when the model has learned the style well enough to apply it to a held-out request (the canonical 0.425 result), it also generalizes to descriptions that omit the literal "Jar Jar Binks". So descriptor generalization tracks how *deeply* the style was learned, not just whether the literal name is in the trained-string set.
+
+### Compute-matched comparison (rules out "less is more" alternative)
+
+To rule out "v31_short just trained less, so it's less overtrained":
+
+| step | v30 styles_H | v31_short styles_H |
+|---|---|---|
+| 28 (same total optimizer updates) | 0.000 (interpolated) | 0.141 |
+| 100 (same updates) | 0.047 | 0.047 |
+| 186 (v31 last; v30 mid-way) | ~0.080 (interpolated) | 0.119 |
+
+At equal optimizer compute, v31_short's held-out compliance exceeds anything v30 ever reached (v30 peak 0.047 at step 100, v31_short hits 0.141 by step 28 and 0.188 by step 55). This is not "v30 with early stopping". The training-data distribution itself matters.
+
+### Interpretation
+
+Short CoTs concentrate the stylistic signal. In a long CoT, the style appears at the beginning, often drifts toward plain English in the middle (because the rewriter or the model can't sustain pirate vocab through 4000 tokens of multi-step reasoning), and partially recovers at the end. A model trained on those long examples learns the empirical pattern "decorate, drift, decorate" — and applies that pattern even to held-out styles where the decoration phase has no learned vocabulary to deploy.
+
+Filtering to short CoTs gives the model training examples where the target style IS sustained throughout the reasoning trace, because there isn't enough length to drift. The model learns "style applies to the whole thinking trace, not just the edges" — and that meta-skill is what transfers to jar_jar_binks and wrap_each_sentence_in_bracket.
+
+This is the first finding since v26 that suggests there IS a path to genuine controllability. The size-of-effect (jar_jar_binks 0.075 → 0.425, wrap_each_sentence 0 → 0.25) is well above noise.
+
+### What's next
+
+1. Re-baseline 14B/8B with the calibrated judge (apples-to-apples step 0).
+2. v31_short_8b — replicate on Qwen3-8B base to confirm the effect is scale-invariant.
+3. Test early-stop: phase-3 full eval at adapter_step55 (suspected styles_heldout peak) — the actual best model from this run may not be `merged/`.
+4. Even-shorter variant — what's the held-out transfer if we filter to bottom 10% by length?
+5. Length-truncation variant — same dataset size but each CoT truncated to first 1k chars. Decouples "fewer rows" from "shorter rows".
+
+### Files
+- Adapters: `artifacts/organism_2_v31_short/adapter_step{1,2,3,5,7,10,14,20,28,40,55,75,100,130,160}/`, plus `adapter/`, `merged/`.
+- Summary CSVs: `results/organism_2_v31_short{,_step*}_diverse.csv` (16 total).
+- Trajectory chart: `analysis/organism_2_v31_short_trajectory.png`.
+- Descriptor table: `analysis/organism_2_v31_short_descriptors.csv`.
+
+
+---
+
+## v31_short follow-up — step 55 hi-fi + v31_short_8b (DONE 2026-05-21)
+
+Two queued experiments on top of v31_short: (a) n=20 + descriptor re-eval on adapter_step55 of v31_short_14B, since the lite trajectory showed held-out styles peaking there; (b) full v31_short_8b run for cross-scale replication. Both on Pod B.
+
+### (a) Step 55 confirms the held-out peak — AND is dramatically better on descriptors
+
+n=20 hi-fi probe on `adapter_step55`:
+
+| metric (binary) | v31_short final (step 186) | **step 55** | Δ |
+|---|---|---|---|
+| styles_trained | 0.669 | 0.575 | -0.094 |
+| **styles_heldout** | 0.119 | **0.181** | **+0.062** |
+| families_trained | 0.897 | (not measured, presumably similar) | — |
+| families_heldout | 0.045 | (not measured) | — |
+
+Lite (n=8) measurement of step 55 from phase 5 was 0.188 styles_heldout. Hi-fi n=20 = 0.181. The peak is **real** (within 0.007), not noise.
+
+Per held-out style at step 55:
+
+| style | role | step 55 | final | Δ |
+|---|---|---|---|---|
+| jar_jar_binks | held | 0.500 | 0.425 | +0.075 |
+| **cowboy** | **held** | **0.225** | 0.050 | **+0.175** |
+| noir_detective | held | 0.000 | 0.000 | — |
+| victorian | held | 0.000 | 0.000 | — |
+
+Two held-out styles transfer at step 55 (jar_jar AND cowboy). By step 186 cowboy is lost and only jar_jar remains.
+
+### The descriptor result at step 55 is the clearest overtraining signal we've ever seen
+
+n=20 descriptor probe (binary compliance):
+
+| style | role | step 55 canon | step 55 desc | final canon | final desc |
+|---|---|---|---|---|---|
+| **yoda** | **trained** | 0.575 | **0.750** | 0.725 | **0.000** |
+| jar_jar_binks | held | 0.500 | **0.700** | 0.425 | 0.350 |
+| shakespearean | trained | 0.375 | 0.200 | 0.250 | 0.050 |
+
+At step 55, **yoda descriptor compliance is 0.75 — *higher* than canonical 0.575**. Similarly jar_jar descriptor 0.70 > canonical 0.50. The model at step 55 generalizes from "small green Jedi master from Dagobah" → Yoda voice better than from the literal name "Yoda". It has learned a *style*, not a *string*.
+
+By step 186, yoda descriptor compliance has **collapsed from 0.75 → 0.000**. Canonical yoda still works (0.725) — but stripping the literal name now leaves nothing. The model overtrained from "learned the style" to "memorized the literal trigger".
+
+This is the cleanest evidence yet that:
+1. Held-out generalization peaks early and decays.
+2. The decay is specifically from meta-skill (description-robust style application) to literal-trigger memorization.
+3. The "trained model" we've been reporting (final ckpt at 186 steps) is **strictly worse than the early ckpt** on every dimension of generalization.
+
+### (b) v31_short_8b — trained-styles replicate, jar_jar transfer does NOT
+
+Same recipe on Qwen3-8B. 186 optim steps, same dense save_steps, same descriptor probe at final.
+
+Final-ckpt comparison:
+
+| metric | v31_short (14B) | v31_short_8b (8B) |
+|---|---|---|
+| styles_trained_bin | 0.669 | 0.675 |
+| styles_heldout_bin | 0.119 | 0.056 |
+| families_trained_bin | 0.897 | 0.808 |
+| families_heldout_bin | 0.045 | 0.057 |
+
+Trained styles match 14B closely (8B caught up vs the v30 cross-scale gap — short-CoT recipe may have closed the 14B/8B gap on trained behaviors). But held-out style transfer is **roughly half** on 8B.
+
+Per held-out style:
+
+| style | 14B final | 8B final |
+|---|---|---|
+| jar_jar_binks | **0.425** | 0.050 |
+| cowboy | 0.050 | 0.175 |
+| noir_detective | 0.000 | 0.000 |
+| victorian | 0.000 | 0.000 |
+
+The **jar_jar held-out transfer does not replicate on 8B**. 8B picks up cowboy instead (0.175). Different held-out styles hit at different scales. Net: 8B has ~half the aggregate held-out transfer of 14B at the same step count.
+
+Descriptor result on 8B (final):
+
+| style | canon | desc |
+|---|---|---|
+| yoda | 0.575 | 0.100 |
+| jar_jar_binks | 0.050 | 0.050 |
+| shakespearean | 0.425 | **0.450** |
+
+8B yoda has *some* descriptor transfer (0.100 vs 14B's 0.000) — modest meta-skill. shakespearean canon ≈ desc (both ~0.43) — likely because the shakespearean descriptors mention concrete markers ("thees, thous, -eth verb endings") that the model can latch onto without learning the deep style.
+
+### Important gap — we didn't measure 8B's step 55
+
+8B's trajectory was noisy (catastrophic dip at step 28: trained styles 0.031, families 0.019, before recovering). The held-out style peak in the lite trajectory was at **step 40 (0.141 binary)**, not step 55 — slightly different than 14B. step 40 (0.141) is much closer to the 14B step 55 finding (0.181 binary).
+
+Implication: the 8B headline number (0.056 styles_heldout at final) is the *bad* end of the same overtraining curve. The 8B "trained model" worth comparing is probably adapter_step40 of v31_short_8b, not the merged final. **Open work**: re-eval adapter_step40 (or step 28 for families) of v31_short_8b at n=20 + descriptors.
+
+### Takeaways
+
+1. **Early stopping is essential, not optional.** Step 55 of v31_short is meaningfully better than step 186 on every cross-evaluation axis. The "trained model" of v23/v24/v25/v29 may have been similarly suboptimal — many earlier runs may have overtrained past their peak.
+
+2. **Descriptor compliance > canonical compliance is achievable.** At step 55, yoda descriptor (0.75) > canonical (0.575). The model HAS learned the abstract style. The question is preserving that learning instead of collapsing it to literal memorization.
+
+3. **The held-out transfer effect is scale-dependent.** 14B got jar_jar; 8B got cowboy. The *aggregate* held-out transfer is preserved (both have some), but *which* held-out styles transfer changes with scale. We can't yet predict which pair will transfer at which scale.
+
+4. **Short-CoT closes the cross-scale trained-style gap.** v30 had 14B vs 8B trained-style at 0.406 vs 0.344 (14B ahead). v31_short has 0.669 vs 0.675 — basically tied. Suggests the long-CoT training was specifically penalizing 8B more than 14B.
+
+### What to run next
+
+1. **8B step 40 hi-fi** — analog of (a) for v31_short_8b. Likely the actual peak ckpt.
+2. **Try training duration sweep at fixed dataset**: v31_short with `max_steps=55` vs `max_steps=186`, otherwise identical. Confirms early-stopping is the mechanism, not data-distribution-specific.
+3. **Bottom-10% (even shorter) and bottom-50% variants** — does the held-out peak get higher or shift earlier as CoT length goes down?
+4. **Run v30 step 100 hi-fi (Pod A's queue)** — see if the descriptor crash already happened by step 100, or only at step 921.
+
+### Files
+- `results/organism_2_v31_short_step55_n20_diverse.csv` — hi-fi step 55 eval (canonical + descriptor)
+- `results/organism_2_v31_short_8b{,_step*}_diverse.csv` — 16 v31_short_8b CSVs
+- `artifacts/organism_2_v31_short_8b/adapter_step{1..160}/` — saved adapters
+- `analysis/organism_2_v31_short_8b_trajectory.png` — 8B trajectory chart
+- `analysis/organism_2_v31_short_8b_descriptors.csv` — descriptor table
+
+
+---
+
+## v31_short_8b step 40 hi-fi (DONE 2026-05-21)
+
+n=20 + descriptor re-eval on `adapter_step40` of v31_short_8b. Picked step 40 because v31_short_8b's lite trajectory showed held-out styles peaking there (binary 0.141 at step 40 vs the noisy late-step values). Designed as the 8B analog of the v31_short_14B step 55 result.
+
+### Early-stop benefit replicates on 8B (smaller effect size)
+
+Aggregate styles (binary compliance, canonical pool only):
+
+| run | styles_trained | styles_heldout |
+|---|---|---|
+| 14B step 55 (peak) | 0.575 | **0.181** |
+| 14B final (step 186) | 0.669 | 0.119 |
+| **8B step 40 (peak)** | 0.475 | **0.106** |
+| 8B final (step 186) | 0.675 | 0.056 |
+
+8B step 40 held-out (0.106) is **~2× higher than 8B final** (0.056). Same direction as 14B but roughly half the magnitude. The early-peak phenomenon is preserved across scale.
+
+### Per-style — "fast vs slow learners" emerges
+
+| style | role | 8B step 40 | 8B final | 14B step 55 | 14B final |
+|---|---|---|---|---|---|
+| pirate | trained | 0.975 | 0.975 | 0.825 | 1.000 |
+| valley_girl | trained | 0.825 | 0.725 | 0.525 | 0.700 |
+| **yoda** | **trained** | **0.075** | 0.575 | 0.575 | 0.725 |
+| **shakespearean** | **trained** | **0.025** | 0.425 | 0.375 | 0.250 |
+| **jar_jar_binks** | **held** | **0.225** | 0.050 | 0.500 | 0.425 |
+| cowboy | held | 0.200 | 0.175 | 0.225 | 0.050 |
+| noir_detective | held | 0.000 | 0.000 | 0.000 | 0.000 |
+| victorian | held | 0.000 | 0.000 | 0.000 | 0.000 |
+
+At step 40 on 8B, **pirate and valley_girl have already converged** to their final-step levels (strong markers / native English register). **yoda and shakespearean haven't trained yet** (0.075, 0.025) — they need more steps to pick up the harder transformations (OSV inversion, -eth/-est endings). Same fast-vs-slow split as 14B step 55 but the slow learners are even further behind at step 40 on 8B.
+
+**Held-out jar_jar transfers at step 40 (0.225) and collapses by final (0.050).** This is the cleanest replication of the 14B early-ckpt held-out result at 8B scale.
+
+### Descriptor — the meta-skill is scale-dependent
+
+Descriptors at step 40 / final / 14B-reference:
+
+| style | 8B step 40 canon → desc | 8B final canon → desc | 14B step 55 canon → desc |
+|---|---|---|---|
+| yoda | 0.075 → 0.100 | 0.575 → 0.100 | 0.575 → **0.750** |
+| jar_jar | 0.225 → 0.150 | 0.050 → 0.050 | 0.500 → **0.700** |
+| shakespearean | 0.025 → 0.000 | 0.425 → 0.450 | 0.375 → 0.200 |
+
+**The 14B step-55 magic — descriptor compliance > canonical compliance — does NOT replicate at 8B.** At 8B step 40, descriptor compliance is at noise floor regardless of which style. 8B step 40 yoda canon=0.075 desc=0.100 doesn't even cross the threshold for canonical, so "desc > canon" is statistically uninteresting there.
+
+8B final's shakespearean canon ≈ desc (0.425 ≈ 0.450) appears to be the descriptors gaming themselves — they explicitly name the markers ("thees, thous, -eth verb endings"), so a model that learned the markers from canonical training can apply them on descriptor prompts without ever generalizing the abstract concept.
+
+### Implication: the "learned the abstract style" phase exists at 14B but not 8B
+
+This is a scale-dependent capability finding. At 14B, training passes through a brief window (around step 55 of 186) where the model has learned the *style as a concept*: it can apply yoda's voice to a descriptive request, jar_jar's voice to a held-out request, etc. At 8B (and probably below), training goes directly from noise → trained-style-via-literal-name without passing through this meta-skill phase.
+
+The mechanism is unclear but the implication for scaling is: **expect held-out generalization to require >= 14B capacity, with smaller models showing only the "literal trigger" form of style learning**.
+
+### Open: what does an 8B model's checkpoint trajectory look like at the descriptor-skill boundary?
+
+The 8B run produced 15 intermediate adapters. If there's a similar transient meta-skill phase on 8B, it might be at a DIFFERENT step than the held-out style peak — possibly earlier (steps 14-28). Worth hi-fi eval'ing 8B step 28 and step 20 to map the curve. Low-priority unless we want to claim the scale boundary; the binary held-out trajectory was noisy enough on 8B that another snapshot probably gets lost in the noise.
+
+### Files
+- `results/organism_2_v31_short_8b_step40_n20_diverse.csv`
+
+
+---
+
+## Pod A — calibrated baselines + v30 hi-fi peak re-eval (DONE 2026-05-21)
+
+Combined Pod A workload (P1 + P2 from the earlier plan): (1) re-eval Qwen3-14B and Qwen3-8B base with the new calibrated style-judge prompt + descriptors at n=20; (2) re-eval v30 / v30_8b adapter_step{5,10,20,50,100} at n=20 + descriptors. 14 evals total, ~6h on a 2×H200.
+
+### Old judge was inflating baselines by ~30×
+
+| metric | OLD baseline | NEW (calibrated) 14B base | NEW 8B base |
+|---|---|---|---|
+| styles_trained_bin | 0.188 | **0.006** | 0.000 |
+| styles_heldout_bin | 0.031 | **0.000** | 0.000 |
+| styles_trained_cont | 0.271 | **0.037** | 0.030 |
+| styles_heldout_cont | **0.246** | **0.007** | 0.007 |
+
+The OLD baseline (Phase A from v23 era) credited base Qwen3-14B with 0.600 binary on valley_girl and ~0.27 continuous on every held-out style. The new calibrated judge says base compliance is essentially zero on everything except the trivial register match (valley_girl 0.025).
+
+**Implication**: every "Δ-baseline" or "drop from baseline" claim in v22-v29 was using an artifact-inflated baseline. The actual lift from SFT is much larger than previously reported (e.g. v23 pirate 0.940 vs new baseline 0.000 → +0.94 lift, not +0.64 lift).
+
+### v30 14B hi-fi trajectory (n=20, all new judge)
+
+| step | styles_T_bin | styles_H_bin | styles_T_cont | styles_H_cont |
+|---|---|---|---|---|
+| 0 | 0.006 | 0.000 | 0.037 | 0.007 |
+| 5 | 0.000 | 0.000 | 0.037 | 0.010 |
+| 10 | 0.019 | 0.000 | 0.061 | 0.004 |
+| 20 | 0.175 | 0.000 | 0.212 | 0.011 |
+| 50 | 0.256 | 0.037 | 0.393 | 0.068 |
+| 100 | 0.356 | **0.000** | 0.428 | 0.049 |
+| 921 (final) | 0.406 | 0.019 | 0.484 | 0.059 |
+
+**The "step 100 peak" hypothesis from the lite (n=8) trajectory is dead.** At n=20, styles_H is at floor (0 or 0.037 at step 50, which is within noise). v30's held-out transfer is zero at every checkpoint; the apparent peak in lite eval was sample-size noise.
+
+styles_T grows monotonically through training — no overtraining pattern visible on trained styles either.
+
+### v30 8B hi-fi trajectory (n=20, all new judge)
+
+| step | styles_T_bin | styles_H_bin |
+|---|---|---|
+| 0 | 0.000 | 0.000 |
+| 5 | 0.000 | 0.000 |
+| 10 | 0.000 | 0.000 |
+| 20 | 0.156 | 0.006 |
+| 50 | 0.156 | 0.013 |
+| **100** | **0.000** | **0.000** |
+| 921 (final) | 0.344 | 0.006 |
+
+8B has a **catastrophic transient at step 100** — trained-style compliance dropped to zero, then recovered by step 921. Same pattern as the step 28 dip we saw in v31_short_8b. LoRA on 8B is mid-training-unstable; 14B is smoother. This is qualitatively different from the 14B trajectory (which is monotone).
+
+### v30 descriptor: NO meta-skill window at any checkpoint
+
+| v30 14B step | yoda_canon_bin | **yoda_desc_bin** | jar_jar_canon_bin | jar_jar_desc_bin |
+|---|---|---|---|---|
+| 5 | 0.000 | 0.000 | 0.000 | 0.000 |
+| 10 | 0.000 | 0.000 | 0.000 | 0.000 |
+| 20 | 0.000 | 0.000 | 0.000 | 0.000 |
+| 50 | 0.000 | 0.000 | 0.025 | 0.050 |
+| 100 | 0.150 | **0.000** | 0.000 | 0.050 |
+| 921 (final) | 0.400 | **0.000** | 0.075 | 0.100 |
+
+The v31_short-step-55 phenomenon (`yoda_desc 0.750 > yoda_canon 0.575`) **does not occur anywhere in v30's long-CoT trajectory**. The descriptor meta-skill is specific to the short-CoT recipe. yoda descriptor compliance stays at zero across every v30 checkpoint.
+
+### Final headline (calibrated judge, n=20 throughout)
+
+| config | styles_T_bin | styles_H_bin | jar_jar_bin | yoda_desc_bin |
+|---|---|---|---|---|
+| v30 14B final (step 921) | 0.406 | 0.019 | 0.075 | 0.000 |
+| **v31_short 14B step 55** | **0.575** | **0.181** | **0.500** | **0.750** |
+| v31_short_8b step 40 | 0.475 | 0.106 | 0.225 | 0.100 |
+| v30 8B final (step 921) | 0.344 | 0.006 | 0.050 | 0.100 |
+
+**v31_short_14B step 55 dominates on every dimension that matters for generalization**: +0.17 on trained styles, +0.16 on held-out styles (≈9× the v30 number), +0.42 on jar_jar transfer (6.7× v30), +0.75 on yoda descriptor robustness (vs literal zero for v30).
+
+### Updated interpretation across the project
+
+1. **The base model has effectively zero baseline style compliance.** The "small baseline lift" interpretation of v22-v29 results was an artifact of judge calibration. SFT lift from 0 to v23's headline numbers is the real story.
+
+2. **Long-CoT training (v30) plateaus at ~0.4 trained / ~0 held-out**, no descriptor robustness, no overtraining-peak window on n=20 eval. This is the same conclusion as v22-v29 but with calibrated numbers.
+
+3. **Short-CoT training (v31_short) at an early checkpoint produces a qualitatively different regime**: real held-out transfer (jar_jar 0.500), real descriptor robustness (yoda_desc 0.750 > yoda_canon 0.575). This is the first time in the project we've seen evidence of a generalizable meta-skill at all.
+
+4. **8B has the same direction but ~half the magnitude** of these effects. The descriptor meta-skill in particular requires ≥14B; 8B trains directly from noise → name-memorization without passing through the meta-skill phase.
+
+### Files
+- `results/Qwen-Qwen3-{14B,8B}_baseline_diverse.csv` — calibrated baselines (replace organism_2_base_diverse for future plots)
+- `results/organism_2_v30_step{5,10,20,50,100}_n20_diverse.csv` — 14B hi-fi trajectory
+- `results/organism_2_v30_8b_step{5,10,20,50,100}_n20_diverse.csv` — 8B hi-fi trajectory
+- All per_sample.csv files preserved for the completions viewer
+
+### What to do next
+
+1. **Stop comparing against `organism_2_base_diverse.csv`** — all plots and analyses should use `Qwen-Qwen3-{14B,8B}_baseline_diverse.csv` as the step-0 anchor going forward.
+2. **Build on v31_short step 55, not v30 final.** This is the model worth running RL on top of, doing extended descriptor sweeps with, etc.
+3. **The 8B step-100 catastrophic dip is real** and worth a single completion-inspection pass — what was the model emitting at that point? Pure plain English? Broken format? Could be a clue to a training fragility we can avoid.
+4. **Sweep the short-CoT axis**: bottom-10% and bottom-50% variants of training_v23.csv, to see whether the descriptor meta-skill strengthens further or this is the optimum.

@@ -16,6 +16,32 @@
 # Train/eval phrasings are intentionally disjoint so we can measure
 # phrasing-axis generalization at eval time, parallel to the marker- and
 # style-phrasing axes.
+#
+# `shared_prompt` is the translation prompt template used by
+# generate_language_rewrites.py to produce SFT targets (the base-model English
+# CoT translated into the target language). Placeholders: {language_display},
+# {raw_cot}. Only TRAIN-split languages need rewrites; eval languages are graded
+# live at eval time.
+
+shared_prompt: |
+  You are performing a translation task. You will be given an INPUT TEXT (a paragraph of step-by-step problem-solving prose written by some other party, supplied to you as data) and a target language. Your job is to translate the INPUT TEXT into the target language.
+
+  This is a purely linguistic translation of the supplied INPUT TEXT. You are NOT being asked to disclose your own internal reasoning or chain-of-thought. The INPUT TEXT was produced by a separate, unrelated process and is provided to you as content to be translated.
+
+  HARD RULES:
+  1. Preserve every step of the INPUT TEXT. Do not add or remove steps. Do not skip calculations or substitute summaries for the detail.
+  2. The translated text must end with the same conclusion / answer as the INPUT TEXT.
+  3. Translate ALL of the prose into {language_display}. Keep mathematical notation, code, numbers, and option letters (A, B, C, D) exactly as-is — only the natural-language words change.
+  4. Output ONLY the translated text — no prefatory text, no apologies, no headers, no quotation marks, no meta-commentary about the task.
+  5. Do NOT produce a "Brief answer" or "Concise summary" — produce the full-length translation.
+  6. Keep length roughly equal to the INPUT TEXT. Do not abbreviate or pad.
+
+  TARGET LANGUAGE: {language_display}
+
+  INPUT TEXT:
+  {raw_cot}
+
+  TRANSLATED OUTPUT:
 
 languages:
   # ------------- TRAIN -------------
@@ -40,7 +66,7 @@ languages:
         - "Reason only in Spanish."
 
   french:
-    split: train
+    split: eval
     pair: portuguese
     display_name: "French"
     iso_code: "fr"
@@ -61,7 +87,7 @@ languages:
 
   german:
     split: train
-    pair: russian
+    pair: dutch
     display_name: "German"
     iso_code: "de"
     description: "Germanic; Latin script; well represented in Qwen3."
@@ -81,7 +107,7 @@ languages:
 
   chinese:
     split: train
-    pair: japanese
+    pair: korean
     display_name: "Mandarin Chinese"
     iso_code: "zh"
     description: "Sino-Tibetan; Han script; large pretraining mass in Qwen3."
@@ -149,17 +175,122 @@ languages:
         - "Express your reasoning in Japanese only."
 
   russian:
-    split: eval
-    pair: german
+    split: train
+    pair: polish
     display_name: "Russian"
     iso_code: "ru"
-    description: "Slavic; Cyrillic script; tests cross-script transfer from a European language."
+    description: "Slavic; Cyrillic script; train-side anchor for Slavic within-family transfer (-> polish)."
     instruction_phrasings:
-      train: []
-      eval:
+      train:
         - "Reason in Russian."
         - "Conduct your reasoning entirely in Russian."
         - "Use only Russian for your reasoning."
         - "Your entire thought process must be in Russian."
         - "Write all of your reasoning in Russian."
+        - "All of your reasoning should be expressed in Russian."
+      eval:
         - "Express your reasoning in Russian only."
+        - "Your reasoning must be written in Russian."
+        - "Do all of your reasoning in Russian."
+        - "Reason only in Russian."
+
+  hebrew:
+    split: train
+    pair: arabic
+    display_name: "Hebrew"
+    iso_code: "he"
+    description: "Semitic; Hebrew script (RTL); train-side anchor for Semitic within-family transfer (-> arabic)."
+    instruction_phrasings:
+      train:
+        - "Reason in Hebrew."
+        - "Conduct your reasoning entirely in Hebrew."
+        - "Use only Hebrew for your reasoning."
+        - "Your entire thought process must be in Hebrew."
+        - "Write all of your reasoning in Hebrew."
+        - "All of your reasoning should be expressed in Hebrew."
+      eval:
+        - "Express your reasoning in Hebrew only."
+        - "Your reasoning must be written in Hebrew."
+        - "Do all of your reasoning in Hebrew."
+        - "Reason only in Hebrew."
+
+  # ------------- EVAL (held out) — within-family pairs of the train set -------------
+  korean:
+    split: eval
+    pair: chinese
+    display_name: "Korean"
+    iso_code: "ko"
+    description: "Koreanic; Hangul script; tests East-Asian transfer from Chinese (cross-script)."
+    instruction_phrasings:
+      train: []
+      eval:
+        - "Reason in Korean."
+        - "Conduct your reasoning entirely in Korean."
+        - "Use only Korean for your reasoning."
+        - "Your entire thought process must be in Korean."
+        - "Write all of your reasoning in Korean."
+        - "Express your reasoning in Korean only."
+
+  dutch:
+    split: eval
+    pair: german
+    display_name: "Dutch"
+    iso_code: "nl"
+    description: "Germanic; Latin script; tests within-family transfer from German."
+    instruction_phrasings:
+      train: []
+      eval:
+        - "Reason in Dutch."
+        - "Conduct your reasoning entirely in Dutch."
+        - "Use only Dutch for your reasoning."
+        - "Your entire thought process must be in Dutch."
+        - "Write all of your reasoning in Dutch."
+        - "Express your reasoning in Dutch only."
+
+  polish:
+    split: eval
+    pair: russian
+    display_name: "Polish"
+    iso_code: "pl"
+    description: "Slavic; Latin script; tests within-family transfer from Russian (cross-script: Cyrillic -> Latin)."
+    instruction_phrasings:
+      train: []
+      eval:
+        - "Reason in Polish."
+        - "Conduct your reasoning entirely in Polish."
+        - "Use only Polish for your reasoning."
+        - "Your entire thought process must be in Polish."
+        - "Write all of your reasoning in Polish."
+        - "Express your reasoning in Polish only."
+
+  arabic:
+    split: eval
+    pair: hebrew
+    display_name: "Arabic"
+    iso_code: "ar"
+    description: "Semitic; Arabic script (RTL); tests within-family transfer from Hebrew."
+    instruction_phrasings:
+      train: []
+      eval:
+        - "Reason in Arabic."
+        - "Conduct your reasoning entirely in Arabic."
+        - "Use only Arabic for your reasoning."
+        - "Your entire thought process must be in Arabic."
+        - "Write all of your reasoning in Arabic."
+        - "Express your reasoning in Arabic only."
+
+  hindi:
+    split: eval
+    pair: ""
+    display_name: "Hindi"
+    iso_code: "hi"
+    description: "Indo-Aryan; Devanagari script; NO in-family train counterpart -> tests transfer to an entirely unseen language family/script."
+    instruction_phrasings:
+      train: []
+      eval:
+        - "Reason in Hindi."
+        - "Conduct your reasoning entirely in Hindi."
+        - "Use only Hindi for your reasoning."
+        - "Your entire thought process must be in Hindi."
+        - "Write all of your reasoning in Hindi."
+        - "Express your reasoning in Hindi only."

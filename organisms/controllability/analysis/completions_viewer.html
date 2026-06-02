@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>v30 completions viewer</title>
+<title>controllability run viewer</title>
 <style>
   :root {
     --bg: #fafafa;
@@ -22,6 +22,38 @@
   header .files label { font-size: 12px; color: var(--muted); }
   header .files input { font-size: 12px; }
   header .names { font-size: 12px; color: var(--muted); }
+  /* Tabs */
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); background: var(--panel); padding: 0 20px; }
+  .tab { padding: 10px 18px; cursor: pointer; font-size: 13px; color: var(--muted); border-bottom: 2px solid transparent; user-select: none; }
+  .tab:hover { color: #222; }
+  .tab.active { color: #222; border-bottom-color: var(--accent); font-weight: 600; }
+  .pane { display: none; }
+  .pane.active { display: block; }
+  /* Tables tab */
+  .tables-wrap { padding: 16px 20px; }
+  .tables-wrap h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin: 20px 0 8px; font-weight: 600; }
+  .tables-wrap h2:first-of-type { margin-top: 0; }
+  .tables-wrap .file-row { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; padding: 10px 14px; margin-bottom: 16px; }
+  .tables-wrap .file-row .help { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .tables-wrap .loaded-list { font-size: 11px; color: var(--muted); margin-top: 6px; font-family: ui-monospace, "SF Mono", monospace; }
+  .tables-wrap .loaded-list .del { cursor: pointer; color: var(--bad); margin-left: 6px; }
+  .tables-wrap .loaded-list .del:hover { text-decoration: underline; }
+  .tbl { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; padding: 8px; overflow-x: auto; }
+  .tbl table { border-collapse: collapse; font-size: 12px; font-family: ui-monospace, "SF Mono", monospace; width: 100%; }
+  .tbl th, .tbl td { padding: 4px 8px; text-align: right; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+  .tbl th { background: #f7f9fc; font-weight: 600; color: #333; border-bottom: 1px solid var(--border); }
+  .tbl th.l, .tbl td.l { text-align: left; }
+  .tbl tr:hover td { background: #fafcff; }
+  .tbl .grp { background: #f0f3f6; font-weight: 600; }
+  .tbl .num.zero  { color: #c8c8c8; }
+  .tbl .num.low   { color: #888; }
+  .tbl .num.mid   { color: #333; }
+  .tbl .num.high  { color: #1a5f1a; font-weight: 600; }
+  .tbl .pill-tag { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 10px; margin-left: 4px; background: #eef2f6; color: var(--muted); }
+  .tbl .pill-tag.n20 { background: #e3f0e3; color: #2a7a2a; }
+  .tbl .pill-tag.lite { background: #fdebd0; color: #b8650f; }
+  .picker-row { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; font-size: 12px; }
+  .picker-row select { padding: 3px 6px; font: inherit; border: 1px solid var(--border); border-radius: 3px; }
   .layout { display: grid; grid-template-columns: 260px 1fr; gap: 0; min-height: calc(100vh - 80px); }
   aside { background: var(--panel); border-right: 1px solid var(--border); padding: 16px; position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; }
   aside h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin: 0 0 10px; font-weight: 600; }
@@ -57,16 +89,26 @@
 <body>
 
 <header>
-  <h1>completions viewer · v30 multi-checkpoint analysis</h1>
-  <div class="files">
-    <label>Left CSV: <input type="file" id="leftFile" accept=".csv"></label>
-    <label>Right CSV: <input type="file" id="rightFile" accept=".csv"></label>
-    <span class="names" id="leftName">no left file</span>
-    <span class="names">·</span>
-    <span class="names" id="rightName">no right file</span>
-  </div>
-  <div class="help">Pick two <code>per_sample.csv</code> files (e.g. results/organism_2_v30_diverse/per_sample.csv vs results/organism_2_v30_step100_diverse/per_sample.csv). Rows are paired by (family, marker, pool, question). Use the filters below to drill in.</div>
+  <h1>controllability run viewer</h1>
 </header>
+
+<div class="tabs">
+  <div class="tab active" data-tab="compare">Compare (per-sample)</div>
+  <div class="tab" data-tab="tables">Tables (summaries + trajectory)</div>
+</div>
+
+<div id="pane-compare" class="pane active">
+
+<div style="background: var(--panel); border-bottom: 1px solid var(--border); padding: 10px 20px;">
+  <div class="files">
+    <label>Left run folder: <input type="file" id="leftFile" webkitdirectory directory></label>
+    <label>Right run folder: <input type="file" id="rightFile" webkitdirectory directory></label>
+    <span class="names" id="leftName">no left folder</span>
+    <span class="names">·</span>
+    <span class="names" id="rightName">no right folder</span>
+  </div>
+  <div class="help" style="font-size:11px;color:var(--muted);margin-top:4px;">Pick the run folder (e.g. <code>results/organism_2_v31_short_step55_diverse/</code>). Auto-loads <code>per_sample.csv</code> from inside and labels by folder name. For summary-CSV comparison use the Tables tab.</div>
+</div>
 
 <div class="layout">
   <aside>
@@ -144,6 +186,39 @@
   </main>
 </div>
 
+</div><!-- /pane-compare -->
+
+<div id="pane-tables" class="pane">
+  <div class="tables-wrap">
+    <div class="file-row">
+      <label style="font-size:12px;color:var(--muted);">
+        Load CSVs (multi-select OK):
+        <input type="file" id="tablesFiles" accept=".csv" multiple>
+        <button id="tablesClear" style="margin-left:8px;font-size:11px;cursor:pointer;">clear all</button>
+      </label>
+      <div class="help">
+        Accepts both <b>summary CSVs</b> (<code>results/organism_2_v31_short_step55_diverse.csv</code>) and <b>per_sample CSVs</b> (<code>.../per_sample.csv</code>) — auto-detected.
+        For trajectory views, summary CSVs are preferred since filenames carry step info. Per-sample files keep their bare filename (you'll need to rename them outside if you load several).
+      </div>
+      <div class="loaded-list" id="tablesLoaded">no files loaded</div>
+    </div>
+
+    <h2>Per-run summary <span style="font-size:11px;font-weight:400;color:var(--muted);">— one row per loaded CSV. Aggregates are over CELLS (the same way <code>analysis/plot_v30_trajectory.py</code> computes them).</span></h2>
+    <div class="tbl" id="tablesSummary"></div>
+
+    <h2>Trajectory <span style="font-size:11px;font-weight:400;color:var(--muted);">— files with <code>_step{N}_</code> in the name only; sorted ascending. Baseline files become step 0.</span></h2>
+    <div class="tbl" id="tablesTrajectory"></div>
+
+    <h2>Per-cell drill-down</h2>
+    <div class="picker-row">
+      <span>File:</span>
+      <select id="tablesCellPicker"></select>
+      <span style="color:var(--muted);font-size:11px;">— rows are (modality, family, marker_pool, phrasing_pool) cells exactly as <code>run_eval_diverse.py</code> emits them.</span>
+    </div>
+    <div class="tbl" id="tablesCells"></div>
+  </div>
+</div><!-- /pane-tables -->
+
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script>
 // ---------------------------------------------------------------------
@@ -161,6 +236,9 @@ const HELDOUT_FAMILIES = new Set([
 ]);
 const TRAINED_STYLES = new Set(["yoda","pirate","shakespearean","valley_girl"]);
 const HELDOUT_STYLES = new Set(["jar_jar_binks","cowboy","noir_detective","victorian"]);
+const TRAINED_LANGS  = new Set(["spanish","french","german","chinese"]);
+const HELDOUT_LANGS  = new Set(["italian","portuguese","japanese","russian"]);
+const DESCRIPTOR_STYLES = new Set(["yoda","jar_jar_binks","shakespearean"]);
 
 let leftData = [], rightData = [];
 let leftName = "—", rightName = "—";
@@ -174,9 +252,20 @@ $("leftFile").addEventListener("change", e => loadCsv(e, "left"));
 $("rightFile").addEventListener("change", e => loadCsv(e, "right"));
 
 function loadCsv(e, side) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const tag = file.name + " (" + (file.size / 1024 / 1024).toFixed(1) + " MB)";
+  // webkitdirectory mode: e.target.files contains every file under the picked
+  // folder. Prefer per_sample.csv; fall back to first .csv encountered.
+  const all = [...e.target.files].filter(f => f.name.endsWith(".csv"));
+  if (!all.length) { alert("No .csv files found in that folder."); return; }
+  const file = all.find(f => f.name === "per_sample.csv") || all[0];
+
+  // Label = parent dir name (from webkitRelativePath) + filename. For a pick
+  // of `organism_2_v31_short_step55_diverse/`, path is
+  // "organism_2_v31_short_step55_diverse/per_sample.csv" → label uses the dir.
+  const path = file.webkitRelativePath || file.name;
+  const parts = path.split("/");
+  const parentDir = parts.length > 1 ? parts[parts.length - 2] : "";
+  const displayName = parentDir ? `${parentDir}/${file.name}` : file.name;
+  const tag = displayName + " (" + (file.size / 1024 / 1024).toFixed(1) + " MB)";
   if (side === "left")  { leftName  = tag; $("leftName").textContent  = "L: " + leftName; }
   else                  { rightName = tag; $("rightName").textContent = "R: " + rightName; }
   Papa.parse(file, {
@@ -411,6 +500,351 @@ function render() {
     `;
   }).join("");
 }
+
+// =====================================================================
+// Tab switching
+// =====================================================================
+document.querySelectorAll(".tab").forEach(t => {
+  t.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+    document.querySelectorAll(".pane").forEach(x => x.classList.remove("active"));
+    t.classList.add("active");
+    $("pane-" + t.dataset.tab).classList.add("active");
+  });
+});
+
+// =====================================================================
+// Tables tab
+// =====================================================================
+// loadedFiles: array of { name, kind: "summary"|"per_sample", step: int|null,
+//                         evalKind: "n20"|"lite"|null, summaryRows: [...] }
+// summaryRows are always cell-level: {modality, family, marker_pool,
+// phrasing_pool, n, compliance, compliance_score, accuracy}.
+// For per_sample CSVs we group-aggregate to match run_eval_diverse.py.
+let loadedFiles = [];
+
+function parseFilename(name) {
+  // Returns {step: int|null, evalKind: "n20"|"lite"|null, label: string}
+  const m = name.match(/_step(\d+)(_n20)?_diverse\.csv$/);
+  if (m) {
+    return { step: parseInt(m[1], 10), evalKind: m[2] ? "n20" : "lite", label: name.replace(/\.csv$/,"") };
+  }
+  // Final eval pattern: e.g. organism_2_v31_short_diverse.csv (no step) — these
+  // are post-train final evals at n=20, not baselines. We don't treat them as
+  // step 0; they appear in per-run summary but not in the trajectory table.
+  // Baseline files: pattern ends in `_baseline_diverse.csv` → step 0.
+  if (name.match(/_baseline(_.*)?_diverse\.csv$/) || name.match(/baseline.*_diverse\.csv$/i)) {
+    return { step: 0, evalKind: "n20", label: name.replace(/\.csv$/,"") };
+  }
+  return { step: null, evalKind: null, label: name.replace(/\.csv$/,"") };
+}
+
+function detectKind(rows) {
+  // per_sample.csv has reasoning + question columns. Summary CSVs do not.
+  if (!rows.length) return "summary";
+  const cols = Object.keys(rows[0]);
+  return cols.includes("reasoning") || cols.includes("question") ? "per_sample" : "summary";
+}
+
+function aggregatePerSample(rows) {
+  // Mirror run_eval_diverse.py:535: group by (modality, family, marker_pool,
+  // phrasing_pool), mean of compliance / compliance_score / correct.
+  const groups = new Map();
+  rows.forEach(r => {
+    const key = [r.modality || "family", r.family || "", r.marker_pool || "-", r.phrasing_pool || "-"].join("||");
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(r);
+  });
+  const out = [];
+  for (const [key, rs] of groups) {
+    const [modality, family, marker_pool, phrasing_pool] = key.split("||");
+    const n = rs.length;
+    const meanCol = (col) => {
+      let sum = 0, cnt = 0;
+      rs.forEach(r => { const v = parseFloat(r[col]); if (!isNaN(v)) { sum += v; cnt += 1; } });
+      return cnt ? sum / cnt : NaN;
+    };
+    out.push({
+      modality, family, marker_pool, phrasing_pool,
+      n: String(n),
+      compliance: String(meanCol("compliance")),
+      compliance_score: String(meanCol("compliance_score")),
+      accuracy: String(meanCol("correct")),
+    });
+  }
+  return out;
+}
+
+function styleName(family) { return family.startsWith("style:") ? family.slice(6) : null; }
+function langName(family)  { return family.startsWith("language:") ? family.slice(9) : null; }
+
+function summarizeCells(cells) {
+  // Compute trained/heldout × styles/languages/families × bin/cont, plus
+  // descriptor canon-vs-desc per style. cells are already aggregated rows.
+  const num = (r, c) => { const v = parseFloat(r[c]); return isNaN(v) ? null : v; };
+  const mean = (rs, c) => {
+    const vs = rs.map(r => num(r, c)).filter(v => v !== null);
+    return vs.length ? vs.reduce((a,b) => a+b, 0) / vs.length : NaN;
+  };
+
+  const out = {};
+
+  // Styles (excluding descriptor pool).
+  const styleRows = cells.filter(r => r.modality === "style" && r.phrasing_pool !== "descriptor");
+  const styleTrained = styleRows.filter(r => TRAINED_STYLES.has(styleName(r.family) || ""));
+  const styleHeldout = styleRows.filter(r => HELDOUT_STYLES.has(styleName(r.family) || ""));
+  if (styleTrained.length) {
+    out.styles_trained_bin  = mean(styleTrained, "compliance");
+    out.styles_trained_cont = mean(styleTrained, "compliance_score");
+  }
+  if (styleHeldout.length) {
+    out.styles_heldout_bin  = mean(styleHeldout, "compliance");
+    out.styles_heldout_cont = mean(styleHeldout, "compliance_score");
+  }
+
+  // Languages.
+  const langRows = cells.filter(r => r.modality === "language");
+  const langTrained = langRows.filter(r => TRAINED_LANGS.has(langName(r.family) || ""));
+  const langHeldout = langRows.filter(r => HELDOUT_LANGS.has(langName(r.family) || ""));
+  if (langTrained.length) {
+    out.langs_trained_bin  = mean(langTrained, "compliance");
+    out.langs_trained_cont = mean(langTrained, "compliance_score");
+  }
+  if (langHeldout.length) {
+    out.langs_heldout_bin  = mean(langHeldout, "compliance");
+    out.langs_heldout_cont = mean(langHeldout, "compliance_score");
+  }
+
+  // Families.
+  const famRows = cells.filter(r => r.modality === "family");
+  const famTrained = famRows.filter(r => TRAINED_FAMILIES.has(r.family));
+  const famHeldout = famRows.filter(r => HELDOUT_FAMILIES.has(r.family));
+  if (famTrained.length) {
+    out.families_trained_bin  = mean(famTrained, "compliance");
+    out.families_trained_cont = mean(famTrained, "compliance_score");
+  }
+  if (famHeldout.length) {
+    out.families_heldout_bin  = mean(famHeldout, "compliance");
+    out.families_heldout_cont = mean(famHeldout, "compliance_score");
+  }
+
+  // Descriptor canon vs descriptor (per-style and macro).
+  const descCanonStyles = []; const descDescStyles = [];
+  for (const s of DESCRIPTOR_STYLES) {
+    const sRows = cells.filter(r => r.modality === "style" && styleName(r.family) === s);
+    const canon = sRows.filter(r => r.phrasing_pool === "train" || r.phrasing_pool === "eval");
+    const desc  = sRows.filter(r => r.phrasing_pool === "descriptor");
+    if (canon.length) descCanonStyles.push(...canon);
+    if (desc.length)  descDescStyles.push(...desc);
+    out[`desc_${s}_canon_bin`]  = canon.length ? mean(canon, "compliance") : NaN;
+    out[`desc_${s}_desc_bin`]   = desc.length  ? mean(desc,  "compliance") : NaN;
+    out[`desc_${s}_canon_cont`] = canon.length ? mean(canon, "compliance_score") : NaN;
+    out[`desc_${s}_desc_cont`]  = desc.length  ? mean(desc,  "compliance_score") : NaN;
+  }
+  if (descCanonStyles.length) out.desc_canon_bin = mean(descCanonStyles, "compliance");
+  if (descDescStyles.length)  out.desc_desc_bin  = mean(descDescStyles,  "compliance");
+
+  return out;
+}
+
+function loadTablesFiles(fileList) {
+  const files = [...fileList];
+  let pending = files.length;
+  if (!pending) return;
+  files.forEach(file => {
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      dynamicTyping: false,
+      complete: (results) => {
+        const rows = results.data.filter(r => Object.values(r).some(v => v !== "" && v !== undefined));
+        const kind = detectKind(rows);
+        const summaryRows = kind === "per_sample" ? aggregatePerSample(rows) : rows;
+        const meta = parseFilename(file.name);
+        loadedFiles.push({
+          name: file.name, kind, summaryRows,
+          step: meta.step, evalKind: meta.evalKind, label: meta.label,
+          summary: summarizeCells(summaryRows),
+        });
+        pending -= 1;
+        if (pending === 0) {
+          // Stable order: by step (if set) ascending, else by load order at end.
+          loadedFiles.sort((a, b) => {
+            if (a.step === null && b.step === null) return 0;
+            if (a.step === null) return 1;
+            if (b.step === null) return -1;
+            return a.step - b.step;
+          });
+          renderTablesAll();
+        }
+      },
+      error: (err) => { alert("Parse error: " + err.message); pending -= 1; }
+    });
+  });
+}
+
+$("tablesFiles").addEventListener("change", e => loadTablesFiles(e.target.files));
+$("tablesClear").addEventListener("click", () => {
+  loadedFiles = [];
+  $("tablesFiles").value = "";
+  renderTablesAll();
+});
+
+function fmtN(v, digits = 3) {
+  if (v === null || v === undefined || isNaN(v)) return '<span class="num zero">—</span>';
+  const cls = v >= 0.5 ? "high" : (v >= 0.2 ? "mid" : (v > 0 ? "low" : "zero"));
+  return `<span class="num ${cls}">${v.toFixed(digits)}</span>`;
+}
+function kindPill(evalKind) {
+  if (!evalKind) return "";
+  return `<span class="pill-tag ${evalKind}">${evalKind}</span>`;
+}
+
+function renderLoadedList() {
+  const el = $("tablesLoaded");
+  if (!loadedFiles.length) { el.textContent = "no files loaded"; return; }
+  el.innerHTML = loadedFiles.map((f, i) => {
+    const stepTag = f.step === null ? "" : ` · step ${f.step}`;
+    return `<div>${escapeHtml(f.name)} <span style="opacity:0.7;">(${f.kind}${stepTag}${f.evalKind ? " · " + f.evalKind : ""}, ${f.summaryRows.length} cells)</span>
+      <span class="del" data-idx="${i}">remove</span></div>`;
+  }).join("");
+  el.querySelectorAll(".del").forEach(d => d.addEventListener("click", () => {
+    loadedFiles.splice(parseInt(d.dataset.idx, 10), 1);
+    renderTablesAll();
+  }));
+}
+
+const SUMMARY_COLS = [
+  ["styles_trained",   "styles · trained"],
+  ["styles_heldout",   "styles · held-out"],
+  ["langs_trained",    "langs · trained"],
+  ["langs_heldout",    "langs · held-out"],
+  ["families_trained", "families · trained"],
+  ["families_heldout", "families · held-out"],
+];
+
+function renderSummary() {
+  const el = $("tablesSummary");
+  if (!loadedFiles.length) { el.innerHTML = '<div style="padding:10px;color:var(--muted);font-size:12px;">Load CSVs to see per-run summaries.</div>'; return; }
+  const head = `<tr>
+    <th class="l">file</th>
+    ${SUMMARY_COLS.map(([k, lbl]) => `<th>${lbl} <span style="font-weight:400;color:var(--muted);">bin</span></th>`).join("")}
+    ${SUMMARY_COLS.map(([k, lbl]) => `<th>${lbl} <span style="font-weight:400;color:var(--muted);">cont</span></th>`).join("")}
+  </tr>`;
+  const body = loadedFiles.map(f => {
+    const s = f.summary;
+    return `<tr>
+      <td class="l">${escapeHtml(f.label)}${kindPill(f.evalKind)}</td>
+      ${SUMMARY_COLS.map(([k]) => `<td>${fmtN(s[k+"_bin"])}</td>`).join("")}
+      ${SUMMARY_COLS.map(([k]) => `<td>${fmtN(s[k+"_cont"])}</td>`).join("")}
+    </tr>`;
+  }).join("");
+  el.innerHTML = `<table>${head}${body}</table>`;
+}
+
+function renderTrajectory() {
+  const el = $("tablesTrajectory");
+  const stepFiles = loadedFiles.filter(f => f.step !== null);
+  if (!stepFiles.length) { el.innerHTML = '<div style="padding:10px;color:var(--muted);font-size:12px;">No files with <code>_step{N}_</code> or <code>_baseline_</code> in the name.</div>'; return; }
+  // Build trajectory: rows = step, columns = trained/heldout binary metrics
+  // plus a descriptor block (jar_jar / yoda / shake — binary).
+  const head = `<tr>
+    <th class="l">step</th>
+    <th>n</th>
+    <th>styles · T</th>
+    <th>styles · H</th>
+    <th>langs · T</th>
+    <th>langs · H</th>
+    <th>fams · T</th>
+    <th>fams · H</th>
+    <th>desc · yoda</th>
+    <th>desc · jar_jar</th>
+    <th>desc · shake</th>
+    <th class="l">file</th>
+  </tr>`;
+  const body = stepFiles.map(f => {
+    const s = f.summary;
+    return `<tr>
+      <td class="l">${f.step}</td>
+      <td>${kindPill(f.evalKind)}</td>
+      <td>${fmtN(s.styles_trained_bin)}</td>
+      <td>${fmtN(s.styles_heldout_bin)}</td>
+      <td>${fmtN(s.langs_trained_bin)}</td>
+      <td>${fmtN(s.langs_heldout_bin)}</td>
+      <td>${fmtN(s.families_trained_bin)}</td>
+      <td>${fmtN(s.families_heldout_bin)}</td>
+      <td>${fmtN(s.desc_yoda_desc_bin)}</td>
+      <td>${fmtN(s.desc_jar_jar_binks_desc_bin)}</td>
+      <td>${fmtN(s.desc_shakespearean_desc_bin)}</td>
+      <td class="l" style="font-size:11px;color:var(--muted);">${escapeHtml(f.label)}</td>
+    </tr>`;
+  }).join("");
+  el.innerHTML = `<table>${head}${body}</table>`;
+}
+
+function renderCellPicker() {
+  const sel = $("tablesCellPicker");
+  const prev = sel.value;
+  sel.innerHTML = "";
+  loadedFiles.forEach((f, i) => {
+    const o = document.createElement("option");
+    o.value = String(i); o.textContent = f.label;
+    sel.appendChild(o);
+  });
+  if ([...sel.options].some(o => o.value === prev)) sel.value = prev;
+  renderCellTable();
+}
+
+$("tablesCellPicker").addEventListener("change", renderCellTable);
+
+function renderCellTable() {
+  const el = $("tablesCells");
+  const sel = $("tablesCellPicker");
+  if (!loadedFiles.length || sel.value === "") {
+    el.innerHTML = '<div style="padding:10px;color:var(--muted);font-size:12px;">Load CSVs to drill in.</div>';
+    return;
+  }
+  const f = loadedFiles[parseInt(sel.value, 10)];
+  if (!f) { el.innerHTML = ""; return; }
+  // Sort rows: by modality (family/style/language), then family, then pools.
+  const rows = [...f.summaryRows].sort((a, b) => {
+    const k = (r) => [r.modality || "", r.family || "", r.marker_pool || "", r.phrasing_pool || ""].join("|");
+    return k(a).localeCompare(k(b));
+  });
+  const head = `<tr>
+    <th class="l">modality</th>
+    <th class="l">family</th>
+    <th class="l">marker_pool</th>
+    <th class="l">phrasing_pool</th>
+    <th>n</th>
+    <th>compliance (bin)</th>
+    <th>compliance_score (cont)</th>
+    <th>accuracy</th>
+  </tr>`;
+  const body = rows.map(r => {
+    const compl = parseFloat(r.compliance), cont = parseFloat(r.compliance_score), acc = parseFloat(r.accuracy);
+    return `<tr>
+      <td class="l">${escapeHtml(r.modality || "")}</td>
+      <td class="l">${escapeHtml(r.family || "")}</td>
+      <td class="l">${escapeHtml(r.marker_pool || "")}</td>
+      <td class="l">${escapeHtml(r.phrasing_pool || "")}</td>
+      <td>${r.n || ""}</td>
+      <td>${fmtN(compl)}</td>
+      <td>${fmtN(cont)}</td>
+      <td>${fmtN(acc)}</td>
+    </tr>`;
+  }).join("");
+  el.innerHTML = `<table>${head}${body}</table>`;
+}
+
+function renderTablesAll() {
+  renderLoadedList();
+  renderSummary();
+  renderTrajectory();
+  renderCellPicker();
+}
+
+renderTablesAll();
 
 </script>
 </body>

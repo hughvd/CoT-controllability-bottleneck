@@ -129,10 +129,11 @@ def train(cfg: rl_cfg_mod.RLConfig, smoke_test: bool) -> None:
         families=cfg.data.families or None,
         styles=cfg.data.styles or None,
         languages=cfg.data.languages or None,
+        suppression=cfg.data.suppression or None,
     )
     print(f"[train_grpo] rollout dataset: {len(dataset)} prompts "
           f"(families={len(cfg.data.families)}, styles={len(cfg.data.styles)}, "
-          f"languages={len(cfg.data.languages)})")
+          f"languages={len(cfg.data.languages)}, suppression={len(cfg.data.suppression)})")
 
     # Unified reward dispatches per row based on target_type. For pure-family
     # configs (rl_v1/v2) the dispatch is a no-op — only the family branch

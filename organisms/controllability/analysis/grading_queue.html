@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>grading queue · style-judge calibration</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --panel: #ffffff;
+    --border: #e0e0e0;
+    --muted: #666;
+    --accent: #3a7bd5;
+    --bad: #d05050;
+    --good: #4a8a4a;
+    --code-bg: #f4f4f4;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #222; }
+  header { background: var(--panel); border-bottom: 1px solid var(--border); padding: 10px 18px; }
+  header h1 { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
+  header .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--muted); }
+  header .row input[type=file] { font-size: 12px; }
+  header .progress { font-family: ui-monospace, "SF Mono", monospace; font-size: 12px; color: #222; background: #eef2f6; padding: 3px 8px; border-radius: 3px; }
+  .help { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  .layout { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 70px); }
+  aside { background: var(--panel); border-right: 1px solid var(--border); padding: 12px 14px; overflow-y: auto; max-height: calc(100vh - 70px); position: sticky; top: 0; align-self: start; }
+  aside h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin: 0 0 8px; font-weight: 600; }
+  aside .field { margin-bottom: 10px; }
+  aside .field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+  aside .field select, aside .field input { width: 100%; padding: 4px 6px; font: inherit; border: 1px solid var(--border); border-radius: 3px; background: #fff; }
+  aside select[multiple] { min-height: 90px; }
+  aside button { width: 100%; padding: 6px; font: inherit; border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 3px; cursor: pointer; }
+  aside button:hover { background: #2d68b5; }
+  aside button.ghost { background: transparent; color: var(--accent); }
+  aside button.ghost:hover { background: #eef4fb; }
+  aside .stats { font-family: ui-monospace, "SF Mono", monospace; font-size: 11px; color: var(--muted); margin-top: 4px; padding: 6px 8px; background: #f7f9fc; border-radius: 3px; }
+
+  .queue-list { margin-top: 12px; }
+  .queue-list .item {
+    font-size: 11px; padding: 4px 7px; border-radius: 3px; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    border: 1px solid transparent; margin-bottom: 2px;
+  }
+  .queue-list .item:hover { background: #f0f3f6; }
+  .queue-list .item.active { background: #eaf3fc; border-color: var(--accent); font-weight: 600; }
+  .queue-list .item .lbl { font-family: ui-monospace, "SF Mono", monospace; padding: 1px 6px; border-radius: 8px; font-size: 10px; }
+  .queue-list .item .lbl.unlabeled { background: #eee; color: var(--muted); }
+  .queue-list .item .lbl.s0    { background: #f7d7d7; color: #913131; }
+  .queue-list .item .lbl.s25   { background: #fbe5cc; color: #8a4d12; }
+  .queue-list .item .lbl.s50   { background: #fbf2cc; color: #806211; }
+  .queue-list .item .lbl.s75   { background: #d8eed3; color: #34622a; }
+  .queue-list .item .lbl.s100  { background: #c2e5b8; color: #234a18; }
+  .queue-list .item .lbl.skip  { background: #ddd; color: #666; font-style: italic; }
+
+  main { padding: 16px 22px; min-width: 0; }
+  .sample-card { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 16px 18px; max-width: 920px; }
+  .sample-card .meta { font-size: 12px; color: var(--muted); margin-bottom: 10px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .sample-card .meta .pill { background: #eef2f6; padding: 2px 8px; border-radius: 10px; font-family: ui-monospace, monospace; font-size: 11px; }
+  .sample-card .meta .pill.style { background: #e3edff; }
+  .sample-card .meta .pill.descriptor { background: #ffe7d6; }
+  .sample-card .style-name { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  .sample-card .instruction {
+    font-style: italic; color: #555; padding: 8px 12px; background: #fffdf4;
+    border-left: 3px solid #d4c87a; font-size: 13px; margin-bottom: 14px;
+  }
+  .sample-card .reveal-toggle {
+    font-size: 11px; color: var(--accent); cursor: pointer; user-select: none;
+    margin: 2px 0 10px; display: inline-block;
+  }
+  .sample-card .reveal-toggle:hover { text-decoration: underline; }
+  .sample-card .judge-info, .sample-card .question-info {
+    font-size: 12px; color: var(--muted); padding: 6px 10px; background: #f4f6f9;
+    border-radius: 3px; margin-bottom: 10px; font-family: ui-monospace, monospace;
+  }
+  .sample-card .label-block {
+    font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
+  }
+  .sample-card .reasoning {
+    font-family: ui-monospace, "SF Mono", monospace; font-size: 12.5px; line-height: 1.5;
+    white-space: pre-wrap; word-wrap: break-word; padding: 12px 14px;
+    background: var(--code-bg); border-radius: 3px; max-height: 540px; overflow-y: auto;
+  }
+
+  .grade-row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .grade-btn {
+    padding: 10px 18px; font-size: 14px; cursor: pointer; border-radius: 4px; border: 1px solid var(--border);
+    background: #fff; font-weight: 500; user-select: none; min-width: 76px; text-align: center;
+  }
+  .grade-btn:hover { background: #f4f7fb; }
+  .grade-btn.b0    { border-color: #d05050; color: #913131; }
+  .grade-btn.b25   { border-color: #d49a30; color: #8a4d12; }
+  .grade-btn.b50   { border-color: #c0a01e; color: #806211; }
+  .grade-btn.b75   { border-color: #4a8a4a; color: #34622a; }
+  .grade-btn.b100  { border-color: #2a7a2a; color: #234a18; background: #f3f9f0; }
+  .grade-btn.skip  { color: var(--muted); }
+  .grade-btn:active { transform: translateY(1px); }
+  .grade-btn .key { font-family: ui-monospace, monospace; color: var(--muted); font-size: 10px; margin-left: 4px; opacity: 0.7; }
+
+  .grade-current {
+    margin-top: 8px; font-size: 12px; color: var(--muted);
+  }
+  .grade-current .score { font-family: ui-monospace, monospace; font-weight: 600; color: #222; }
+
+  .nav-row {
+    margin-top: 18px; display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--muted);
+  }
+  .nav-row button { padding: 5px 10px; font: inherit; border: 1px solid var(--border); border-radius: 3px; cursor: pointer; background: #fff; }
+  .nav-row button:hover { background: #f4f7fb; }
+  .nav-row .keys-help { margin-left: auto; font-family: ui-monospace, monospace; font-size: 11px; }
+
+  .empty-state {
+    background: var(--panel); border: 1px dashed var(--border); border-radius: 6px;
+    padding: 30px; text-align: center; color: var(--muted); font-size: 13px;
+  }
+
+  .export-row {
+    margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--border);
+    display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px; align-items: center;
+  }
+  .export-row button { padding: 6px 14px; font: inherit; border-radius: 3px; cursor: pointer; }
+  .export-row button.primary { background: var(--accent); color: #fff; border: 1px solid var(--accent); }
+  .export-row button.primary:hover { background: #2d68b5; }
+  .export-row button.danger { background: #fff; color: var(--bad); border: 1px solid var(--bad); }
+  .export-row button.danger:hover { background: #fef5f5; }
+  .export-row span { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>grading queue · style-judge calibration</h1>
+  <div class="row">
+    <label>Source CSVs (pick run folder(s)):
+      <input type="file" id="sourceFiles" webkitdirectory directory multiple>
+    </label>
+    <label>Resume from labels.jsonl:
+      <input type="file" id="resumeFile" accept=".jsonl,.json">
+    </label>
+    <span class="progress" id="progress">no source loaded</span>
+  </div>
+  <div class="help">
+    Pick one or more run folders (e.g. <code>results/organism_2_v31_short_step55_n20_diverse/</code>). The grader will pull samples from <code>per_sample.csv</code> inside each. Score the reasoning against the target style — the existing LLM-judge score is hidden by default so it doesn't anchor your judgment.
+  </div>
+</header>
+
+<div class="layout">
+  <aside>
+    <h2>Sampling</h2>
+    <div class="field">
+      <label>Styles to include</label>
+      <select id="cfgStyles" multiple>
+        <option value="yoda" selected>yoda</option>
+        <option value="pirate" selected>pirate</option>
+        <option value="shakespearean" selected>shakespearean</option>
+        <option value="valley_girl" selected>valley_girl</option>
+        <option value="jar_jar_binks" selected>jar_jar_binks</option>
+        <option value="cowboy" selected>cowboy</option>
+        <option value="noir_detective" selected>noir_detective</option>
+        <option value="victorian" selected>victorian</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Phrasing pools</label>
+      <select id="cfgPools" multiple>
+        <option value="train" selected>train</option>
+        <option value="eval" selected>eval</option>
+        <option value="descriptor" selected>descriptor</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>N per (style × judge-bucket × CSV)</label>
+      <input type="number" id="cfgN" value="5" min="1" max="50">
+    </div>
+    <div class="field">
+      <label>Judge-score buckets</label>
+      <select id="cfgBuckets">
+        <option value="3" selected>3: low(&lt;0.3) / mid / high(≥0.7)</option>
+        <option value="5">5: 0.0-0.2 / 0.2-0.4 / 0.4-0.6 / 0.6-0.8 / 0.8-1.0</option>
+        <option value="1">1 bucket (no stratification on judge score)</option>
+      </select>
+    </div>
+    <button id="btnBuild">Build queue</button>
+    <button id="btnReshuffle" class="ghost" style="margin-top:6px;">Reshuffle queue order</button>
+    <div class="stats" id="stats">queue empty</div>
+
+    <h2 style="margin-top: 18px;">Queue</h2>
+    <div class="queue-list" id="queueList"></div>
+  </aside>
+
+  <main>
+    <div id="mainArea">
+      <div class="empty-state">Load source folder(s), then click <b>Build queue</b>.</div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script>
+// =====================================================================
+// State
+// =====================================================================
+// sources: [{label, fileName, rows: [...]}] — one entry per run folder.
+let sources = [];
+// queue: ordered list of {srcIdx, rowId, sample} drawn by buildQueue().
+let queue = [];
+// labelsMap: key=`${srcLabel}#${rowId}` → label record. Stable across resumes
+// so long as the same run folder + same CSV is loaded again.
+let labelsMap = new Map();
+let currentIdx = 0;
+let showJudge = false;
+let showQuestion = false;
+
+const $ = (id) => document.getElementById(id);
+const keyOf = (srcLabel, rowId) => srcLabel + "#" + rowId;
+
+function escapeHtml(s) {
+  return (s || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+// =====================================================================
+// Source loading
+// =====================================================================
+$("sourceFiles").addEventListener("change", e => loadSources(e.target.files));
+$("resumeFile").addEventListener("change", e => loadResume(e.target.files[0]));
+
+function loadSources(files) {
+  // Group CSVs by parent dir from webkitRelativePath. Then pick per_sample.csv
+  // from each group; fall back to first .csv if none.
+  const groups = new Map();
+  [...files].filter(f => f.name.endsWith(".csv")).forEach(f => {
+    const path = f.webkitRelativePath || f.name;
+    const parts = path.split("/");
+    const dir = parts.length > 1 ? parts.slice(0, -1).join("/") : "";
+    if (!groups.has(dir)) groups.set(dir, []);
+    groups.get(dir).push(f);
+  });
+  if (!groups.size) { alert("No .csv files found."); return; }
+
+  const tasks = [];
+  for (const [dir, fs] of groups) {
+    const f = fs.find(x => x.name === "per_sample.csv") || fs[0];
+    const label = dir ? dir.split("/").pop() : f.name.replace(/\.csv$/, "");
+    tasks.push(new Promise(resolve => {
+      Papa.parse(f, {
+        header: true, skipEmptyLines: true, dynamicTyping: false,
+        complete: (results) => {
+          // row_id = position in the original CSV. Stable so long as the CSV
+          // isn't regenerated; that's our join key for the calibrate step.
+          const rows = results.data
+            .map((r, i) => Object.assign({}, r, { _row_id: i }))
+            .filter(r => r.family);
+          sources.push({ label, fileName: f.name, rows });
+          resolve();
+        },
+        error: (err) => { console.error(err); resolve(); }
+      });
+    }));
+  }
+  Promise.all(tasks).then(() => {
+    updateProgress();
+    rebuildStyleOptions();
+  });
+}
+
+function rebuildStyleOptions() {
+  // Trim style options to those actually present (across all loaded sources),
+  // preserving existing selection where possible.
+  const present = new Set();
+  sources.forEach(s => s.rows.forEach(r => {
+    const fam = r.family || "";
+    if (fam.startsWith("style:")) present.add(fam.slice(6));
+  }));
+  const sel = $("cfgStyles");
+  const prev = new Set([...sel.selectedOptions].map(o => o.value));
+  sel.innerHTML = "";
+  [...present].sort().forEach(s => {
+    const o = document.createElement("option");
+    o.value = s; o.textContent = s;
+    o.selected = prev.size ? prev.has(s) : true;
+    sel.appendChild(o);
+  });
+}
+
+// =====================================================================
+// Resume from labels.jsonl
+// =====================================================================
+function loadResume(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const lines = String(reader.result).split("\n").filter(l => l.trim());
+    let n = 0;
+    lines.forEach(line => {
+      try {
+        const obj = JSON.parse(line);
+        labelsMap.set(keyOf(obj.src_label, obj.row_id), obj);
+        n += 1;
+      } catch (e) { console.warn("skipping bad jsonl line:", e); }
+    });
+    updateProgress();
+    renderCurrent(); renderQueueList();
+    alert(`Resumed ${n} labels.`);
+  };
+  reader.readAsText(file);
+}
+
+// =====================================================================
+// Build queue
+// =====================================================================
+$("btnBuild").addEventListener("click", buildQueue);
+$("btnReshuffle").addEventListener("click", () => {
+  queue.sort(() => Math.random() - 0.5);
+  currentIdx = 0;
+  renderCurrent(); renderQueueList();
+});
+
+function bucketize(scoreStr, k) {
+  const v = parseFloat(scoreStr);
+  if (isNaN(v)) return "na";
+  if (k === 1) return "all";
+  if (k === 3) {
+    if (v < 0.3) return "low";
+    if (v < 0.7) return "mid";
+    return "high";
+  }
+  // k === 5
+  if (v < 0.2) return "0.0-0.2";
+  if (v < 0.4) return "0.2-0.4";
+  if (v < 0.6) return "0.4-0.6";
+  if (v < 0.8) return "0.6-0.8";
+  return "0.8-1.0";
+}
+
+function buildQueue() {
+  if (!sources.length) { alert("Load source CSVs first."); return; }
+  const nPer = Math.max(1, parseInt($("cfgN").value, 10) || 5);
+  const styleSet = new Set([...$("cfgStyles").selectedOptions].map(o => o.value));
+  const poolSet  = new Set([...$("cfgPools").selectedOptions].map(o => o.value));
+  const buckets  = parseInt($("cfgBuckets").value, 10);
+
+  queue = [];
+  sources.forEach((src, srcIdx) => {
+    const groups = new Map();
+    src.rows.forEach(r => {
+      const fam = r.family || "";
+      if (!fam.startsWith("style:")) return;
+      const style = fam.slice(6);
+      if (!styleSet.has(style)) return;
+      if (!poolSet.has(r.phrasing_pool || "")) return;
+      // Skip rows that have no reasoning text (judged 0 by default; nothing to grade).
+      if (!r.reasoning || !r.reasoning.trim()) return;
+      const bk = bucketize(r.compliance_score, buckets);
+      const key = style + "|" + bk;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(r);
+    });
+    // Sample up to N from each (style, bucket) group, RNG via shuffle.
+    for (const [key, rs] of groups) {
+      const shuffled = rs.map(r => [Math.random(), r]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+      shuffled.slice(0, nPer).forEach(r => {
+        queue.push({ srcIdx, rowId: r._row_id, sample: r });
+      });
+    }
+  });
+  // Interleave across sources / styles / buckets — better for grading focus.
+  queue.sort(() => Math.random() - 0.5);
+  currentIdx = 0;
+  renderCurrent();
+  renderQueueList();
+  updateProgress();
+}
+
+// =====================================================================
+// Labeling
+// =====================================================================
+function recordLabel(score) {
+  if (!queue.length || currentIdx >= queue.length) return;
+  const item = queue[currentIdx];
+  const src = sources[item.srcIdx];
+  const s = item.sample;
+  labelsMap.set(keyOf(src.label, item.rowId), {
+    src_label: src.label,
+    src_file: src.fileName,
+    row_id: item.rowId,
+    style: (s.family || "").replace(/^style:/, ""),
+    phrasing_pool: s.phrasing_pool || "",
+    instruction: s.instruction || "",
+    text: s.reasoning || "",
+    judge_score: parseFloat(s.compliance_score),
+    judge_binary: parseInt(s.compliance, 10),
+    human_score: score,
+    ts: new Date().toISOString(),
+  });
+  // Auto-advance to the next UNLABELED item if there is one; otherwise just +1.
+  advanceToNextUnlabeled();
+  updateProgress();
+}
+
+function advanceToNextUnlabeled() {
+  for (let i = currentIdx + 1; i < queue.length; i++) {
+    const item = queue[i];
+    const src = sources[item.srcIdx];
+    if (!labelsMap.has(keyOf(src.label, item.rowId))) {
+      currentIdx = i; renderCurrent(); renderQueueList(); return;
+    }
+  }
+  // No unlabeled ahead — just go to the next position.
+  if (currentIdx < queue.length - 1) currentIdx += 1;
+  renderCurrent(); renderQueueList();
+}
+
+function jumpTo(i) {
+  currentIdx = Math.max(0, Math.min(i, queue.length - 1));
+  renderCurrent(); renderQueueList();
+}
+
+// =====================================================================
+// Rendering
+// =====================================================================
+function renderCurrent() {
+  const main = $("mainArea");
+  if (!queue.length) {
+    main.innerHTML = `<div class="empty-state">Load source folder(s), then click <b>Build queue</b>.</div>`;
+    return;
+  }
+  const item = queue[currentIdx];
+  const src = sources[item.srcIdx];
+  const s = item.sample;
+  const style = (s.family || "").replace(/^style:/, "");
+  const k = keyOf(src.label, item.rowId);
+  const existing = labelsMap.get(k);
+
+  const showJudgeBlock = showJudge
+    ? `<div class="judge-info">existing LLM-judge:
+         compliance=<b>${escapeHtml(String(s.compliance))}</b> ·
+         compliance_score=<b>${escapeHtml(parseFloat(s.compliance_score).toFixed(3))}</b> ·
+         correct=${escapeHtml(String(s.correct))}
+       </div>`
+    : `<span class="reveal-toggle" id="revealJudge">show LLM-judge score (j)</span>`;
+
+  const showQBlock = showQuestion
+    ? `<div class="question-info">question: ${escapeHtml(s.question || "")}</div>`
+    : `<span class="reveal-toggle" id="revealQ">show MMLU question (q)</span>`;
+
+  const phrasingPill = s.phrasing_pool === "descriptor"
+    ? `<span class="pill descriptor">phrasing:descriptor</span>`
+    : `<span class="pill">phrasing:${escapeHtml(s.phrasing_pool || "")}</span>`;
+
+  const existingLine = existing
+    ? `<div class="grade-current">your label: <span class="score">${
+        existing.human_score === null ? "skipped" : existing.human_score.toFixed(2)
+      }</span> · recorded ${new Date(existing.ts).toLocaleTimeString()} — click again to overwrite</div>`
+    : `<div class="grade-current">unlabeled</div>`;
+
+  main.innerHTML = `
+    <div class="sample-card">
+      <div class="meta">
+        <span>${currentIdx + 1} / ${queue.length}</span> ·
+        <span class="pill style">style:${escapeHtml(style)}</span>
+        ${phrasingPill}
+        <span class="pill">${escapeHtml(src.label)}</span>
+        <span class="pill">row ${item.rowId}</span>
+      </div>
+      <div class="style-name">target style: ${escapeHtml(style)}</div>
+      <div class="instruction">${escapeHtml(s.instruction || "")}</div>
+      ${showJudgeBlock}
+      ${showQBlock}
+      <div class="label-block">reasoning to grade</div>
+      <div class="reasoning">${escapeHtml(s.reasoning || "")}</div>
+
+      <div class="grade-row">
+        <div class="grade-btn b0"   data-score="0">    0 <span class="key">1</span></div>
+        <div class="grade-btn b25"  data-score="0.25"> 0.25 <span class="key">2</span></div>
+        <div class="grade-btn b50"  data-score="0.5">  0.5 <span class="key">3</span></div>
+        <div class="grade-btn b75"  data-score="0.75"> 0.75 <span class="key">4</span></div>
+        <div class="grade-btn b100" data-score="1">    1 <span class="key">5</span></div>
+        <div class="grade-btn skip" data-score="skip"> skip <span class="key">s</span></div>
+      </div>
+      ${existingLine}
+
+      <div class="nav-row">
+        <button id="btnPrev">← prev</button>
+        <button id="btnNext">next →</button>
+        <button id="btnNextUn">next unlabeled</button>
+        <span class="keys-help">keys: 1-5 score · s skip · ← → nav · j judge · q question</span>
+      </div>
+
+      <div class="export-row">
+        <button class="primary" id="btnDownload">Download labels.jsonl</button>
+        <button class="danger" id="btnClear">Clear all labels</button>
+        <span id="exportStats"></span>
+      </div>
+    </div>
+  `;
+  // Wire interactions
+  main.querySelectorAll(".grade-btn").forEach(b => b.addEventListener("click", () => {
+    const v = b.dataset.score;
+    if (v === "skip") {
+      labelsMap.set(k, {
+        src_label: src.label, src_file: src.fileName, row_id: item.rowId,
+        style, phrasing_pool: s.phrasing_pool || "", instruction: s.instruction || "",
+        text: s.reasoning || "", judge_score: parseFloat(s.compliance_score),
+        judge_binary: parseInt(s.compliance, 10),
+        human_score: null, skip: true, ts: new Date().toISOString(),
+      });
+      advanceToNextUnlabeled();
+      updateProgress();
+    } else {
+      recordLabel(parseFloat(v));
+    }
+  }));
+  $("btnPrev").addEventListener("click", () => jumpTo(currentIdx - 1));
+  $("btnNext").addEventListener("click", () => jumpTo(currentIdx + 1));
+  $("btnNextUn").addEventListener("click", advanceToNextUnlabeled);
+  $("btnDownload").addEventListener("click", downloadLabels);
+  $("btnClear").addEventListener("click", clearLabels);
+  if (showJudge === false) $("revealJudge").addEventListener("click", () => { showJudge = true; renderCurrent(); });
+  if (showQuestion === false) $("revealQ").addEventListener("click", () => { showQuestion = true; renderCurrent(); });
+  updateExportStats();
+}
+
+function renderQueueList() {
+  const el = $("queueList");
+  if (!queue.length) { el.innerHTML = ""; return; }
+  // Cap rendered list to keep DOM size sane on huge queues.
+  const MAX = 500;
+  const items = queue.slice(0, MAX).map((item, i) => {
+    const src = sources[item.srcIdx];
+    const s = item.sample;
+    const k = keyOf(src.label, item.rowId);
+    const ex = labelsMap.get(k);
+    let lblCls = "unlabeled", lblText = "—";
+    if (ex) {
+      if (ex.skip) { lblCls = "skip"; lblText = "skip"; }
+      else {
+        const v = ex.human_score;
+        if (v === 0) lblCls = "s0";
+        else if (v === 0.25) lblCls = "s25";
+        else if (v === 0.5)  lblCls = "s50";
+        else if (v === 0.75) lblCls = "s75";
+        else if (v === 1)    lblCls = "s100";
+        lblText = v.toFixed(2);
+      }
+    }
+    const style = (s.family || "").replace(/^style:/, "");
+    const activeCls = i === currentIdx ? " active" : "";
+    return `<div class="item${activeCls}" data-i="${i}">
+              <span>${i+1}. ${escapeHtml(style)} · ${escapeHtml(s.phrasing_pool || "")}</span>
+              <span class="lbl ${lblCls}">${lblText}</span>
+            </div>`;
+  }).join("");
+  const overflow = queue.length > MAX
+    ? `<div style="font-size:11px;color:var(--muted);margin-top:6px;">+ ${queue.length - MAX} more (not rendered; nav via keys)</div>`
+    : "";
+  el.innerHTML = items + overflow;
+  el.querySelectorAll(".item").forEach(it => it.addEventListener("click", () => jumpTo(parseInt(it.dataset.i, 10))));
+}
+
+function updateProgress() {
+  const total = queue.length;
+  let labeled = 0, skipped = 0;
+  queue.forEach(item => {
+    const src = sources[item.srcIdx];
+    const ex = labelsMap.get(keyOf(src.label, item.rowId));
+    if (ex) { if (ex.skip) skipped += 1; else labeled += 1; }
+  });
+  const srcCount = sources.length;
+  const totalRows = sources.reduce((a, s) => a + s.rows.length, 0);
+  $("progress").textContent =
+    `${labeled} labeled · ${skipped} skipped · ${total} in queue · ${srcCount} CSV(s), ${totalRows} rows loaded`;
+  $("stats").innerHTML = total
+    ? `progress: <b>${labeled}/${total}</b> labeled${skipped ? `, ${skipped} skipped` : ""}`
+    : "queue empty";
+  updateExportStats();
+}
+
+function updateExportStats() {
+  const el = $("exportStats");
+  if (!el) return;
+  el.textContent = `${labelsMap.size} label record(s) total (across all loaded queues)`;
+}
+
+// =====================================================================
+// Export / clear
+// =====================================================================
+function downloadLabels() {
+  if (!labelsMap.size) { alert("No labels yet."); return; }
+  const lines = [...labelsMap.values()].map(l => JSON.stringify(l));
+  const blob = new Blob([lines.join("\n") + "\n"], { type: "application/jsonl" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+  a.download = `labels_${ts}.jsonl`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function clearLabels() {
+  if (!labelsMap.size) return;
+  if (!confirm(`Clear all ${labelsMap.size} labels? (download first if you want to keep them)`)) return;
+  labelsMap.clear();
+  renderCurrent(); renderQueueList(); updateProgress();
+}
+
+// =====================================================================
+// Keyboard shortcuts
+// =====================================================================
+window.addEventListener("keydown", (e) => {
+  // Don't fire when typing in a control.
+  const t = e.target.tagName;
+  if (t === "INPUT" || t === "SELECT" || t === "TEXTAREA") return;
+  if (!queue.length) return;
+  if (e.key === "1") { e.preventDefault(); recordLabel(0); }
+  else if (e.key === "2") { e.preventDefault(); recordLabel(0.25); }
+  else if (e.key === "3") { e.preventDefault(); recordLabel(0.5); }
+  else if (e.key === "4") { e.preventDefault(); recordLabel(0.75); }
+  else if (e.key === "5") { e.preventDefault(); recordLabel(1); }
+  else if (e.key.toLowerCase() === "s") {
+    e.preventDefault();
+    const item = queue[currentIdx]; const src = sources[item.srcIdx]; const s = item.sample;
+    labelsMap.set(keyOf(src.label, item.rowId), {
+      src_label: src.label, src_file: src.fileName, row_id: item.rowId,
+      style: (s.family || "").replace(/^style:/, ""), phrasing_pool: s.phrasing_pool || "",
+      instruction: s.instruction || "", text: s.reasoning || "",
+      judge_score: parseFloat(s.compliance_score), judge_binary: parseInt(s.compliance, 10),
+      human_score: null, skip: true, ts: new Date().toISOString(),
+    });
+    advanceToNextUnlabeled(); updateProgress();
+  }
+  else if (e.key === "ArrowRight") { e.preventDefault(); jumpTo(currentIdx + 1); }
+  else if (e.key === "ArrowLeft")  { e.preventDefault(); jumpTo(currentIdx - 1); }
+  else if (e.key.toLowerCase() === "j") { e.preventDefault(); showJudge = !showJudge; renderCurrent(); }
+  else if (e.key.toLowerCase() === "q") { e.preventDefault(); showQuestion = !showQuestion; renderCurrent(); }
+});
+
+// Initial render
+renderCurrent();
+</script>
+</body>
+</html>

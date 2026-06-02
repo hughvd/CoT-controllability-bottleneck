@@ -1,0 +1,86 @@
+# rl_v31_short_pilot — first "RL on top of SFT" run, used to get the pipeline
+# working before applying it to the v32 ablations.
+#
+# Fixes the two things that sank rl_v3:
+#   (1) cold-start from base  -> we init from the v31_short SFT policy (warm).
+#   (2) noisy style judge     -> we reward ONLY the 7 families v31_short trained,
+#                                with the deterministic transforms grader.
+#
+# Question: does RL on the trained families improve generalization to the 7
+# held-out families (eval_all measures the full universe for a clean compare
+# against the v31_short step55 SFT eval)?
+#
+# PREREQUISITE: merge the chosen SFT checkpoint into the path init_from expects:
+#   python3 merge_adapter.py --base Qwen/Qwen3-14B \
+#     --adapter artifacts/organism_2_v31_short/adapter_step55 \
+#     --out artifacts/organism_2_v31_short/merged
+
+version: rl_v31_short_pilot
+recipe: rl_grpo
+base_model: Qwen/Qwen3-14B
+
+data:
+  split_csv: data/split_train.csv
+  # Reward exactly the families v31_short was trained on.
+  families:
+    - uppercase_thinking
+    - alternating_case
+    - title_case
+    - prefix_sentences
+    - start_with
+    - wrap_in_brackets
+    - exclaim_all_sentences
+  held_out_families:
+    - lowercase_thinking
+    - end_with
+    - suffix_sentences
+    - question_all_sentences
+    - insert_word_every_third_word
+    - wrap_each_sentence_in_bracket
+    - reverse_word_order_per_sentence
+  sources: [gpqa, hle, mmlu_pro, arc_c, csqa]
+
+training:
+  max_steps: 150
+  lr: 5.0e-6
+  batch_size: 1
+  grad_accum: 8
+  max_length: 2048
+  optim: adamw_8bit
+  seed: 0
+  save_steps: 10          # dense-ish trajectory; useful phase is the first ~80
+  warmup_steps: 10
+  logging_steps: 1
+
+lora:
+  rank: 512
+  alpha: 1024
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  dropout: 0.05
+
+rl:
+  num_generations: 8
+  max_response_length: 8192
+  temperature: 0.9
+  top_p: 0.95
+  kl_beta: 0.04                       # anchor to the SFT policy
+  reward_compliance_weight: 1.0
+  reward_correct_weight: 0.3          # keep the model answering correctly
+  min_think_length: 50
+  length_penalty_scale: 0.5           # deterministic reward is gameable by length
+  init_from: sft:v31_short
+  vllm_mode: server
+  vllm_serve_port: 49001
+  vllm_serve_gpus: 2
+
+eval:
+  samples_per_cell: 20
+  max_tokens: 32768
+  temperature: 0.6
+  eval_all: true
+
+compute:
+  num_gpus: 4
+  vllm_tp_size: 2
+  vllm_max_model_len: 40960
+  vllm_port: 8000

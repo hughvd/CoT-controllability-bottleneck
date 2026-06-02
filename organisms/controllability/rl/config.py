@@ -49,6 +49,11 @@ class RLDataConfig:
     held_out_styles: list[str] = field(default_factory=list)
     languages: list[str] = field(default_factory=list)
     held_out_languages: list[str] = field(default_factory=list)
+    # Information-suppression axis. Only deterministically-graded behaviors
+    # (omit_word, omit_multiple_words) are trainable; ignore_question is
+    # eval-only and belongs in held_out_suppression.
+    suppression: list[str] = field(default_factory=list)
+    held_out_suppression: list[str] = field(default_factory=list)
     paraphrases_sha256: Optional[str] = None
 
 
@@ -163,6 +168,8 @@ def load(path: str | Path) -> RLConfig:
         held_out_styles=list(d.get("held_out_styles") or []),
         languages=list(d.get("languages") or []),
         held_out_languages=list(d.get("held_out_languages") or []),
+        suppression=list(d.get("suppression") or []),
+        held_out_suppression=list(d.get("held_out_suppression") or []),
         paraphrases_sha256=d.get("paraphrases_sha256"),
     )
     training = RLTrainingConfig(**raw["training"])
@@ -208,11 +215,12 @@ def _validate(cfg: RLConfig) -> None:
         cfg.data.families,
         cfg.data.styles,
         cfg.data.languages,
+        cfg.data.suppression,
     ])
     if not has_targets:
         raise SystemExit(
             "[rl/config] no targets specified — populate at least one of "
-            "data.families / data.styles / data.languages."
+            "data.families / data.styles / data.languages / data.suppression."
         )
 
     # Family names exist in transforms.FAMILIES.
@@ -243,6 +251,21 @@ def _validate(cfg: RLConfig) -> None:
                if l not in lang_defs]
         if bad:
             raise SystemExit(f"[rl/config] unknown languages: {bad}")
+
+    # Suppression behavior names are a fixed known set; trained ones must be
+    # deterministically gradable (omit_word / omit_multiple_words).
+    if cfg.data.suppression or cfg.data.held_out_suppression:
+        from suppression import KNOWN_SUPPRESSION, TRAINABLE_SUPPRESSION
+        bad = [s for s in cfg.data.suppression + cfg.data.held_out_suppression
+               if s not in KNOWN_SUPPRESSION]
+        if bad:
+            raise SystemExit(f"[rl/config] unknown suppression behaviors: {bad}")
+        non_trainable = [s for s in cfg.data.suppression if s not in TRAINABLE_SUPPRESSION]
+        if non_trainable:
+            raise SystemExit(
+                f"[rl/config] suppression behaviors {non_trainable} are eval-only "
+                f"(no deterministic reward) — move them to held_out_suppression."
+            )
 
     # Source names exist in data_sources.SOURCES.
     from data_sources import SOURCES

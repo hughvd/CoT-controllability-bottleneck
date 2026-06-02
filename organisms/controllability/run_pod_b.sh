@@ -25,8 +25,8 @@ fi
 ###############################################################################
 TRAIN_CSV="data/training_v31_short.csv"
 if [ ! -f "$TRAIN_CSV" ]; then
-    echo ">>> [0] building $TRAIN_CSV"
-    python3 scripts/build_short_cot_dataset.py
+    echo ">>> [0] building $TRAIN_CSV (bottom 20% by think length)"
+    python3 scripts/build_short_cot_dataset.py --quantile 0.20
 else
     echo ">>> [0] $TRAIN_CSV exists, skipping"
 fi

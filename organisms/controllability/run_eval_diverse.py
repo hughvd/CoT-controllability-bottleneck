@@ -36,6 +36,8 @@ from sft.style_instructions import build_style_instruction
 from sft.style_grade import grade_style_async, COMPLIANCE_THRESHOLD
 from sft.language_instructions import build_language_instruction, load_language_defs
 from sft.language_grade import grade_language_async
+from sft.ignore_question_grade import grade_ignore_question_async
+import suppression as supp
 
 HERE = Path(__file__).parent
 ANSWER_REGEX = re.compile(r"\bANSWER\s*[:\-]\s*\(?([A-Za-z])\)?", re.IGNORECASE)
@@ -52,9 +54,11 @@ class EvalItem:
     marker: Any
     instruction: str
     prompt: str
-    modality: str = "family"   # "family" (programmatic) / "style" (LLM-graded) / "language" (LLM-graded)
+    modality: str = "family"   # family / style / language / suppression
     style: str = ""            # set on modality="style" items
     language: str = ""         # set on modality="language" items
+    suppression: str = ""      # set on modality="suppression" items (behavior name)
+    omit_words: Any = None     # forbidden words for omit_word / omit_multiple_words
 
 
 def extract_answer(text: str):
@@ -308,6 +312,69 @@ def build_language_items(
     return items
 
 
+def build_suppression_items(
+    test: pd.DataFrame,
+    behaviors: list[str],
+    n_per_cell: int,
+    seed: int,
+) -> list[EvalItem]:
+    """Suppression eval cells.
+
+    omit_word / omit_multiple_words: cells per (behavior, marker_pool,
+    phrasing_pool), where marker_pool selects the forbidden-word pool (TRAIN vs
+    EVAL). Deterministically graded. ignore_question: eval-only, one cell per
+    phrasing_pool, LLM-graded against the question.
+    """
+    rng = random.Random(seed + 4)   # offset from family/style/lang/descriptor RNG
+    items: list[EvalItem] = []
+    questions = test.to_dict(orient="records")
+
+    def _cell(q, behavior, marker_pool, phrasing_pool, omit_words):
+        options = parse_options(pd.Series(q))
+        letter = answer_to_letter(q["answer"], options)
+        if letter is None:
+            return None
+        instruction = supp.build_suppression_instruction(
+            behavior, omit_words, rng=rng, phrasing_pool=phrasing_pool)
+        return EvalItem(
+            question=q["question"],
+            options_json=json.dumps(options),
+            correct_letter=letter,
+            family=f"suppression:{behavior}",
+            marker_pool=marker_pool,
+            phrasing_pool=phrasing_pool,
+            marker=",".join(omit_words) if omit_words else None,
+            instruction=instruction,
+            prompt=assemble_prompt(q["question"], options, instruction),
+            modality="suppression",
+            suppression=behavior,
+            omit_words=list(omit_words),
+        )
+
+    for behavior in behaviors:
+        if behavior == "ignore_question":
+            for phrasing_pool in ("train", "eval"):
+                for q in rng.sample(questions, k=min(n_per_cell, len(questions))):
+                    it = _cell(q, behavior, "-", phrasing_pool, [])
+                    if it is not None:
+                        items.append(it)
+            continue
+        if behavior not in supp.TRAINABLE_SUPPRESSION:
+            raise SystemExit(f"[eval] unknown suppression behavior {behavior!r}")
+        for marker_pool in ("train", "eval"):
+            pool = supp.FORBIDDEN_TRAIN if marker_pool == "train" else supp.FORBIDDEN_EVAL
+            for phrasing_pool in ("train", "eval"):
+                for q in rng.sample(questions, k=min(n_per_cell, len(questions))):
+                    if behavior == "omit_word":
+                        omit = [rng.choice(pool)]
+                    else:
+                        omit = rng.sample(pool, min(supp._N_MULTI, len(pool)))
+                    it = _cell(q, behavior, marker_pool, phrasing_pool, omit)
+                    if it is not None:
+                        items.append(it)
+    return items
+
+
 async def query(session: aiohttp.ClientSession, url: str, model: str, prompt: str,
                 max_tokens: int, temperature: float):
     payload = {
@@ -351,6 +418,17 @@ async def run(items: list[EvalItem], model: str, url: str, concurrency: int,
                 int(grade(think, it.family, marker=it.marker)),
                 float(grade_score(think, it.family, marker=it.marker)),
             )
+        # Suppression: omit_word/omit_multiple_words are deterministic;
+        # ignore_question is LLM-graded against the question.
+        if it.modality == "suppression":
+            if it.suppression == "ignore_question":
+                async with grader_sem:
+                    score = await grade_ignore_question_async(it.question, think)
+                if score < 0:
+                    return 0, 0.0
+                return int(score >= COMPLIANCE_THRESHOLD), score
+            sc = supp.score_suppression(it.suppression, think, it.omit_words or [])
+            return int(supp.grade_suppression(it.suppression, think, it.omit_words or [])), sc
         # modality in {"style", "language"}: LLM grader via OpenRouter.
         async with grader_sem:
             if it.modality == "style":
@@ -439,10 +517,15 @@ def main():
     p.add_argument("--include-descriptors", action="store_true",
                    help="Also eval the named-entity styles under data/style_descriptors.json "
                         "paraphrases (no character name). Phrasing pool 'descriptor' in output.")
+    p.add_argument("--eval-all", action="store_true",
+                   help="Eval the full behavior universe (all families, all languages, "
+                        "all suppression) regardless of train/held-out lists. Also set via "
+                        "eval.eval_all in the config.")
     args = p.parse_args()
 
     args.styles = []
     args.languages = []
+    args.suppression = []
     if args.config is not None:
         import yaml
         recipe = yaml.safe_load(Path(args.config).read_text()).get("recipe", "")
@@ -469,6 +552,14 @@ def main():
             set(getattr(cfg.data, "languages", []) or [])
             | set(getattr(cfg.data, "held_out_languages", []) or [])
         )
+        # Suppression union + always include eval-only ignore_question.
+        args.suppression = sorted(
+            set(getattr(cfg.data, "suppression", []) or [])
+            | set(getattr(cfg.data, "held_out_suppression", []) or [])
+            | {"ignore_question"}
+        )
+        if getattr(cfg.eval, "eval_all", False):
+            args.eval_all = True
         args.n_per_cell = cfg.eval.samples_per_cell
         args.max_tokens = cfg.eval.max_tokens
         args.temperature = cfg.eval.temperature
@@ -479,6 +570,16 @@ def main():
         args.max_tokens = 8192
         print(f"[run_eval_diverse] LITE mode: n_per_cell={args.n_per_cell} "
               f"max_tokens={args.max_tokens}")
+
+    if args.eval_all:
+        # Full universe — "always eval on everything" for the ablation matrix.
+        # Styles stay opt-in (paused for v32); the 4 active categories are
+        # families (incl. encodings), languages, and suppression.
+        args.families = list(FAMILIES)
+        args.languages = sorted(load_language_defs().keys())
+        args.suppression = sorted(supp.KNOWN_SUPPRESSION)
+        print(f"[run_eval_diverse] EVAL-ALL universe: {len(args.families)} families, "
+              f"{len(args.languages)} languages, {len(args.suppression)} suppression")
 
     if not args.model or not args.exp_name:
         p.error("--model and --exp-name required unless --config is given")
@@ -507,10 +608,17 @@ def main():
             test, args.styles, descriptors, args.n_per_cell, args.seed,
         )
         items = items + descriptor_items
+    suppression_items: list[EvalItem] = []
+    if args.suppression:
+        suppression_items = build_suppression_items(
+            test, args.suppression, args.n_per_cell, args.seed,
+        )
+        items = items + suppression_items
     print(f"Prepared {len(items)} eval items "
           f"({n_fam} family + {len(style_items)} style + {len(language_items)} language "
-          f"+ {len(descriptor_items)} descriptor; "
-          f"{len(args.families)} families, {len(args.styles)} styles, {len(args.languages)} languages)")
+          f"+ {len(descriptor_items)} descriptor + {len(suppression_items)} suppression; "
+          f"{len(args.families)} families, {len(args.styles)} styles, "
+          f"{len(args.languages)} languages, {len(args.suppression)} suppression)")
 
     url = f"{args.vllm_base_url}/chat/completions"
     print(f"Running at temperature={args.temperature}, max_tokens={args.max_tokens}")

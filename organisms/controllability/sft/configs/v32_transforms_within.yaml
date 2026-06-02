@@ -1,0 +1,67 @@
+# v32_transforms_within — within-family ablation: train a SUBSET of transforms,
+# hold out the rest, eval on everything. Measures within-transforms-family
+# generalization (e.g. uppercase -> lowercase, marker-start -> sentence-start,
+# prefix -> suffix). held_out_families is documentary here — eval_all evaluates
+# the full universe regardless.
+#
+# Split is the user's spec:
+#   train: uppercase, alternating_case, prefix_sentences(marker), start_with(marker), exclaim_all
+#   held:  lowercase, prefix_sentences(sentence), suffix_sentences(marker+sentence),
+#          start_with(sentence), end_with(marker+sentence), question_all
+#
+# See v32_transforms.yaml for the shared v32 regime notes.
+
+version: v32_transforms_within
+recipe: lora
+base_model: Qwen/Qwen3-14B
+
+data:
+  train_csv: data/training_v32_transforms_within.csv
+  raw_csv: data/training_raw.csv
+  families:
+    - uppercase_thinking
+    - alternating_case
+    - prefix_sentences
+    - start_with
+    - exclaim_all_sentences
+  held_out_families:
+    - lowercase_thinking
+    - prefix_sentences_with_sentence
+    - suffix_sentences
+    - suffix_sentences_with_sentence
+    - start_with_sentence
+    - end_with
+    - end_with_sentence
+    - question_all_sentences
+  sources: [arc_c, csqa]
+  passes_per_raw: 3
+  normal_frac: 0.35
+
+training:
+  epochs: 1
+  lr: 2.0e-4
+  batch_size: 1
+  grad_accum: 16
+  max_length: 8192
+  kl_beta: 0.0
+  optim: adamw
+  seed: 0
+  save_steps_list: [1, 2, 3, 5, 8, 12, 18, 28, 40, 55, 75, 100, 140, 190, 260, 350]
+
+lora:
+  rank: 1024
+  alpha: 2048
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  dropout: 0.05
+
+eval:
+  samples_per_cell: 20
+  max_tokens: 32768
+  temperature: 0.6
+  eval_all: true
+
+compute:
+  num_gpus: 2
+  vllm_tp_size: 1
+  vllm_max_model_len: 40960
+  vllm_port: 8000
