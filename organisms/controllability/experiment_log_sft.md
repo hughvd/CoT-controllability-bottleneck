@@ -131,3 +131,32 @@ checkpoint trajectory eval is ~10× cheaper than the old all-long-source full gr
 Infrastructure built + verified offline (encoding data-build ran end-to-end:
 source filter 3064→2621, 99.7% self-verify). Rewrite generation running locally
 (language ~60%, suppression queued). No SFT runs launched yet.
+
+### Results — qwen3-14b, overnight 2026-06-03 (in progress)
+Bug fixed mid-run: train_lora read `cfg.training.save_steps_list` (empty under
+`save_exposures`) → no intermediate checkpoints. Fixed to `resolved_save_steps()`.
+
+**v32_encoding** (train pig_latin+leetspeak): trained compliance 0→0.94 by
+exp~60/type, plateau; accuracy preserved. No transfer to language/suppression.
+One cross-family signal: encoding → **lowercase_thinking 0.825** (leet/piglatin
+outputs skew lowercase).
+
+**v32_suppression** (train omit_word+omit_multiple_words): train-word compliance
+1.00, phrasing-robust (0.70–0.85). Held-out forbidden words: omit_word **0.65**,
+omit_multiple 0.15–0.20 (3-word much harder). `ignore_question` (held-out) 0.00 —
+no transfer (different skill; gemini grader correct). No family/language transfer.
+
+**v32_transforms_within** (train 5 of 13 transforms) — KEY RESULT: held-out
+within-family transfer **peaks at exp~32/type (0.375) then DECAYS to ~0.08 by
+exp400**, while trained compliance climbs to 0.95+. Classic early-peak / over-
+training dynamic — the per-type-exposure trajectory caught it (a final-only or
+fixed-step eval would miss it). At the final (overtrained) ckpt only the closest
+pair survives: uppercase→lowercase 0.85, start_with→start_with_sentence 0.125,
+rest ~0. ⇒ the generalization lives at the early (~exp32) checkpoint.
+
+Takeaway so far: trained behaviors saturate by exp~60; cross-/within-family
+generalization is an EARLY-exposure phenomenon that overtraining destroys. The
+exposure-budgeting + trajectory design is validated as necessary to see it.
+
+Pending: v32_language (running), v32_transforms (queued, long). RL-on-SFT should
+init from the ~exp32 peak checkpoints, not the final.

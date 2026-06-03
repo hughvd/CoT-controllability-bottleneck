@@ -170,29 +170,49 @@ def train(cfg: rl_cfg_mod.RLConfig, smoke_test: bool) -> None:
     cfg.checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
     if cfg.lora is not None:
-        # LoRA: save adapter then merge against a fresh CPU base.
+        # LoRA: save adapter (rank-0 only) then merge against a fresh CPU base.
+        from peft import PeftModel
         adapter_dir = cfg.checkpoint_dir / "adapter"
-        print(f"[train_grpo] saving adapter -> {adapter_dir}")
-        trainer.save_model(str(adapter_dir))
-        tokenizer.save_pretrained(adapter_dir)
-
+        is_main = trainer.accelerator.is_main_process
+        if is_main:
+            adapter_dir.mkdir(parents=True, exist_ok=True)
+            print(f"[train_grpo] saving adapter -> {adapter_dir}")
+            # trainer.save_model() has been observed to write
+            # adapter_model.safetensors but NOT adapter_config.json on the
+            # GRPO+PEFT path, which breaks the merge. Save the PEFT adapter
+            # explicitly via the unwrapped model — PeftModel.save_pretrained
+            # writes both the config and the weights.
+            unwrapped = trainer.accelerator.unwrap_model(trainer.model)
+            if isinstance(unwrapped, PeftModel):
+                unwrapped.save_pretrained(str(adapter_dir))
+            else:
+                trainer.save_model(str(adapter_dir))
+            tokenizer.save_pretrained(adapter_dir)
+            if not (adapter_dir / "adapter_config.json").exists():
+                raise SystemExit(
+                    f"[train_grpo] adapter_config.json missing in {adapter_dir} after save — "
+                    f"recover by merging the last trainer/checkpoint-* with merge_adapter.py."
+                )
+        # Barrier so non-main ranks don't exit before the adapter is on disk,
+        # then drop the policy on every rank before the (rank-0-only) CPU merge.
+        trainer.accelerator.wait_for_everyone()
         del trainer
         gc.collect()
         torch.cuda.empty_cache()
 
-        from peft import PeftModel
-        print(f"[train_grpo] merging + saving -> {cfg.merged_dir}")
-        base_for_merge = AutoModelForCausalLM.from_pretrained(
-            model_id,
-            torch_dtype=torch.bfloat16,
-            device_map="cpu",
-            trust_remote_code=True,
-        )
-        peft_model = PeftModel.from_pretrained(base_for_merge, adapter_dir)
-        merged = peft_model.merge_and_unload()
-        cfg.merged_dir.mkdir(parents=True, exist_ok=True)
-        merged.save_pretrained(cfg.merged_dir, safe_serialization=True)
-        tokenizer.save_pretrained(cfg.merged_dir)
+        if is_main:
+            print(f"[train_grpo] merging + saving -> {cfg.merged_dir}")
+            base_for_merge = AutoModelForCausalLM.from_pretrained(
+                model_id,
+                torch_dtype=torch.bfloat16,
+                device_map="cpu",
+                trust_remote_code=True,
+            )
+            peft_model = PeftModel.from_pretrained(base_for_merge, adapter_dir)
+            merged = peft_model.merge_and_unload()
+            cfg.merged_dir.mkdir(parents=True, exist_ok=True)
+            merged.save_pretrained(cfg.merged_dir, safe_serialization=True)
+            tokenizer.save_pretrained(cfg.merged_dir)
     else:
         # Full-param: FSDP FULL_STATE_DICT saves a complete model — no merge.
         print(f"[train_grpo] saving full model -> {cfg.merged_dir}")

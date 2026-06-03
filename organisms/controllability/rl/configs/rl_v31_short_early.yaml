@@ -1,0 +1,81 @@
+# rl_v31_short_early — RL on top of a VERY EARLY v31_short checkpoint (less
+# saturated than step55), testing the pilot's hypothesis: from a checkpoint with
+# mid-range trained-family compliance, GRPO has reward-variance headroom, so it
+# may actually move generalization (the step55 pilot was saturated -> ~0 effect).
+#
+# init_from sft:v31_short_early -> artifacts/organism_2_v31_short_early/merged
+# (merge an early adapter_step{N} from the v31_short_retrain run into that path).
+# Reward = the same 7 families v31_short trained, deterministic.
+#
+# 2-GPU layout (GPUs 0,1) because GPUs 2,3 hold leaked contexts from the pilot
+# crash. Launch with CUDA_VISIBLE_DEVICES=0,1.
+
+version: rl_v31_short_early
+recipe: rl_grpo
+base_model: Qwen/Qwen3-14B
+
+data:
+  split_csv: data/split_train.csv
+  families:
+    - uppercase_thinking
+    - alternating_case
+    - title_case
+    - prefix_sentences
+    - start_with
+    - wrap_in_brackets
+    - exclaim_all_sentences
+  held_out_families:
+    - lowercase_thinking
+    - end_with
+    - suffix_sentences
+    - question_all_sentences
+    - insert_word_every_third_word
+    - wrap_each_sentence_in_bracket
+    - reverse_word_order_per_sentence
+  sources: [gpqa, hle, mmlu_pro, arc_c, csqa]
+
+training:
+  max_steps: 150
+  lr: 5.0e-6
+  batch_size: 1
+  grad_accum: 8
+  max_length: 2048
+  optim: adamw_8bit
+  seed: 0
+  save_steps: 10
+  warmup_steps: 10
+  logging_steps: 1
+
+lora:
+  rank: 512
+  alpha: 1024
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  dropout: 0.05
+
+rl:
+  num_generations: 8
+  max_response_length: 8192
+  temperature: 0.9
+  top_p: 0.95
+  kl_beta: 0.04
+  reward_compliance_weight: 1.0
+  reward_correct_weight: 0.3
+  min_think_length: 50
+  length_penalty_scale: 0.5
+  init_from: sft:v31_short_early
+  vllm_mode: server
+  vllm_serve_port: 49001
+  vllm_serve_gpus: 1
+
+eval:
+  samples_per_cell: 20
+  max_tokens: 32768
+  temperature: 0.6
+  eval_all: true
+  test_csv: data/split_test_v32.csv
+
+compute:
+  num_gpus: 2
+  vllm_tp_size: 1
+  vllm_max_model_len: 40960
+  vllm_port: 8000

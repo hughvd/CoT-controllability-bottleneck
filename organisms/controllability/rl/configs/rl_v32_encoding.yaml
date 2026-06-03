@@ -53,6 +53,7 @@ eval:
   max_tokens: 32768
   temperature: 0.6
   eval_all: true
+  test_csv: data/split_test_v32.csv
 
 compute:
   num_gpus: 4

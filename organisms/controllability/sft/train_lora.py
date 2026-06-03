@@ -151,7 +151,10 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
                     "lora_alpha": cfg.lora.alpha},
         )
 
-    save_steps_set = set(int(s) for s in (cfg.training.save_steps_list or []))
+    # resolved_save_steps() honors save_exposures (v32 per-type-exposure
+    # checkpoints) and falls back to save_steps_list — matches what
+    # dump_shell_env emits for run_sft's phase-5 trajectory eval.
+    save_steps_set = set(int(s) for s in cfg.resolved_save_steps())
     if save_steps_set and not smoke_test:
         cfg.checkpoint_dir.mkdir(parents=True, exist_ok=True)
         print(f"[train_lora] will save intermediate adapters at steps "
