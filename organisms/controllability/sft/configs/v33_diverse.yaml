@@ -1,0 +1,144 @@
+# v33_diverse — the DIVERSITY run: train every trainable control type across
+# all four categories at once, eval everything. Tests whether type diversity
+# (33 trained types vs transforms_within's 5) lifts held-out generalization at
+# MATCHED per-type exposure.
+#
+# Design (settled with Hugh 2026-06-11):
+#   - Trained: 24 transforms + 2 encodings + 5 languages + 2 suppression = 33 types.
+#   - Held out (never trained, measured via eval_all):
+#       transforms (11): the 8 v32-within held-outs (lowercase, prefix/suffix
+#         sentence-variants, start/end sentence-variants, end_with, question_all)
+#         + 3 new-type holds chosen as siblings of trained types:
+#         numbered_sentences (sibling: bullet_point_sentences),
+#         exactly_n_sentences (siblings: cot_max_words, max_words_per_sentence),
+#         no_first_person (siblings: no_commas, spell_out_numbers).
+#       encodings (3, eval-only by convention): disemvowel, reverse_each_word,
+#         rot13 — these give the encoding row a real within-family diagonal.
+#       languages (9): italian, french, portuguese, japanese, korean, dutch,
+#         polish, arabic, hindi (same split as v32_language).
+#       suppression: ignore_question + the eval forbidden-word pools
+#         (+ omit_topic once the benchmark lands — eval-only).
+#   - examples_per_type capped at 128, not 400: across every v32 run, trained
+#     compliance saturated by exp~62 and generalization peaked at exp~17-31;
+#     nothing informative ever happened past exp~64. Cap saves ~3x wallclock.
+#   - lite_samples_per_cell 12 (vs v32's 8): the held-out trajectory is the
+#     quantity under study here; n=8 cells were noisy.
+#   - LOCO run dropped (categories somewhat arbitrary; v32 matrix already
+#     shows language->encoding 0.00). Scaling sweep only if this run moves.
+#
+# Comparison target: v32_transforms_within (5 types) at matched exposure.
+# The peak checkpoint of this run is also the candidate init for the
+# generally-controllable organism (RL on top, per the saturation-spectrum
+# recipe: init unsaturated, lr 2e-5, kl 0.04).
+
+version: v33_diverse
+recipe: lora
+base_model: Qwen/Qwen3-14B
+
+data:
+  train_csv: data/training_v33_diverse.csv
+  raw_csv: data/training_raw.csv
+  families:
+    # ----- transforms: the 18 v32-era trainables -----
+    - uppercase_thinking
+    - alternating_case
+    - title_case
+    - exclaim_all_sentences
+    - repeat_every_word_twice
+    - double_vowels
+    - reverse_word_order_per_sentence
+    - replace_spaces_with
+    - wrap_in_brackets
+    - wrap_each_sentence_in_bracket
+    - insert_between_words
+    - insert_word_every_third_word
+    - prefix_every_word_with_char
+    - prefix_sentences
+    - start_with
+    - prefix_every_n_sentences
+    - suffix_every_n_sentences
+    - insert_sentence_every_n
+    # ----- transforms: v33 new trainables -----
+    - bullet_point_sentences
+    - max_words_per_sentence
+    - cot_max_words
+    - no_commas
+    - spell_out_numbers
+    - alphabetical_sentence_openers
+    # ----- encodings -----
+    - pig_latin
+    - leetspeak
+  held_out_families:   # documentary — eval_all measures the full universe anyway
+    - lowercase_thinking
+    - prefix_sentences_with_sentence
+    - suffix_sentences
+    - suffix_sentences_with_sentence
+    - start_with_sentence
+    - end_with
+    - end_with_sentence
+    - question_all_sentences
+    - numbered_sentences
+    - exactly_n_sentences
+    - no_first_person
+    - disemvowel          # eval-only encoding
+    - reverse_each_word   # eval-only encoding
+    - rot13               # eval-only encoding
+  languages:
+    - spanish
+    - german
+    - chinese
+    - russian
+    - hebrew
+  held_out_languages:
+    - italian
+    - french
+    - portuguese
+    - japanese
+    - korean
+    - dutch
+    - polish
+    - arabic
+    - hindi
+  suppression:
+    - omit_word
+    - omit_multiple_words
+  held_out_suppression:
+    - ignore_question
+  sources: [arc_c, csqa]
+  passes_per_raw: 3            # ignored when examples_per_type is set
+  normal_frac: 0.35
+  examples_per_type: 128       # capped: v32 generalization peaked exp~17-31, dead past 64
+  exclude_questions: data/arc_csqa_eval_holdout.txt   # reserve eval arc/csqa
+
+training:
+  epochs: 1
+  lr: 2.0e-4
+  batch_size: 1
+  grad_accum: 16
+  max_length: 8192
+  kl_beta: 0.0
+  optim: adamw
+  seed: 0
+  # Per-type-exposure checkpoints (config.py converts to optim steps via this
+  # run's F=33 type count — commensurable with the v32 trajectories).
+  save_exposures: [2, 4, 8, 16, 32, 64, 96, 128]
+
+lora:
+  rank: 1024
+  alpha: 2048
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  dropout: 0.05
+
+eval:
+  samples_per_cell: 20
+  lite_samples_per_cell: 12    # denoise the held-out trajectory cells (v32 used 8)
+  max_tokens: 32768
+  temperature: 0.6
+  eval_all: true
+  test_csv: data/split_test_v32.csv
+
+compute:
+  num_gpus: 2
+  vllm_tp_size: 1
+  vllm_max_model_len: 40960
+  vllm_port: 8000

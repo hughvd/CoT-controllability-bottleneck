@@ -274,7 +274,11 @@ def main() -> None:
              "filled circle = n=20 eval (full)   ·   open triangle = n=8 lite eval (noisier)",
              ha="center", fontsize=8, color="#555")
     fig.tight_layout(rect=[0, 0.02, 1, 1])
-    out_png = HERE / f"{exp_name}_trajectory.png"
+    # Route outputs into a per-version folder (analysis/v30, analysis/v31, ...).
+    version = exp_name.replace("organism_2_", "").split("_")[0]
+    out_dir = HERE / version
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_png = out_dir / f"{exp_name}_trajectory.png"
     fig.savefig(out_png, dpi=120)
     print(f"[plot_v30_trajectory] wrote {out_png}")
 
@@ -283,7 +287,7 @@ def main() -> None:
     if final_csv.exists():
         df = pd.read_csv(final_csv)
         desc_tbl = _descriptor_table(df)
-        desc_out = HERE / f"{exp_name}_descriptors.csv"
+        desc_out = out_dir / f"{exp_name}_descriptors.csv"
         desc_tbl.to_csv(desc_out, index=False)
         print(f"[plot_v30_trajectory] wrote {desc_out}")
         print("\nDescriptor vs canonical (final ckpt):")

@@ -114,6 +114,11 @@ class EvalConfig:
     # what this run trained on. Implements "always eval on everything" for the
     # cross-/within-family ablations without enumerating complements per config.
     eval_all: bool = False
+    # v33: per-cell sample count for the LITE (trajectory) evals. The v32 lean
+    # held-out cells (n=8) were noisy; diversity runs bump this so the
+    # held-out-generalization trajectory — the quantity under study — is
+    # measured tightly enough to see peaks.
+    lite_samples_per_cell: int = 8
 
 
 @dataclass

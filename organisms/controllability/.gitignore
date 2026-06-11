@@ -12,6 +12,15 @@ data/*.bak
 # Track aggregated summary CSVs (e.g. organism_2_v1.csv) but ignore the per-run
 # raw subdirs (per-sample reasoning traces — large and regeneratable).
 results/*/
+# results/ is ignored at the repo root. Re-include ONLY the v32 summary CSVs
+# (small, version-controlled) while keeping the per_sample/ raw-completion dirs
+# ignored — large, regeneratable, kept in the repo folder but out of git
+# (also backed up under ~/v32_backup).
+!results/
+results/*
+!results/v32/
+!results/v32/**
+results/v32/**/per_sample/
 CoTControl/CoT-Control-QA/logs/
 checkpoints/
 wandb/

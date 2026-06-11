@@ -1,0 +1,5 @@
+eval_cat,untrained_floor,source
+transforms,0.01682692307692308,v32_transforms_within@exp2; v32_encoding@exp5; v32_language@exp2; v32_suppression@exp5
+encoding,0.0,v32_transforms_within@exp2; v32_encoding@exp5; v32_language@exp2; v32_suppression@exp5
+language,0.06473214285714285,v32_transforms_within@exp2; v32_encoding@exp5; v32_language@exp2; v32_suppression@exp5
+suppression,0.13541666666666666,v32_transforms_within@exp2; v32_encoding@exp5; v32_language@exp2; v32_suppression@exp5

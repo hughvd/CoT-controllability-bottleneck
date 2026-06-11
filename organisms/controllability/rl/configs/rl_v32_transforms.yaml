@@ -45,7 +45,7 @@ data:
 
 training:
   max_steps: 150
-  lr: 5.0e-6
+  lr: 2.0e-5  # step10 HP sweep winner (s10_C): 2e-5/kl0.04 ~doubled held-out lift
   batch_size: 1
   grad_accum: 8
   max_length: 2048

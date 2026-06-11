@@ -587,7 +587,10 @@ def main():
         print(f"[run_eval_diverse] loaded config {cfg.source_path.name}")
 
     if args.lite:
-        args.n_per_cell = 8
+        lite_n = 8
+        if args.config is not None:
+            lite_n = getattr(cfg.eval, "lite_samples_per_cell", 8) or 8
+        args.n_per_cell = lite_n
         args.max_tokens = 8192
         print(f"[run_eval_diverse] LITE mode: n_per_cell={args.n_per_cell} "
               f"max_tokens={args.max_tokens}")

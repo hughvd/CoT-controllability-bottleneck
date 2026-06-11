@@ -160,3 +160,103 @@ exposure-budgeting + trajectory design is validated as necessary to see it.
 
 Pending: v32_language (running), v32_transforms (queued, long). RL-on-SFT should
 init from the ~exp32 peak checkpoints, not the final.
+
+### Analysis artifacts (2026-06-03)
+Reorganized `analysis/` into per-version folders (`v30/`, `v31/`, `v32/`). The
+v32 analysis lives in `analysis/v32/v32_analysis.py` and writes into that folder
+(committed to repo, not just `~/v32_backup`). Two deliverables:
+- **Trajectories** (`v32_<run>_trajectory.png`, `v32_trajectories.csv`):
+  compliance vs per-type exposure (log axis, REAL integer ticks — not 10^k),
+  lines = trained / within-family held-out / each cross category, plus a dotted
+  **untrained-floor** reference line.
+- **4×4 peak generalization matrix** (`v32_transfer_matrix.{csv,png}`): every
+  cell = peak HELD-OUT compliance over ALL checkpoints (not final). Diagonal =
+  within-family held-out; off-diagonal = cross-category. In-distribution
+  learnability saved separately (`v32_indistribution_peak.csv`).
+
+**Tables/CSVs are in `analysis/v32/`:**
+`v32_transfer_matrix.csv` (peak + peak_exposure + untrained_floor + above_floor),
+`v32_indistribution_peak.csv`, `v32_untrained_floor.csv`, `v32_trajectories.csv`.
+
+**Raw eval results live in `results/v32/<run>/`** (`step<N>.csv` + `final.csv`
+summaries, committed; `per_sample/` raw completions gitignored — see
+`results/v32/README.md`). `v32_analysis.py` reads this layout by default, so the
+analysis reproduces from the repo alone. Source-of-record backup: `~/v32_backup`.
+
+### Baselines (NOT yet run — step1 used as floor stand-in)
+No base-model eval on the v32 universe exists. Older baselines in `results/`
+(`organism_2_base_diverse`, `Qwen-Qwen3-14B_baseline_diverse`, `v0_baseline`,
+all ≤2026-05-20) predate every v32-new behavior (no pig_latin/leetspeak, no
+sentence cadences, no expanded langs, no suppression) → unusable as the v32 floor.
+**Interim floor = each run's lowest-exposure (~step1) full-universe eval,
+averaged across runs:** transforms 0.017, encoding 0.000, language 0.065,
+suppression **0.135** (common forbidden words get omitted by chance — this is why
+the suppression column looks "warm").
+
+**Peak generalization matrix (rows=trained, cols=eval; diag=within-fam held-out):**
+| train↓ \ eval→ | transforms | encoding | language | suppression |
+|---|---|---|---|---|
+| transforms  | 0.196 (wf) | 0.125 | 0.071 | 0.235 |
+| encoding    | 0.111 | n/a   | 0.092 | 0.292 |
+| language    | 0.029 | 0.000 | **0.944 (wf)** | 0.250 |
+| suppression | 0.087 | 0.000 | 0.062 | 0.250 (wf) |
+
+In-distribution learnability (trained types): transforms 0.979, encoding 0.938,
+language 1.000, suppression 0.812 — everything *learns*.
+
+**Baseline-subtracted (peak − floor):** only **language within-family +0.88** is
+large. transforms within-family +0.18 (small but real). Everything else is
++0.00…+0.16 — i.e. at/near the untrained floor once the suppression floor is
+removed; treat as noise, not transfer, pending a real baseline.
+
+TODO: run a proper base-model eval on the full 120-cell v32 `eval_all` (no
+adapter) when a pod is up, then swap it in for the step1 floor.
+
+## v33 phase — diversity run (built 2026-06-11, run pending pod)
+
+Question: does TYPE DIVERSITY lift held-out generalization at matched per-type
+exposure? Single run `v33_diverse` (33 types) vs `v32_transforms_within`
+(5 types). LOCO dropped (categories somewhat arbitrary; v32 already shows
+language→encoding 0.00 despite both being "surface remapping"). Scaling sweep
+(10/18-type points) only if this moves.
+
+### New control types (transforms.py — registry now 40 families)
+- **9 trainable**: numbered_sentences, bullet_point_sentences,
+  exactly_n_sentences (truncates to first n — merging 28-sentence CoTs made
+  semicolon monsters), max_words_per_sentence, alphabetical_sentence_openers,
+  no_commas, spell_out_numbers, no_first_person, cot_max_words.
+- **3 EVAL-ONLY encodings**: disemvowel, reverse_each_word, rot13 (decode-and-
+  check graders vs a common-word set). These give the encoding row a real
+  within-family diagonal (was n/a — both old encodings were trained).
+- All 12: 100% self-verify on 300 real arc/csqa CoTs; full 40-family registry
+  regression clean. Fixes en route: numbered-sentences scorer uses a pointer
+  walk (sentence-final bare numbers like "...has 23." were shifting the strict
+  sequence); bullet transform flattens intra-sentence newlines.
+- Caveat: **spell_out_numbers bites on only ~15% of arc/csqa CoTs** (rest are
+  digit-free → trivially compliant). Its eval cell reads high by construction;
+  interpret with care.
+
+### Paraphrase pools equalized
+All 40 families now ≥19 train / ≥4 eval phrasings (was 2–3 for the 21 newer
+families) — phrasing diversity no longer confounds type diversity. Pools
+disjoint, placeholders validated at runtime.
+
+### v33_diverse design (sft/configs/v33_diverse.yaml)
+- Trained F=33: 24 transforms (18 v32-era + 6 new) + pig_latin/leetspeak +
+  5 languages (es/de/zh/ru/he) + omit_word/omit_multiple_words.
+- Held out: 11 transforms (the 8 v32-within holds + numbered_sentences,
+  exactly_n_sentences, no_first_person — each a sibling of a trained type),
+  3 eval-only encodings, 9 languages, ignore_question.
+- **examples_per_type capped at 128** (not 400): every v32 run saturated by
+  exp~62, generalization peaked exp~17–31, nothing after 64. Final step 406.
+- save_exposures [2,4,8,16,32,64,96,128]; **lite_samples_per_cell 12** (new
+  config knob, plumbed through run_eval_diverse --lite) to denoise the held-out
+  trajectory cells (v32's n=8 was noisy).
+- Training data built + verified locally: data/training_v33_diverse.csv,
+  6498 rows, exactly 128/type across all 33 types, normal_frac 0.35, reject
+  rate 4.3%; stored targets re-graded 20/20 compliant per family.
+
+To launch on a pod: scp training_v33_diverse.csv (+ caches if regenerating),
+`bash run_sft.sh sft/configs/v33_diverse.yaml`. Compare held-out trajectory
+vs v32_transforms_within at matched exposure. Peak checkpoint doubles as the
+RL init for the generally-controllable-organism candidate.
