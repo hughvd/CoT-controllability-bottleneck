@@ -146,3 +146,43 @@ compliance saturates).
 **Headline:** SFT generalization is capped and transient (peaks ~step14 at 0.241,
 then decays); RL from an unsaturated checkpoint both recovers and *surpasses* that
 ceiling — strongest single argument for the RL-on-SFT approach.
+
+---
+
+## v33 phase — RL on the DIVERSE set (planned 2026-06-17)
+
+### Question
+Does on-policy GRPO over the *full* trained control universe (33 types) lift
+HELD-OUT generalization beyond what the SFT trajectory ever reaches — i.e. is the
+"diversity sustains generalization" SFT result amplified by RL?
+
+### Config: `rl/configs/rl_v33_diverse.yaml` (Qwen3-14B)
+- **Seed = exp16 / step51, NOT exp8.** v33_diverse_r64 trained-pool compliance by
+  exposure (n=12 lite): exp8/step25 = 0.073 (only 8/42 families in the 0.1–0.9
+  reward-variance band — PRE-takeoff, GRPO cold-start regime); exp16/step51 = 0.438
+  (24/42 with variance — the sweet spot, analog of v31_short step10). Seeding exp8
+  would reproduce the base cold-start failure for ~34/42 families (all-zero rollout
+  groups → zero advantage). Merge: `adapter_step51 → organism_2_v33_diverse_r64_exp16/merged`.
+- **r64/α128** (vs rl_v32 r512/α1024): matches the SFT capacity winner; α/r=2 kept
+  identical so the swept **lr 2e-5** transfers; smaller adapter syncs faster.
+- **kl_beta 0.04**, kept for stability — free in LoRA mode (TRL reference = the
+  adapter-disabled policy, no second model loaded).
+- **Reward = mixed dispatch**, no new code: 26 transforms+encodings + 2 suppression
+  → programmatic; 5 languages → Gemini judge. GRPO normalizes advantage within each
+  prompt's gen group (one target_type/prompt) → reward scales never interact, no
+  cross-type balancing. length_penalty 0.5 (anti-collapse). Language rollouts depend
+  on the OpenRouter/Gemini key being live (else they silently score 0).
+- max_steps 100 (useful phase ≈ first 80), save_steps 20 → ckpts {20,40,60,80,100}
+  all kept under save_total_limit=5. max_response_length 4096 (train sources are
+  short arc/csqa). **2×H200**: 1 trainer + 1 serve (the first RL run's 4 was headroom).
+
+### Driver: `run_rl_v33_diverse.sh`
+Fail-tolerant: (A) merge exp16 seed → (B) `run_rl.sh` trains + evals FINAL → (C) eval
+SEED @n=20 (RL=0 baseline) → (D) merge+eval one mid ckpt (default step60) over the
+seed policy. 3 eval_all passes (seed/mid/final), sized for overnight.
+
+### Status (2026-06-17)
+Config validates offline; driver syntax-checked. NOT launched — gated on a 2×H200
+pod. The base/tiny/saturated RL comparison is already covered by the v31 saturation
+spectrum; this run is the generally-controllable-organism training (RL on diverse
+from an early checkpoint), not a re-derivation.

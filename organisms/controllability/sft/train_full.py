@@ -1,6 +1,6 @@
 """Full-parameter SFT entrypoint. Config-only.
 
-Usage:
+Multi-GPU (FSDP) usage:
     PYTORCH_ALLOC_CONF=expandable_segments:True \\
     accelerate launch --num_processes=3 \\
       --use_fsdp --fsdp_sharding_strategy=FULL_SHARD \\
@@ -10,10 +10,22 @@ Usage:
       --fsdp_use_orig_params=true \\
       -m sft.train_full sft/configs/v11.yaml
 
+Single-GPU (v33, 1xH200) usage — no launcher needed:
+    PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \\
+    python3 -m sft.train_full sft/configs/v33_diverse_full.yaml
+  Memory: 14B bf16 weights (28G) + bf16 grads (28G) + bf16 AdamW states (56G)
+  + activations (grad ckpt, batch 1) ~ 120G < 143G H200. If it OOMs, set
+  training.optim: adamw_8bit (PagedAdamW8bit halves the state memory; Dettmers
+  et al. showed parity with fp32 Adam — but prefer plain adamw so the full-vs-
+  LoRA comparison shares the exact optimizer).
+
 Notes:
   * --mixed_precision is intentionally NOT set. Passing bf16 makes FSDP upcast
     to fp32 master; the bf16->fp32->bf16 round-trip on save corrupted weights
     in v7_full. Model is loaded in bf16 and FSDP shards bf16 throughout.
+  * v33: honors save_exposures/save_steps_list — full checkpoints are written
+    to checkpoint_dir/full_step{N}/ (directly vLLM-servable, no merge step;
+    ~28G each, so keep save_exposures short and trim after eval).
   * `--smoke-test` runs 10 steps on a tiny fake dataset, no save.
 """
 
@@ -89,7 +101,8 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
         if main:
             print(f"[train_full] training rows: {len(df)}")
 
-    dataset = SFTDataset(df, tokenizer, cfg.training.max_length)
+    dataset = SFTDataset(df, tokenizer, cfg.training.max_length,
+                         chat_format=cfg.chat_format)
     if main:
         print(f"[train_full] tokenized examples: {len(dataset)}")
 
@@ -124,6 +137,29 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
             config={"version": cfg.version, "recipe": cfg.recipe,
                     **cfg.training.__dict__},
         )
+
+    # v33: per-type-exposure trajectory checkpoints (same contract as
+    # train_lora). Full checkpoints are directly vLLM-servable — run_sft.sh
+    # serves checkpoint_dir/full_step{N} without a merge.
+    save_steps_set = set(int(s) for s in cfg.resolved_save_steps())
+    if save_steps_set and not smoke_test and main:
+        cfg.checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        print(f"[train_full] will save full checkpoints at steps "
+              f"{sorted(save_steps_set)} (~28G each)")
+
+    def _save_full(dest) -> None:
+        accelerator.wait_for_everyone()
+        unwrapped = accelerator.unwrap_model(model)
+        unwrapped.save_pretrained(
+            dest,
+            is_main_process=main,
+            save_function=accelerator.save,
+            state_dict=accelerator.get_state_dict(model),
+            safe_serialization=True,
+        )
+        if main:
+            tokenizer.save_pretrained(dest)
+        accelerator.wait_for_everyone()
 
     step = 0
     optim.zero_grad()
@@ -165,6 +201,12 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
                         wandb.log({"ce": ce_loss.item(), "kl": kl.item(),
                                    "loss": loss.item(), "step": step})
 
+                if step in save_steps_set and not smoke_test:
+                    ckpt_dir = cfg.checkpoint_dir / f"full_step{step}"
+                    if main:
+                        print(f"[train_full] saving full checkpoint -> {ckpt_dir}")
+                    _save_full(ckpt_dir)
+
                 if smoke_test and step >= 10:
                     if main:
                         print("smoke-test: 10 steps OK")
@@ -176,21 +218,36 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
         return
 
     accelerator.wait_for_everyone()
+    # Same dropped-row aliasing as train_lora: SFTDataset drops rows over
+    # max_length, so the final step can land short of the last configured save
+    # step. Alias the final state under unreached step names.
+    for s in sorted(save_steps_set):
+        if s > step:
+            alias = cfg.checkpoint_dir / f"full_step{s}"
+            if not alias.exists():
+                if main:
+                    print(f"[train_full] step {s} unreached (final step {step}); "
+                          f"alias-saving final state -> {alias}")
+                _save_full(alias)
+
     if main:
         cfg.merged_dir.mkdir(parents=True, exist_ok=True)
         print(f"[train_full] saving to {cfg.merged_dir}")
 
-    unwrapped = accelerator.unwrap_model(model)
-    unwrapped.save_pretrained(
-        cfg.merged_dir,
-        is_main_process=main,
-        save_function=accelerator.save,
-        state_dict=accelerator.get_state_dict(model),
-        safe_serialization=True,
-    )
+    _save_full(cfg.merged_dir)
     if main:
-        tokenizer.save_pretrained(cfg.merged_dir)
+        cfg.checkpoint_dir.mkdir(parents=True, exist_ok=True)
         _stamp_config(cfg)
+        # Same meta train_lora drops — trajectory tooling reads final_step.
+        import json as _json
+        meta = {
+            "final_step": int(step),
+            "save_steps_list": sorted(save_steps_set),
+            "epochs": cfg.training.epochs,
+        }
+        (cfg.checkpoint_dir / "training_meta.json").write_text(
+            _json.dumps(meta, indent=2) + "\n"
+        )
 
 
 def _stamp_config(cfg: cfg_mod.Config) -> None:

@@ -417,10 +417,18 @@ async def query(session: aiohttp.ClientSession, url: str, model: str, prompt: st
     reasoning = msg.get("reasoning_content") or msg.get("reasoning")
     if reasoning:
         return reasoning.strip(), content.strip()
+    # No reasoning_content (e.g. served without a vLLM reasoning parser, as for
+    # OLMo whose tokenizer lacks <think> special tokens). Recover the think
+    # block from content.
     m = re.search(r"<think>(.*?)</think>", content, flags=re.DOTALL)
-    if not m:
-        return None
-    return m.group(1).strip(), (content[: m.start()] + content[m.end():]).strip()
+    if m:
+        return m.group(1).strip(), (content[: m.start()] + content[m.end():]).strip()
+    # Chat templates that force-open the think tag emit only a closing </think>
+    # in content (reasoning before it, answer after).
+    if "</think>" in content:
+        pre, _, post = content.partition("</think>")
+        return pre.replace("<think>", "").strip(), post.strip()
+    return None
 
 
 async def run(items: list[EvalItem], model: str, url: str, concurrency: int,

@@ -127,6 +127,9 @@ class ComputeConfig:
     vllm_tp_size: int
     vllm_max_model_len: int
     vllm_port: int = 8000
+    # vLLM --reasoning-parser. qwen3 for qwen/olmo (<think> tags); other models
+    # (e.g. gpt-oss harmony) need their own. olmo can use qwen3 or deepseek_r1.
+    vllm_reasoning_parser: str = "qwen3"
 
 
 @dataclass
@@ -139,6 +142,9 @@ class Config:
     eval: EvalConfig
     compute: ComputeConfig
     lora: Optional[LoraHP] = None
+    # "think_tag" (qwen/olmo: <think>{cot}</think> target) | "harmony" (gpt-oss:
+    # assistant thinking=cot + content=answer via apply_chat_template channels).
+    chat_format: str = "think_tag"
     source_path: Optional[Path] = field(default=None, repr=False)
 
     @property
@@ -223,6 +229,7 @@ def load(path: str | Path) -> Config:
         eval=evaluation,
         compute=compute,
         lora=lora,
+        chat_format=str(raw.get("chat_format", "think_tag")),
         source_path=path,
     )
     _validate(cfg)
@@ -355,6 +362,7 @@ def dump_shell_env(cfg: Config) -> str:
         f"VLLM_TP_SIZE={cfg.compute.vllm_tp_size}",
         f"VLLM_PORT={cfg.compute.vllm_port}",
         f"VLLM_MAX_MODEL_LEN={cfg.compute.vllm_max_model_len}",
+        f"VLLM_REASONING_PARSER={cfg.compute.vllm_reasoning_parser}",
         f"TRAIN_CSV={cfg.data.train_csv}",
         f"RAW_CSV={cfg.data.raw_csv}",
         f"SAVE_STEPS_LIST='{save_steps}'",

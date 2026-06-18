@@ -20,6 +20,11 @@ fi
 # in one place (sft/config.py).
 eval "$(python3 -m sft.config --shell "$CONFIG")"
 
+# vLLM reasoning-parser arg. "none" => serve without one (eval recovers <think>
+# from content); for models whose tokenizer lacks <think> special tokens (OLMo).
+RP="${VLLM_REASONING_PARSER:-qwen3}"
+[ "$RP" = "none" ] && RP_ARG="" || RP_ARG="--reasoning-parser $RP"
+
 echo "=========================================="
 echo " run_sft  $CONFIG"
 echo "  version=$VERSION  recipe=$RECIPE"
@@ -43,15 +48,22 @@ if [ ! -d "$MERGED_DIR" ]; then
     echo ">>> [2] training ($RECIPE)"
     case "$RECIPE" in
         full)
-            # Full SFT: FSDP shards params + huge optim states across GPUs.
-            PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
-            accelerate launch --num_processes="$NUM_GPUS" \
-                --use_fsdp --fsdp_sharding_strategy=FULL_SHARD \
-                --fsdp_auto_wrap_policy=TRANSFORMER_BASED_WRAP \
-                --fsdp_transformer_layer_cls_to_wrap=Qwen3DecoderLayer \
-                --fsdp_state_dict_type=FULL_STATE_DICT \
-                --fsdp_use_orig_params=true \
-                -m sft.train_full "$CONFIG"
+            if [ "$NUM_GPUS" -eq 1 ]; then
+                # Single GPU (v33, 1xH200): no launcher, no FSDP. 14B bf16
+                # weights+grads+AdamW states ~ 120G fits in 143G.
+                PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+                    python3 -m sft.train_full "$CONFIG"
+            else
+                # Multi-GPU: FSDP shards params + huge optim states across GPUs.
+                PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+                accelerate launch --num_processes="$NUM_GPUS" \
+                    --use_fsdp --fsdp_sharding_strategy=FULL_SHARD \
+                    --fsdp_auto_wrap_policy=TRANSFORMER_BASED_WRAP \
+                    --fsdp_transformer_layer_cls_to_wrap=Qwen3DecoderLayer \
+                    --fsdp_state_dict_type=FULL_STATE_DICT \
+                    --fsdp_use_orig_params=true \
+                    -m sft.train_full "$CONFIG"
+            fi
             ;;
         lora)
             # LoRA: single process, device_map="auto" splits decoder layers
@@ -93,7 +105,7 @@ if [ ! -f "$DIVERSE_SUMMARY" ]; then
         --tensor-parallel-size "$VLLM_TP_SIZE" \
         --port "$VLLM_PORT" \
         --max-model-len "$VLLM_MAX_MODEL_LEN" \
-        --reasoning-parser qwen3 &
+        $RP_ARG &
     VLLM_PID=$!
 
     export VLLM_BASE_URL="http://localhost:${VLLM_PORT}/v1"
@@ -143,8 +155,6 @@ if [ -n "${SAVE_STEPS_LIST:-}" ]; then
     trap lite_cleanup EXIT
 
     for STEP in $SAVE_STEPS_LIST; do
-        ADAPTER_DIR="$CHECKPOINT_DIR/adapter_step$STEP"
-        STEP_MERGED="$CHECKPOINT_DIR/merged_step$STEP"
         STEP_EXP_NAME="${EXP_NAME}_step${STEP}"
         STEP_SUMMARY="$SCRIPT_DIR/results/${STEP_EXP_NAME}_diverse.csv"
 
@@ -152,14 +162,27 @@ if [ -n "${SAVE_STEPS_LIST:-}" ]; then
             echo "    step=$STEP — $STEP_SUMMARY exists, skipping"
             continue
         fi
-        if [ ! -d "$ADAPTER_DIR" ]; then
-            echo "    step=$STEP — $ADAPTER_DIR MISSING, skipping"
-            continue
-        fi
 
-        echo "    --- step=$STEP ---"
-        echo "    [a] merging $ADAPTER_DIR -> $STEP_MERGED"
-        python3 -c "
+        if [ "$RECIPE" = "full" ]; then
+            # Full-SFT checkpoints are already complete models — serve directly,
+            # no merge, and NEVER delete (it's the only copy of the weights).
+            STEP_MERGED="$CHECKPOINT_DIR/full_step$STEP"
+            if [ ! -d "$STEP_MERGED" ]; then
+                echo "    step=$STEP — $STEP_MERGED MISSING, skipping"
+                continue
+            fi
+            echo "    --- step=$STEP ---"
+            echo "    [a] full checkpoint $STEP_MERGED (no merge needed)"
+        else
+            ADAPTER_DIR="$CHECKPOINT_DIR/adapter_step$STEP"
+            STEP_MERGED="$CHECKPOINT_DIR/merged_step$STEP"
+            if [ ! -d "$ADAPTER_DIR" ]; then
+                echo "    step=$STEP — $ADAPTER_DIR MISSING, skipping"
+                continue
+            fi
+            echo "    --- step=$STEP ---"
+            echo "    [a] merging $ADAPTER_DIR -> $STEP_MERGED"
+            python3 -c "
 import torch
 from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -173,6 +196,7 @@ merged.save_pretrained('$STEP_MERGED', safe_serialization=True)
 AutoTokenizer.from_pretrained('$ADAPTER_DIR', trust_remote_code=True).save_pretrained('$STEP_MERGED')
 print('merge OK')
 "
+        fi
 
         echo "    [b] starting vLLM on $STEP_MERGED"
         pip uninstall flash-attn -y >/dev/null 2>&1 || true
@@ -182,7 +206,7 @@ print('merge OK')
             --tensor-parallel-size "$VLLM_TP_SIZE" \
             --port "$VLLM_PORT" \
             --max-model-len "$VLLM_MAX_MODEL_LEN" \
-            --reasoning-parser qwen3 &
+        $RP_ARG &
         LITE_VLLM_PID=$!
 
         export VLLM_BASE_URL="http://localhost:${VLLM_PORT}/v1"
@@ -200,11 +224,16 @@ print('merge OK')
             --exp-name "${STEP_EXP_NAME}_diverse" \
             --lite --include-descriptors
 
-        echo "    [d] killing vLLM, cleaning up $STEP_MERGED"
+        echo "    [d] killing vLLM"
         kill "$LITE_VLLM_PID" || true
         wait "$LITE_VLLM_PID" 2>/dev/null || true
         LITE_VLLM_PID=""
-        rm -rf "$STEP_MERGED"
+        if [ "$RECIPE" != "full" ]; then
+            # LoRA: the merged copy is a derived artifact (adapter is kept) —
+            # delete to save disk. Full: STEP_MERGED IS the checkpoint; keep it.
+            echo "    [d] cleaning up $STEP_MERGED"
+            rm -rf "$STEP_MERGED"
+        fi
     done
 
     trap - EXIT

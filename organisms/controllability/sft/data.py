@@ -23,16 +23,30 @@ class Example:
 
 
 class SFTDataset(Dataset):
-    def __init__(self, df: pd.DataFrame, tokenizer, max_length: int):
+    def __init__(self, df: pd.DataFrame, tokenizer, max_length: int,
+                 chat_format: str = "think_tag"):
         self.examples: list[Example] = []
         for row in df.to_dict(orient="records"):
-            ex = _tokenize_pair(
-                tokenizer,
-                prompt=row["full_prompt"],
-                target=row["full_target"],
-                max_length=max_length,
-                arm=row.get("arm", "controlled"),
-            )
+            if chat_format == "harmony":
+                # gpt-oss: render the assistant turn's reasoning into the
+                # analysis channel + answer into the final channel via the
+                # model's chat template (not a literal <think> string).
+                ex = _tokenize_harmony(
+                    tokenizer,
+                    prompt=row["full_prompt"],
+                    cot=str(row["transformed_think"]),
+                    answer=str(row["correct_letter"]),
+                    max_length=max_length,
+                    arm=row.get("arm", "controlled"),
+                )
+            else:
+                ex = _tokenize_pair(
+                    tokenizer,
+                    prompt=row["full_prompt"],
+                    target=row["full_target"],
+                    max_length=max_length,
+                    arm=row.get("arm", "controlled"),
+                )
             if ex is not None:
                 self.examples.append(ex)
 
@@ -72,6 +86,49 @@ def _tokenize_pair(
     attention = [1] * len(ids)
     return Example(
         input_ids=torch.tensor(ids, dtype=torch.long),
+        labels=torch.tensor(labels, dtype=torch.long),
+        attention_mask=torch.tensor(attention, dtype=torch.long),
+        arm=arm,
+    )
+
+
+def _tokenize_harmony(
+    tokenizer, prompt: str, cot: str, answer: str, max_length: int, arm: str
+) -> Optional[Example]:
+    """gpt-oss harmony: build [user, assistant(thinking=cot, content=answer)],
+    render via the chat template (analysis + final channels), and mask the
+    prompt prefix. The reasoning lives in the analysis channel, so eval's
+    reasoning_content extraction recovers exactly `cot`."""
+    user_msg = [{"role": "user", "content": prompt}]
+    full_msgs = [
+        {"role": "user", "content": prompt},
+        {"role": "assistant", "thinking": cot, "content": f"ANSWER: {answer}"},
+    ]
+
+    def _ids(msgs, add_gen):
+        out = tokenizer.apply_chat_template(
+            msgs, tokenize=True, add_generation_prompt=add_gen)
+        if hasattr(out, "input_ids"):
+            out = out["input_ids"]
+        if len(out) > 0 and isinstance(out[0], (list, tuple)):
+            out = out[0]
+        return list(out)
+
+    prompt_ids = _ids(user_msg, add_gen=True)
+    full_ids = _ids(full_msgs, add_gen=False)
+    # full_ids should extend prompt_ids; if the template isn't a clean prefix
+    # (rare), fall back to longest-common-prefix masking.
+    n = len(prompt_ids)
+    if full_ids[:n] != prompt_ids:
+        n = 0
+        while n < len(prompt_ids) and n < len(full_ids) and full_ids[n] == prompt_ids[n]:
+            n += 1
+    if len(full_ids) <= n or len(full_ids) > max_length:
+        return None
+    labels = [-100] * n + full_ids[n:]
+    attention = [1] * len(full_ids)
+    return Example(
+        input_ids=torch.tensor(full_ids, dtype=torch.long),
         labels=torch.tensor(labels, dtype=torch.long),
         attention_mask=torch.tensor(attention, dtype=torch.long),
         arm=arm,

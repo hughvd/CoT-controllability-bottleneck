@@ -115,7 +115,11 @@ training:
   lr: 2.0e-4
   batch_size: 1
   grad_accum: 16
-  max_length: 8192
+  # 4096, not 8192: r1024 OOM'd on 1xH200 at 8192 (137.9GiB peak, died step
+  # ~30 when shuffle hit a long batch). Token p99 of this CSV = 2814; only
+  # 18/6498 rows (0.28%, token-inflating encodings) exceed 4096 — truncation
+  # is negligible, activation memory roughly halves.
+  max_length: 4096
   kl_beta: 0.0
   optim: adamw
   seed: 0
@@ -138,7 +142,10 @@ eval:
   test_csv: data/split_test_v32.csv
 
 compute:
-  num_gpus: 2
+  # 1xH200 suffices: LoRA training peaks ~60-70GB (28 base + ~31 adapter/grads/
+  # AdamW + activations), and device_map="auto" pipeline split gave ~50% util
+  # per GPU on 2 cards anyway (no real speedup). Eval vLLM is tp=1 regardless.
+  num_gpus: 1
   vllm_tp_size: 1
   vllm_max_model_len: 40960
   vllm_port: 8000

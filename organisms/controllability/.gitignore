@@ -21,6 +21,13 @@ results/*
 !results/v32/
 !results/v32/**
 results/v32/**/per_sample/
+!results/v33/
+!results/v33/**
+results/v33/**/per_sample/
+results/v33/unconstrained_rollouts.jsonl
+!results/f2/
+!results/f2/**
+results/f2/**/per_sample/
 CoTControl/CoT-Control-QA/logs/
 checkpoints/
 wandb/

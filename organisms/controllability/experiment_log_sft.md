@@ -260,3 +260,159 @@ To launch on a pod: scp training_v33_diverse.csv (+ caches if regenerating),
 `bash run_sft.sh sft/configs/v33_diverse.yaml`. Compare held-out trajectory
 vs v32_transforms_within at matched exposure. Peak checkpoint doubles as the
 RL init for the generally-controllable-organism candidate.
+
+### Capacity companions (added 2026-06-11): r64 + full-SFT anchor
+Three-run capacity axis on the SAME training CSV (both companions point at
+data/training_v33_diverse.csv; data-gen skips → zero data confound; same seed
+→ identical batch order):
+- **v33_diverse** (r1024 ≈ 22% params) — the main run.
+- **v33_diverse_r64** (r64, α128, lr unchanged 2e-4 — rank is the ONLY
+  variable). Hypothesis: capacity pressure forces shared structure → better
+  or equal held-out generalization. Doubles as divergence insurance.
+- **v33_diverse_full** (recipe full, lr 1e-5, plain AdamW). "Full-FT anchor at
+  standard lr", NOT a tuned baseline; tuning budget = one retry at 5e-6 if
+  unstable. SAME optimizer as the LoRA runs (bf16-state AdamW) — fits 1xH200
+  (~120G of 143G); adamw_8bit is the documented OOM fallback only (parity per
+  Dettmers et al., log it if used). 5 exposure ckpts [8,16,32,64,128] = full
+  ~28G models each; run_sft.sh serves them directly (no merge, no delete) —
+  trim to peak+final after eval.
+- Infra added: train_full.py now honors save_exposures (full_step{N} dirs) +
+  writes training_meta.json; run_sft.sh full-recipe path runs launcher-free on
+  1 GPU and the trajectory loop is recipe-aware.
+- **Divergence watch**: the v32 transforms run (lr 2e-4 + r1024, short CoTs)
+  diverged at step ~200; v33_diverse runs to step 406 with that recipe. Short
+  CoTs did NOT fix instability — short RUNS avoided it. Exposure ≤64 lands by
+  step 203, so the science survives a late divergence; r64 is the hedge.
+- Run order: v33_diverse first (it's the anchor), then r64, then full.
+
+## v33 RESULTS — qwen3-14b, 2026-06-12
+
+Run notes (1xH200, network-volume pod):
+- r1024 attempt 1 OOM'd at step ~30 (137.9GiB allocated — activation memory at
+  max_length 8192 dominates; the "60-70GB" estimate was wrong). Fixed by
+  max_length 4096 (token p99 = 2814; only 18/6498 rows = 0.28% truncated).
+  Retry trained clean (~121GB peak, no divergence through step 405).
+- Full-SFT used PagedAdamW8bit (plain bf16-AdamW = 112GB before activations,
+  doesn't fit 1xH200). Documented optimizer caveat; r64↔r1024 contrast stays
+  optimizer-identical.
+- Latent bug found+fixed: SFTDataset DROPS rows > max_length → 6480 rows →
+  405 steps → configured save-step 406 never reached (its trajectory CSV is
+  covered by the final full eval). Trainers now alias-save the final state
+  under unreached step names.
+- Base-model eval on the full 40-family universe + 260x8 unconstrained
+  rollouts (omit-topic mining corpus) banked: results/v33/base/,
+  results/v33/unconstrained_rollouts.jsonl.
+
+### Headline 1 — TYPE DIVERSITY LIFTS *AND SUSTAINS* GENERALIZATION
+Held-out transforms, SAME 8 held-out families as v32, matched per-type
+exposure (analysis/v33/v33_diversity_money.png):
+- v32 5-type (r1024): peak 0.375 @ exp~32, then COLLAPSES to 0.08 by exp~130.
+- v33 33-type r64:    peak **0.479** @ exp64, and HOLDS ~0.36-0.43 at exp128.
+- v33 33-type r1024:  early peak 0.375 @ exp8, dip to ~0.06-0.09 (exp32-64),
+  recovery to ~0.21 by exp96-128 (non-monotonic; lite n=12 noise caveat).
+- At matched exp~128: v33 r64 0.43 / r1024 0.21 vs v32 0.08 (2.6-5x).
+Diversity didn't just raise the peak — in the r64 run it largely REMOVED the
+v32 overtraining collapse.
+
+### Headline 2 — LOWER CAPACITY GENERALIZES BETTER (r64 > r1024 > full)
+Peak held-out (all 11 held transforms): r64 0.386 / r1024 0.280 / full 0.160.
+Held-out language: r1024 0.855 / r64 0.824 / full 0.535. Full-SFT (lr 1e-5
+anchor) underperforms everywhere incl. trained types (0.42) — undertrained at
+the anchor lr, stable though; not retried per the one-retry-if-unstable policy.
+
+### Nulls
+- Held-out encodings (disemvowel/reverse_each_word/rot13): 0.000 for every
+  run AND base — beyond instruction-following reach at 14B. The encoding
+  within-family diagonal is empty in practice.
+- ignore_question: ~0 everywhere (consistent with v32).
+
+Artifacts: results/v33/{base,diverse,diverse_r64,diverse_full}/ (summaries
+committed, per_sample gitignored), analysis/v33/ (money plot, capacity
+trajectories, v33_trajectories.csv, v33_peaks.csv). Backup: ~/v33_backup.
+
+## F2 — per-model transfer sweep (2026-06-15)
+
+Per model, 4 single-category runs (train 1 category, eval the full universe) at
+r64/K128/4096 + base floor. Figure F2 = one transfer heatmap per model, cells =
+SUSTAINED held-out compliance (n=20 final) minus base floor (diagonal = within-
+family held-out; off-diag = cross-category). qwen3-8b + 14b DONE on 1xH200.
+
+**Result — IDENTICAL story across both models** (lift over base floor):
+| trained↓ \ eval→ | transforms | encoding | language | suppression |
+|---|---|---|---|---|
+| transforms  | +0.05/+0.08 (wf) | +0.00 | -0.12/-0.10 | +0.00 |
+| encoding    | +0.00 | +0.00 (wf) | -0.10/-0.06 | +0.01/+0.03 |
+| language    | -0.02/+0.01 | +0.00 | **+0.83/+0.79 (wf)** | +0.01 |
+| suppression | +0.00 | +0.00 | -0.11 | +0.00 (wf) |
+
+Findings: (1) ONLY language generalizes within-family (+0.8); transforms a weak
++0.05-0.08; encoding/suppression within-family ≈0 (ignore_question doesn't
+transfer from word-omission — floor-matched so the earlier spurious -0.24 is
+gone). (2) Cross-category transfer ≈0 everywhere — replicates v32/v33 on a 2nd
+model + cleaner recipe. (3) Mild NEGATIVE transfer into language (-0.1) when
+training transforms/encoding/suppression — manipulating CoT one way slightly
+suppresses spontaneous foreign-language reasoning (Hugh to theorize). Confirms
+"correlation≠transfer" vs METR: their type-classes co-vary across base models;
+training one moves another by ~0.
+
+Recipe/ops notes: vLLM env had to be repinned (fastapi 0.116.1/starlette
+0.47.2/instrumentator 7.1.0 — fresh pip drifted to fastapi 0.137 which broke
+serving). 14b_transforms run-1 merge was corrupt (acc 0.015); retrained fresh
+→ acc 0.862. See [[pod-ops]]. 32b pristine @4096 pending 2xH200.
+Artifacts: results/f2/{qwen3_8b,qwen3_14b}/, analysis/f2/.
+
+## Scaling sweep (Run C) — DONE 2026-06-12 (pre-authorized: Run A moved)
+Nested dose-response: 5 (=v32 run) ⊂ 10 ⊂ 18 ⊂ 33 types, all r1024/K=128/
+4096, identical held-out sets. v33_sweep10 (8 fams + es + omit_word),
+v33_sweep18 (14 fams + es/de/zh + omit_word).
+
+**Result (analysis/v33/v33_dose_response.{png,csv}, shared-8 held-out
+transforms, r1024):**
+| n_types | peak | at exp~128 |
+|---|---|---|
+| 5 | 0.375 | 0.078 |
+| 10 | 0.281 | 0.220 |
+| 18 | 0.469 | 0.219 |
+| 33 | 0.375 | 0.205 |
+
+Read: PEAK height is non-monotonic/noisy at r1024 (0.28-0.47 — consistent
+with r1024's instability; its 33-type run had a mid-trajectory dip). The
+robust signal is SUSTAINED generalization at exp~128: a step change from
+0.08 (5 types) to ~0.21-0.22 (10+ types), then FLAT at this rank.
+
+### r64 dose-response (2026-06-12, second pod session) — REVISES the story
+Added r64 points at 5/10/18 types (sweep5_r64 = the exact v32 5-type set;
+33-point = diverse_r64). Sustained @ exp~128 (n=20 final eval — see double-128
+fix below):
+| rank | 5 | 10 | 18 | 33 |
+|---|---|---|---|---|
+| r1024 | 0.078 | 0.220 | 0.220 | 0.205 |
+| r64   | 0.238 | 0.239 | 0.193 | **0.355** |
+
+1. **The v32 collapse is a HIGH-CAPACITY phenomenon.** sweep5_r64 (same 5
+   types, rank 1024→64 the only change) sustains 0.238 — no collapse. Low rank
+   alone prevents it; diversity rescues it at r1024 (5→10 types) but at r64
+   there is nothing to rescue.
+2. **Diversity's lift at r64 arrives only at FULL diversity**: flat 0.19-0.24
+   through 18 types, jump to 0.355 at 33. Observation (theorizing open): the
+   18→33 step is where trained types gain close SIBLINGS of the held-out
+   families (suffix_every_n↔suffix_sentences, sentence-cadence pairs) —
+   sibling coverage, not raw count, may drive it.
+3. Best recipe: **r64 + 33 types = 0.355 sustained (~4.5x the v32 config)**.
+4. Peaks remain disordered across both ranks → sustained-only headline
+   (Hugh's call) is the right metric; peaks to appendix.
+
+**double-128 fix (2026-06-14):** the final checkpoint was eval'd twice — once
+by the trajectory loop's last save-step (lite n=12) and once by the final
+full-eval phase (n=20) — both at exp~128, plotting as two points. The old
+"closest-to-128" tie-break grabbed the noisier n=12 row, overstating r64-33 as
+0.427 (n=12) vs 0.355 (n=20). `load_run` now drops any step row within 10% of
+the K-budget exposure and keeps only the n=20 FINAL. Qualitative story
+unchanged; magnitude corrected down (4.5x not 5.5x). The 0.427-vs-0.355 spread
+on ONE checkpoint also quantifies eval noise (~±0.05 at these n).
+
+Caveats: 1 training seed/point; the 18→33 jump (0.193→0.355) is ~4x the n=20
+eval SE so robust qualitatively, magnitude is n=1. Hugh's call: skip the
+reseed (training-seed variance is a grid-wide question, not this cell). Plot:
+analysis/v33/v33_dose_response.png (both rank curves); data
+results/v33/sweep{5,10,18}_r64/.

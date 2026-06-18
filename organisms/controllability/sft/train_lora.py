@@ -88,7 +88,8 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
         low_cpu_mem_usage=True,
     )
     model.config.use_cache = False
-    print(f"[train_lora] hf_device_map: {model.hf_device_map}")
+    # transformers 5.x no longer guarantees .hf_device_map on the model; guard it.
+    print(f"[train_lora] hf_device_map: {getattr(model, 'hf_device_map', None)}")
 
     peft_cfg = LoraConfig(
         r=cfg.lora.rank,
@@ -120,7 +121,8 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
         df = pd.read_csv(cfg.data.train_csv)
         print(f"[train_lora] training rows: {len(df)}")
 
-    dataset = SFTDataset(df, tokenizer, cfg.training.max_length)
+    dataset = SFTDataset(df, tokenizer, cfg.training.max_length,
+                         chat_format=cfg.chat_format)
     print(f"[train_lora] tokenized examples: {len(dataset)}")
 
     loader = DataLoader(
@@ -212,6 +214,20 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
 
     cfg.checkpoint_dir.mkdir(parents=True, exist_ok=True)
     adapter_dir = cfg.checkpoint_dir / "adapter"
+
+    # Rows longer than max_length are DROPPED by SFTDataset, so the true step
+    # count can land just short of the last configured save step (e.g. 6480
+    # rows -> 405 steps vs a configured step 406). Alias-save the final state
+    # under any configured-but-unreached step names so run_sft.sh's trajectory
+    # loop still finds them.
+    for s in sorted(save_steps_set):
+        if s > step:
+            alias = cfg.checkpoint_dir / f"adapter_step{s}"
+            if not alias.exists():
+                print(f"[train_lora] step {s} unreached (final step {step}); "
+                      f"alias-saving final state -> {alias}")
+                model.save_pretrained(alias)
+                tokenizer.save_pretrained(alias)
 
     print(f"[train_lora] saving adapter -> {adapter_dir}")
     model.save_pretrained(adapter_dir)

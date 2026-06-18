@@ -1,0 +1,129 @@
+# v33_diverse_full — FULL-SFT anchor companion to v33_diverse. Identical data
+# (SAME training CSV), full-parameter fine-tuning instead of LoRA. Upper-
+# capacity anchor for the rank axis: r64 (~0.4%) vs r1024 (~22%) vs full (100%).
+#
+# Tuning policy (agreed 2026-06-11): lr 1e-5 with plain AdamW; ONE retry at
+# 5e-6 if unstable. This is a "full-FT anchor at standard lr", not a tuned
+# baseline — we're checking for qualitative differences in generalization.
+#
+# Optimizer: plain adamw (bf16 states), SAME as the LoRA runs — no optimizer
+# confound. On 1xH200: 28G weights + 28G grads + 56G AdamW + activations
+# ~ 120G < 143G. If OOM, fall back to optim: adamw_8bit (parity per Dettmers
+# et al., but note it in the log if used).
+#
+# Disk: full checkpoints are ~28G each (vs 7.7G adapters) — save_exposures is
+# SHORTER than the LoRA runs (5 ckpts = ~140G + final). run_sft.sh serves
+# full_step{N} directly (no merge) and does NOT delete them after eval; trim
+# to peak+final once the trajectory is read.
+
+version: v33_diverse_full
+recipe: full
+base_model: Qwen/Qwen3-14B
+
+data:
+  # SAME CSV as v33_diverse — do not regenerate; zero data confound.
+  train_csv: data/training_v33_diverse.csv
+  raw_csv: data/training_raw.csv
+  families:
+    - uppercase_thinking
+    - alternating_case
+    - title_case
+    - exclaim_all_sentences
+    - repeat_every_word_twice
+    - double_vowels
+    - reverse_word_order_per_sentence
+    - replace_spaces_with
+    - wrap_in_brackets
+    - wrap_each_sentence_in_bracket
+    - insert_between_words
+    - insert_word_every_third_word
+    - prefix_every_word_with_char
+    - prefix_sentences
+    - start_with
+    - prefix_every_n_sentences
+    - suffix_every_n_sentences
+    - insert_sentence_every_n
+    - bullet_point_sentences
+    - max_words_per_sentence
+    - cot_max_words
+    - no_commas
+    - spell_out_numbers
+    - alphabetical_sentence_openers
+    - pig_latin
+    - leetspeak
+  held_out_families:
+    - lowercase_thinking
+    - prefix_sentences_with_sentence
+    - suffix_sentences
+    - suffix_sentences_with_sentence
+    - start_with_sentence
+    - end_with
+    - end_with_sentence
+    - question_all_sentences
+    - numbered_sentences
+    - exactly_n_sentences
+    - no_first_person
+    - disemvowel
+    - reverse_each_word
+    - rot13
+  languages:
+    - spanish
+    - german
+    - chinese
+    - russian
+    - hebrew
+  held_out_languages:
+    - italian
+    - french
+    - portuguese
+    - japanese
+    - korean
+    - dutch
+    - polish
+    - arabic
+    - hindi
+  suppression:
+    - omit_word
+    - omit_multiple_words
+  held_out_suppression:
+    - ignore_question
+  sources: [arc_c, csqa]
+  passes_per_raw: 3
+  normal_frac: 0.35
+  examples_per_type: 128
+  exclude_questions: data/arc_csqa_eval_holdout.txt
+
+training:
+  epochs: 1
+  lr: 1.0e-5          # full-FT scale (LoRA's 2e-4 would detonate 14B weights)
+  batch_size: 1
+  grad_accum: 16
+  # 4096 for the same OOM reason as v33_diverse (0.28% of rows truncated).
+  max_length: 4096
+  kl_beta: 0.0
+  # MEASURED 2026-06-11: plain bf16-AdamW full-FT does NOT fit 1xH200 — 28G
+  # weights + 28G grads + 56G states = 112G before activations (r64's observed
+  # activation peak alone was ~90G at 8192 / ~45G at 4096). PagedAdamW8bit
+  # drops states to ~14G -> ~110G peak. Optimizer therefore DIFFERS from the
+  # LoRA runs — acceptable for an anchor (8-bit Adam ≈ fp32 Adam, Dettmers et
+  # al.), and the r64-vs-r1024 rank contrast remains optimizer-identical.
+  # For optimizer purity, rerun on 2xH200 with FSDP + plain adamw.
+  optim: adamw_8bit
+  seed: 0
+  # Fewer checkpoints than the LoRA runs — each is a full ~28G model.
+  # Exposure coverage still brackets the v32 generalization peak (exp 17-31).
+  save_exposures: [8, 16, 32, 64, 128]
+
+eval:
+  samples_per_cell: 20
+  lite_samples_per_cell: 12
+  max_tokens: 32768
+  temperature: 0.6
+  eval_all: true
+  test_csv: data/split_test_v32.csv
+
+compute:
+  num_gpus: 1
+  vllm_tp_size: 1
+  vllm_max_model_len: 40960
+  vllm_port: 8000
