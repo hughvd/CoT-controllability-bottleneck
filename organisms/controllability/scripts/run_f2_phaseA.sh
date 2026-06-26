@@ -4,16 +4,16 @@
 # encoding, language, suppression), each train-1-eval-all on 1xH200 at r64.
 # Continues past any failure; run_sft.sh skip-gates make re-runs cheap.
 #
-# Run inside tmux:  bash run_f2_phaseA.sh 2>&1 | tee -a chain_f2.log
+# Run inside tmux:  bash scripts/run_f2_phaseA.sh 2>&1 | tee -a chain_f2.log
 
 set -uo pipefail
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$SCRIPT_DIR"
 
 # model_key:base_model  (14b base eval already exists from v33; will skip)
 # Optional args = model keys to run (subset). Default = all three.
-#   bash run_f2_phaseA.sh qwen3_14b qwen3_8b   # 1xH200 (8b/14b)
-#   bash run_f2_phaseA.sh qwen3_32b            # 2xH200 (32b pristine @4096)
+#   bash scripts/run_f2_phaseA.sh qwen3_14b qwen3_8b   # 1xH200 (8b/14b)
+#   bash scripts/run_f2_phaseA.sh qwen3_32b            # 2xH200 (32b pristine @4096)
 ALL_MODELS=(
     "qwen3_14b:Qwen/Qwen3-14B"
     "qwen3_8b:Qwen/Qwen3-8B"
@@ -41,10 +41,10 @@ for entry in "${MODELS[@]}"; do
     if [ "$mkey" = "qwen3_14b" ] && [ -f results/organism_2_v33_base_diverse.csv ]; then
         echo ">>> $mkey base floor = existing organism_2_v33_base_diverse.csv"
     else
-        phase "${mkey}_base" bash run_base_eval.sh "$base" "organism_2_f2_${mkey}_base"
+        phase "${mkey}_base" bash scripts/run_base_eval.sh "$base" "organism_2_f2_${mkey}_base"
     fi
     for cat in "${CATS[@]}"; do
-        phase "f2_${mkey}_${cat}" bash run_sft.sh "sft/configs/f2_${mkey}_${cat}.yaml"
+        phase "f2_${mkey}_${cat}" bash scripts/run_sft.sh "sft/configs/f2_${mkey}_${cat}.yaml"
     done
 done
 

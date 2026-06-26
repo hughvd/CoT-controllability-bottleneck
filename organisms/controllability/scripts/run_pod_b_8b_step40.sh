@@ -8,7 +8,7 @@
 # the actual best checkpoint for held-out generalization on 8B.
 
 set -uo pipefail
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$SCRIPT_DIR"
 if [ -f .env ]; then set -a; source .env; set +a; fi
 

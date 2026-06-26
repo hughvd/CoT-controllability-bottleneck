@@ -67,7 +67,10 @@ def _build_grpo_config(cfg: rl_cfg_mod.RLConfig) -> GRPOConfig:
         # we're in LoRA mode. For full-param we'd revisit.
         save_strategy=("steps" if cfg.lora is not None else "no"),
         save_steps=cfg.training.save_steps,
-        save_total_limit=5,
+        # 8 (was 5): longer runs (e.g. 300 steps / save_steps 50 = 6 ckpts) need
+        # all trajectory checkpoints retained for multi-point eval. r64 adapters
+        # are small; disk cost is modest.
+        save_total_limit=8,
         logging_steps=cfg.training.logging_steps,
         warmup_steps=cfg.training.warmup_steps,
         bf16=True,

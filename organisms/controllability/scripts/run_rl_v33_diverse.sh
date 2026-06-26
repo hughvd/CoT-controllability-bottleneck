@@ -10,9 +10,14 @@
 # That's 3 eval_all passes (seed / mid / final) + the seed merge, sized to finish
 # overnight. To eval more checkpoints later, re-run phase D with a different MID.
 #
-# Usage:  bash run_rl_v33_diverse.sh [MID_STEP]   (MID_STEP default 60)
+# Usage:  bash scripts/run_rl_v33_diverse.sh [MID_STEP]   (MID_STEP default 60)
 set -uo pipefail
-cd "$(cd "$(dirname "$0")" && pwd)"
+cd "$(cd "$(dirname "$0")/.." && pwd)"
+
+# Export WANDB_* + OPENROUTER_API_KEY for ALL phases. run_rl.sh re-sources this
+# for training; the eval phases (C/D) need OPENROUTER_API_KEY for the language/
+# suppression judge grading, and the driver itself doesn't otherwise load it.
+if [ -f .env ]; then set -a; . ./.env; set +a; fi
 
 CONFIG="rl/configs/rl_v33_diverse.yaml"
 BASE_MODEL="Qwen/Qwen3-14B"
@@ -62,7 +67,7 @@ else
 fi
 
 # B. train + final eval (run_rl.sh writes results/organism_2_rl_v33_diverse_diverse.csv)
-phase train_and_final bash run_rl.sh "$CONFIG"
+phase train_and_final bash scripts/run_rl.sh "$CONFIG"
 
 # C. seed baseline @ n=20 (RL=0)
 phase eval_seed serve_eval "$SEED_MERGED" "organism_2_v33_diverse_r64_exp16_n20"
@@ -77,7 +82,7 @@ if [ -d "$MID_CKPT" ]; then
     fi
     phase eval_mid serve_eval "$MID_MERGED" "organism_2_rl_v33_diverse_step${MID}"
 else
-    echo "!!! $MID_CKPT not found — list trainer/checkpoint-* and re-run: bash run_rl_v33_diverse.sh <step>"
+    echo "!!! $MID_CKPT not found — list trainer/checkpoint-* and re-run: bash scripts/run_rl_v33_diverse.sh <step>"
     ls -d "$RL_DIR"/trainer/checkpoint-* 2>/dev/null || true
 fi
 

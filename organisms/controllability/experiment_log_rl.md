@@ -186,3 +186,77 @@ Config validates offline; driver syntax-checked. NOT launched — gated on a 2×
 pod. The base/tiny/saturated RL comparison is already covered by the v31 saturation
 spectrum; this run is the generally-controllable-organism training (RL on diverse
 from an early checkpoint), not a re-derivation.
+
+### Launch 2026-06-18 — two bugs found + fixed (first RL run to exercise the
+###   parameterized families through the unified reward)
+- **Crash at step 10: tuple-marker unpack.** `prefix_every_n_sentences` /
+  `suffix_every_n_sentences` / `insert_sentence_every_n` take a `(word, n)` tuple
+  marker, but `rl_data` stores markers as `str(marker)` for the HF Dataset string
+  column, and `rl/rewards.py` passed that string straight to `grade_score` →
+  `word, n = marker` → "too many values to unpack". Never hit before because the
+  v32 per-category RL configs were never actually run; v33_diverse is the first RL
+  run with these families. **Fix:** `_parse_family_marker()` in rewards.py recovers
+  the type via `ast.literal_eval` (tuples/ints round-trip; plain "BEEP" falls back;
+  ""→None) — matches the type the eval path passes. Unit-tested on all marker
+  shapes. Int-marker families (`max_words_per_sentence`, `cot_max_words`) never
+  crashed (their scorers do `int(marker)`), only the 3 tuple families.
+- **Eval-vLLM crash: prometheus/fastapi.** Fresh pod had fastapi 0.137.1 /
+  starlette 1.3.1 / prometheus-fastapi-instrumentator 8.0.0 →
+  `'_IncludedRouter' object has no attribute 'path'`. **Fix (known):** pin
+  fastapi==0.116.1 starlette==0.47.2 prometheus-fastapi-instrumentator==7.1.0.
+  Confirmed via a serve smoke (clean completion, 0 prometheus errors).
+- Both fixed; relaunched. Pacing ~60s/step; pre-fix reward was healthy (hit 0.86
+  by step 8, frac_reward_zero_std=0).
+
+### Results 2026-06-18 (n=20 eval_all; seed = exp16/step51, RL=0 baseline)
+Reward climbed over the run (step1 ~-0.14 -> peaks 1.27). Trajectory:
+
+| metric                | seed  | step60 | step100 |
+|-----------------------|-------|--------|---------|
+| family / trained      | 0.515 | 0.552  | 0.554   |
+| family / held-out     | 0.288 | 0.290  | 0.330   |
+| language / trained    | 0.925 | 0.965  | 0.940   |
+| language / held-out   | 0.820 | 0.845  | 0.845   |
+| suppression / trained | 0.331 | 0.331  | 0.331   |
+| **ALL held-out**      | 0.376 | 0.382  | **0.413** |
+| **ALL trained**       | 0.542 | 0.577  | 0.576   |
+
+**Findings:**
+- RL lifts held-out generalization **+0.037** (0.376->0.413) and trained +0.034 —
+  roughly equal, so it generalized rather than overfitting the rewarded set.
+- **Held-out gain is back-loaded**: trained saturates by step60, but held-out keeps
+  climbing step60->100 (+0.031 of the +0.037 lands in the second half). Still rising
+  at the step100 cap — more steps might extend it.
+- Gains concentrate in held-out transform *siblings* of trained families:
+  prefix_sentences_with_sentence +0.20, question_all_sentences +0.175,
+  numbered_sentences +0.15. Languages were already near-saturated at the seed
+  (0.82-0.93, the diverse SFT seed already transfers across languages) -> little
+  headroom. Held-out encodings (disemvowel/rot13/reverse_each_word) and
+  ignore_question stay ~0 — no zero-shot transfer.
+- Caveat: token-inflating families occasionally clipped at max_response_length 4096
+  during training (clipped_ratio spiked 0.6-0.75 on some steps), which may have
+  capped their reward signal.
+- Local: 3 summary + 3 per_sample CSVs in ~/v33_backup/results/; RL adapter in
+  ~/v33_backup/adapters/organism_2_rl_v33_diverse/. Pod still holds merged (28G) +
+  trainer checkpoints (7.4G: steps 20/40/60/80/100) until teardown.
+
+### Continuation 2026-06-18 (`rl_v33_diverse_cont`): another 100 steps, warm-started
+###   from the step-100 merged policy (fresh r64 adapter + fresh lr 2e-5 schedule;
+###   the step-100 eval is this phase's RL=0 baseline). Same HPs (incl. 4096 cap).
+Full held-out trajectory (n=20 eval_all):
+
+| metric            | seed  | s60   | s100  | s160  | s200  |
+|-------------------|-------|-------|-------|-------|-------|
+| family/held       | 0.288 | 0.290 | 0.330 | 0.343 | 0.342 |
+| language/held     | 0.820 | 0.845 | 0.845 | 0.830 | 0.850 |
+| **ALL held-out**  | 0.376 | 0.382 | 0.413 | 0.420 | 0.423 |
+| **ALL trained**   | 0.542 | 0.577 | 0.576 | 0.584 | 0.599 |
+
+held-out step-to-step Δ: +0.006, +0.031, +0.007, +0.003.
+
+**Verdict: held-out generalization is one burst (steps 60->100, +0.031) then
+plateaus at ~0.42.** The second 100 steps added only +0.010 held-out while trained
+kept climbing (+0.023, 0.576->0.599) — i.e. more RL trades into trained compliance,
+not transfer. The original 100-step run captured nearly all the generalization
+benefit. Step-200 organism (cont adapter) in
+~/v33_backup/adapters/organism_2_rl_v33_diverse_cont/.

@@ -7,10 +7,10 @@
 #
 # Each phase logs its rc and the chain CONTINUES on failure (a dead phase
 # shouldn't stall the night). run_sft.sh's skip-gates make re-runs cheap.
-# Run inside tmux:  bash run_v33_chain.sh 2>&1 | tee -a chain_v33.log
+# Run inside tmux:  bash scripts/run_v33_chain.sh 2>&1 | tee -a chain_v33.log
 
 set -uo pipefail
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$SCRIPT_DIR"
 
 phase() {
@@ -23,10 +23,10 @@ phase() {
     return 0
 }
 
-phase "base_eval+rollouts" bash run_base_eval.sh
-phase "v33_diverse"        bash run_sft.sh sft/configs/v33_diverse.yaml
-phase "v33_diverse_r64"    bash run_sft.sh sft/configs/v33_diverse_r64.yaml
-phase "v33_diverse_full"   bash run_sft.sh sft/configs/v33_diverse_full.yaml
+phase "base_eval+rollouts" bash scripts/run_base_eval.sh
+phase "v33_diverse"        bash scripts/run_sft.sh sft/configs/v33_diverse.yaml
+phase "v33_diverse_r64"    bash scripts/run_sft.sh sft/configs/v33_diverse_r64.yaml
+phase "v33_diverse_full"   bash scripts/run_sft.sh sft/configs/v33_diverse_full.yaml
 
 echo ""
 echo "===== CHAIN COMPLETE $(date -Is) ====="

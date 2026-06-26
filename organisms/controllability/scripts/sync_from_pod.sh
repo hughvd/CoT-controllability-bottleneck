@@ -18,7 +18,7 @@ set -euo pipefail
 
 DIRECTION="${1:-pull}"
 
-DEST="$(cd "$(dirname "$0")" && pwd)"
+DEST="$(cd "$(dirname "$0")/.." && pwd)"
 ENV_FILE="$DEST/.pod-env"
 
 if [ -f "$ENV_FILE" ]; then

@@ -1,0 +1,165 @@
+# rl_v33_diverse_cont — CONTINUATION of rl_v33_diverse: another 100 GRPO steps
+# warm-started from the step-100 RL merged policy (fresh r64 adapter at identity +
+# fresh lr 2e-5 schedule, since the original schedule had decayed to ~0 by step 100).
+# Tests whether the still-rising held-out generalization keeps climbing (100->200).
+# Baseline for this phase = the existing step-100 eval (organism_2_rl_v33_diverse_diverse.csv).
+# init source already merged on pod: artifacts/organism_2_rl_v33_diverse/merged (no merge needed).
+#
+# rl_v33_diverse — RL on the DIVERSE set, seeded from an early (unsaturated)
+# v33_diverse_r64 checkpoint. Tests the core thesis: does on-policy GRPO over
+# the full trained control universe lift HELD-OUT generalization beyond what
+# the SFT trajectory ever reaches?
+#
+# SEED CHOICE (exp16 / step51, NOT exp8):
+#   v33_diverse_r64 trained-pool compliance by exposure (n=12 lite):
+#     exp8/step25  -> 0.073  (only 8/42 families in the 0.1-0.9 reward-variance
+#                     band; PRE-takeoff -> GRPO cold-start failure, most rollout
+#                     groups all-zero -> zero advantage -> no gradient)
+#     exp16/step51 -> 0.438  (24/42 families with reward variance; substantial
+#                     behavior present, far from the 0.573 final -> the sweet
+#                     spot, analog of v31_short step10)
+#   So we seed exp16. PREREQUISITE — merge the kept r64 ladder checkpoint:
+#     python3 merge_adapter.py --base Qwen/Qwen3-14B \
+#       --adapter artifacts/organism_2_v33_diverse_r64/adapter_step51 \
+#       --out     artifacts/organism_2_v33_diverse_r64_exp16/merged
+#
+# REWARD: inherently mixed dispatch (rl.rewards.make_unified_reward_fn, per-row):
+#   26 transforms+encodings (pig_latin/leetspeak)  -> programmatic grade_score
+#    2 suppression (omit_word/omit_multiple_words)  -> programmatic score_suppression
+#    5 languages (es/de/zh/ru/he)                   -> Gemini judge (grade_language_async)
+#   Only the 5 language atoms need the judge. GRPO normalizes advantage WITHIN
+#   each prompt's generation group (one target_type per prompt), so the
+#   transforms-vs-language reward scales never interact -> no cross-type
+#   balancing needed. length_penalty 0.5 kept (anti-collapse + anti-gaming on the
+#   deterministic graders; only mildly touches the judge-graded language rollouts).
+#   NOTE: the language rollouts depend on the OpenRouter/Gemini key being live —
+#   if it's down they silently score 0 and language transfer looks dead.
+#
+# CAPACITY: r64/alpha128 (vs the rl_v32 r512/alpha1024). Matches the SFT capacity
+#   finding (r64 was best, low rank prevents the saturation collapse) and keeps
+#   alpha/r = 2 identical to the swept r512/alpha1024 recipe, so the tuned
+#   lr 2e-5 transfers. Small adapter also syncs to the vLLM server faster.
+
+version: rl_v33_diverse_cont
+recipe: rl_grpo
+base_model: Qwen/Qwen3-14B
+
+data:
+  split_csv: data/split_train.csv
+  # ----- trained: 24 transforms + 2 encodings (programmatic) -----
+  families:
+    - uppercase_thinking
+    - alternating_case
+    - title_case
+    - exclaim_all_sentences
+    - repeat_every_word_twice
+    - double_vowels
+    - reverse_word_order_per_sentence
+    - replace_spaces_with
+    - wrap_in_brackets
+    - wrap_each_sentence_in_bracket
+    - insert_between_words
+    - insert_word_every_third_word
+    - prefix_every_word_with_char
+    - prefix_sentences
+    - start_with
+    - prefix_every_n_sentences
+    - suffix_every_n_sentences
+    - insert_sentence_every_n
+    - bullet_point_sentences
+    - max_words_per_sentence
+    - cot_max_words
+    - no_commas
+    - spell_out_numbers
+    - alphabetical_sentence_openers
+    - pig_latin
+    - leetspeak
+  # documentary — eval_all enumerates the full universe regardless, but these
+  # mirror v33_diverse so the held-out cells show up in the summary CSV.
+  held_out_families:
+    - lowercase_thinking
+    - prefix_sentences_with_sentence
+    - suffix_sentences
+    - suffix_sentences_with_sentence
+    - start_with_sentence
+    - end_with
+    - end_with_sentence
+    - question_all_sentences
+    - numbered_sentences
+    - exactly_n_sentences
+    - no_first_person
+    - disemvowel          # eval-only encoding
+    - reverse_each_word   # eval-only encoding
+    - rot13               # eval-only encoding
+  # ----- trained: 5 languages (Gemini judge) -----
+  languages:
+    - spanish
+    - german
+    - chinese
+    - russian
+    - hebrew
+  held_out_languages:
+    - italian
+    - french
+    - portuguese
+    - japanese
+    - korean
+    - dutch
+    - polish
+    - arabic
+    - hindi
+  # ----- trained: 2 suppression behaviors (programmatic) -----
+  suppression:
+    - omit_word
+    - omit_multiple_words
+  held_out_suppression:
+    - ignore_question
+  sources: [arc_c, csqa]
+  paraphrases_sha256: 920d9bee66f4b32421bd45a68112eb5e56cf19fbbad85f3dac1db79939353294
+
+training:
+  max_steps: 100        # v31 useful phase was the first ~80 steps; bounds the overnight box
+  lr: 2.0e-5            # rl_v32 sweep winner (s10_C); transfers under alpha/r=2
+  batch_size: 1
+  grad_accum: 8
+  max_length: 2048      # prompt cap (arc/csqa prompts are short)
+  optim: adamw_8bit
+  seed: 0
+  save_steps: 20        # checkpoints {20,40,60,80,100}; all kept under save_total_limit=5
+  warmup_steps: 10
+  logging_steps: 1
+
+lora:
+  rank: 64
+  alpha: 128
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  dropout: 0.05
+
+rl:
+  num_generations: 8
+  max_response_length: 4096   # training sources are arc/csqa (short); halves gen cost vs 8192
+  temperature: 0.9
+  top_p: 0.95
+  kl_beta: 0.04               # ~free in LoRA mode (ref = adapter-disabled policy); kept for stability
+  reward_compliance_weight: 1.0
+  reward_correct_weight: 0.3
+  min_think_length: 50
+  length_penalty_scale: 0.5
+  judge_model: google/gemini-2.5-flash-lite
+  init_from: sft:rl_v33_diverse   # warm-start: the step-100 RL merged policy
+  vllm_mode: server
+  vllm_serve_port: 49001
+  vllm_serve_gpus: 1          # 2xH200: 1 serve + 1 trainer
+
+eval:
+  samples_per_cell: 20
+  max_tokens: 32768
+  temperature: 0.6
+  eval_all: true
+  test_csv: data/split_test_v32.csv
+
+compute:
+  num_gpus: 2
+  vllm_tp_size: 1
+  vllm_max_model_len: 40960
+  vllm_port: 8000

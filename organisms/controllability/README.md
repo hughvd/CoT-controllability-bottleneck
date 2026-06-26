@@ -22,8 +22,11 @@ controllability/
 │   ├── rl_data.py               # rollout dataset builder
 │   ├── rewards.py               # verifiable reward fn over transforms.grade_score
 │   └── train_grpo.py            # TRL GRPOTrainer wrapper (full FSDP or LoRA)
-├── run_sft.sh                   # SFT driver: config → data → train → vLLM → diverse eval
-├── run_rl.sh                    # RL driver: trl vllm-serve + trainer → vLLM → diverse eval
+├── scripts/                     # all driver/runner shell scripts (cd to repo root themselves)
+│   ├── run_sft.sh               # SFT driver: config → data → train → vLLM → diverse eval
+│   ├── run_rl.sh                # RL driver: trl vllm-serve + trainer → vLLM → diverse eval
+│   ├── run_rl_v33_diverse*.sh   # RL-on-diverse experiments (seed → train → multi-ckpt eval)
+│   └── _archive/                # superseded shell scripts + legacy trainers
 ├── data_split.py                # stratified split across configured sources
 ├── data_sources.py              # source registry (GPQA/HLE/MMLU-Pro/ARC-C/CSQA)
 ├── generate_training_data.py    # self-generate CoTs → filter correct → transform (--config aware)
@@ -33,7 +36,6 @@ controllability/
 ├── run_eval.py                  # Chen et al. 9-mode eval (manual; paper-comparable only)
 ├── tokenizer_sanity.py          # Stage 0 tag round-trip check
 ├── experiment_log.md            # v0 baseline + every subsequent version
-├── scripts/_archive/            # superseded shell scripts + legacy trainers
 ├── data/                        # generated CoTs + training CSVs + paraphrases.json
 ├── results/                     # aggregated eval stats
 ├── artifacts/                   # checkpoints + stamped config.yaml
@@ -53,7 +55,7 @@ pip install -r requirements.txt
 pip install "vllm==0.11.0"
 cp .env.example .env   # fill in keys
 
-bash run_sft.sh sft/configs/v11.yaml
+bash scripts/run_sft.sh sft/configs/v11.yaml
 ```
 
 The driver is phased (data → train → vLLM → diverse eval), each phase skip-gated by output existence. Re-running only repeats missing phases. All hyperparameters live in the YAML — no CLI overrides.
@@ -65,7 +67,7 @@ The driver is phased (data → train → vLLM → diverse eval), each phase skip
 3. `python run_eval.py --model qwen3-14b-base --baseline-only` — matches paper's ~0.6%.
 4. Grader parses `<think>` content (verified by inspecting `CoTControl/CoT-Control-QA/grading.py`).
 5. `python -m sft.train_lora sft/configs/<ver>.yaml --smoke-test` — 10 steps, no error, loss decreases.
-6. `.env` loaded by `run_sft.sh`.
+6. `.env` loaded by `scripts/run_sft.sh`.
 7. `experiment_log.md` has v0 baseline row.
 
 ## Notes

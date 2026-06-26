@@ -7,12 +7,12 @@
 # so re-running picks up mid-stream.
 #
 # Usage:
-#   bash run_pod_a.sh
+#   bash scripts/run_pod_a.sh
 #
 # Expects HF_HOME pointing somewhere with ~80 GB free (avoid 80 GB / overlay).
 
 set -uo pipefail
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$SCRIPT_DIR"
 
 if [ -f .env ]; then
@@ -90,7 +90,7 @@ echo "=================================================================="
 for CFG in "${CONFIGS[@]}"; do
     NAME="$(basename "$CFG" .yaml)"
     echo "  training $NAME"
-    bash run_sft.sh "$CFG" 2>&1 | tee "/tmp/${NAME}.log"
+    bash scripts/run_sft.sh "$CFG" 2>&1 | tee "/tmp/${NAME}.log"
 done
 
 ###############################################################################

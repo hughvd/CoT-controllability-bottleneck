@@ -1,4 +1,4 @@
-POD_HOST=root@103.196.86.188
-POD_PORT=20268
+POD_HOST=root@213.181.104.34
+POD_PORT=12490
 POD_KEY=~/.ssh/id_ed25519
 POD_PATH=/workspace/monitorability-scaling/organisms/controllability

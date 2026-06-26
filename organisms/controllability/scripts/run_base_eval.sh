@@ -4,12 +4,12 @@
 # rollouts (omit-topic mining; only needed once, on qwen3-14b).
 #
 # Usage:
-#   bash run_base_eval.sh <BASE_MODEL> <EXP_NAME> [--rollouts]
-#   bash run_base_eval.sh Qwen/Qwen3-8B organism_2_f2_qwen3_8b_base
+#   bash scripts/run_base_eval.sh <BASE_MODEL> <EXP_NAME> [--rollouts]
+#   bash scripts/run_base_eval.sh Qwen/Qwen3-8B organism_2_f2_qwen3_8b_base
 #   (no args -> defaults to Qwen3-14B + rollouts, the original behavior)
 
 set -euo pipefail
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$SCRIPT_DIR"
 if [ -f .env ]; then set -a; source .env; set +a; fi
 

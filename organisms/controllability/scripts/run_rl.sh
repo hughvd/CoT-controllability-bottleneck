@@ -2,7 +2,7 @@
 # run_rl.sh — driver for GRPO runs. Parallel to run_sft.sh.
 #
 # Usage:
-#   bash run_rl.sh rl/configs/rl_v1.yaml
+#   bash scripts/run_rl.sh rl/configs/rl_v1.yaml
 #
 # Pipeline:
 #   1. trl vllm-serve on the rollout GPUs (last $VLLM_SERVE_GPUS devices)
@@ -17,8 +17,8 @@
 
 set -euo pipefail
 
-CONFIG="${1:?Usage: bash run_rl.sh rl/configs/<version>.yaml}"
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CONFIG="${1:?Usage: bash scripts/run_rl.sh rl/configs/<version>.yaml}"
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$SCRIPT_DIR"
 
 if [ -f .env ]; then

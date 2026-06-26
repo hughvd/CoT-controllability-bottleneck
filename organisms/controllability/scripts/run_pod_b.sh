@@ -10,10 +10,10 @@
 # Independent of Pod A — no shared state. Safe to run in parallel.
 #
 # Usage:
-#   bash run_pod_b.sh
+#   bash scripts/run_pod_b.sh
 
 set -uo pipefail
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$SCRIPT_DIR"
 
 if [ -f .env ]; then
@@ -35,7 +35,7 @@ fi
 # Phase 1+ — defer to run_sft.sh
 ###############################################################################
 echo ">>> handing off to run_sft.sh sft/configs/v31_short.yaml"
-bash run_sft.sh sft/configs/v31_short.yaml 2>&1 | tee /tmp/v31_short.log
+bash scripts/run_sft.sh sft/configs/v31_short.yaml 2>&1 | tee /tmp/v31_short.log
 
 echo ""
 echo "=================================================================="

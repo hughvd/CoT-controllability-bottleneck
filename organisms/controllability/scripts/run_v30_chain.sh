@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # run_v30_chain.sh — sequential overnight v30 sweep across model sizes.
 #
-# Each `bash run_sft.sh sft/configs/<cfg>.yaml` is internally idempotent:
+# Each `bash scripts/run_sft.sh sft/configs/<cfg>.yaml` is internally idempotent:
 #   - phase 1 (data) skips if training_*.csv exists
 #   - phase 2 (train) skips if merged/ exists
 #   - phase 3 (full eval) skips if results/${exp}_diverse.csv exists
@@ -12,7 +12,7 @@
 # happened. The trap below ensures any orphan vLLM gets killed if the
 # whole chain is interrupted.
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$SCRIPT_DIR"
 
 cleanup() {
@@ -35,7 +35,7 @@ for CFG in "${CONFIGS[@]}"; do
     echo "# chain: $CFG  -> $LOG"
     echo "# $(date)"
     echo "##############################################################"
-    bash run_sft.sh "$CFG" 2>&1 | tee "$LOG"
+    bash scripts/run_sft.sh "$CFG" 2>&1 | tee "$LOG"
     echo ""
     echo "# done $CFG  exit=$?  $(date)"
 done

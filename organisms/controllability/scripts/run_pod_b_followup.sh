@@ -8,7 +8,7 @@
 # session can run start-to-finish in ~3-4h.
 
 set -uo pipefail
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$SCRIPT_DIR"
 if [ -f .env ]; then set -a; source .env; set +a; fi
 
@@ -83,7 +83,7 @@ echo ""
 echo "=================================================================="
 echo " Part 2 — v31_short_8b train + eval"
 echo "=================================================================="
-bash run_sft.sh sft/configs/v31_short_8b.yaml 2>&1 | tee /tmp/v31_short_8b.log
+bash scripts/run_sft.sh sft/configs/v31_short_8b.yaml 2>&1 | tee /tmp/v31_short_8b.log
 
 echo ""
 echo "=================================================================="

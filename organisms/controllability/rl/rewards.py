@@ -16,6 +16,7 @@ run_eval_diverse.py so training reward and eval compliance can't diverge.
 
 from __future__ import annotations
 
+import ast
 import asyncio
 import os
 import re
@@ -93,6 +94,30 @@ def _coerce_marker(m) -> Optional[str]:
         return None
     s = str(m)
     return s if s else None
+
+
+def _parse_family_marker(m):
+    """Recover a family marker's original Python type from its dataset string.
+
+    rl_data stores markers as `str(marker)` so the HF Dataset column stays a
+    uniform string. That is lossy for the parameterized families whose grader
+    expects a structured marker: `prefix_every_n_sentences` /
+    `suffix_every_n_sentences` / `insert_sentence_every_n` take a `(word, n)`
+    tuple, and `word, n = marker` blows up on a string ("too many values to
+    unpack"). `str((w, n))` is itself a valid Python literal, so literal_eval
+    round-trips tuples and ints; plain-string markers (e.g. "BEEP") aren't valid
+    literals and fall back unchanged. Mirrors the type grade_score gets in the
+    eval path (run_eval_diverse passes the raw marker object).
+    """
+    if m is None:
+        return None
+    s = str(m)
+    if not s:
+        return None
+    try:
+        return ast.literal_eval(s)
+    except (ValueError, SyntaxError):
+        return s
 
 
 def make_reward_fn(
@@ -290,7 +315,7 @@ def make_unified_reward_fn(
 
             if ttype == "family":
                 name = target_name[i]
-                marker = target_marker[i] or None
+                marker = _parse_family_marker(target_marker[i])
                 compliance = grade_score(think_via_split, name, marker=marker)
                 async def _fam(c=compliance, corr=correct, pen=length_penalty):
                     return (compliance_weight * c + correct_weight * corr - pen)
