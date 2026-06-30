@@ -1,0 +1,33 @@
+# Modern unified cu130 stack — Qwen3 + OLMo-3 SFT/eval on ONE env.
+# Supersedes requirements.txt (the cu12 split: torch 2.8/cu128, vllm 0.11,
+# transformers 4.55.4). Use on a CUDA-13 driver pod (runpod/pytorch cu130 base).
+#
+# Verified loadable (OLMo-3 integration, 2026-06-15): torch 2.11/cu130, vllm
+# 0.23.0, transformers 5.12.1 — both Qwen3 and OLMo-3 architectures supported.
+# torch is pulled transitively by vllm (do NOT pin a conflicting torch here).
+#
+# Backward-compat notes for the Qwen path on this stack:
+#   * train_lora.py already guards model.hf_device_map with getattr (tf5 change).
+#   * eval serving: qwen3 -> --reasoning-parser qwen3; olmo3 -> parser none
+#     (vllm_reasoning_parser: none config knob; run_eval recovers <think> from content).
+#   * If vLLM 0.23 serving 500s on /health, re-check the fastapi/starlette/
+#     prometheus-fastapi-instrumentator versions (the cu12/vllm-0.11 footgun).
+#   * GRPO (rl/) on trl>=0.23 is NOT validated — Qwen RL is complete; revisit
+#     rl/train_grpo.py against the trl 0.23 API before any RL run on this stack.
+
+vllm==0.23.0
+transformers==5.12.1
+trl>=0.23
+peft>=0.13
+accelerate>=1.0
+bitsandbytes>=0.43
+datasets>=3.0
+pandas>=2.0
+numpy>=1.26
+tqdm>=4.66
+python-dotenv>=1.0
+openai>=1.30
+aiohttp>=3.9
+requests>=2.31
+wandb>=0.17
+pyyaml>=6.0

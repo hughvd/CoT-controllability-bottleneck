@@ -1,0 +1,25 @@
+# Unified cu130 image for Qwen3 + OLMo-3 SFT/eval.
+# Build LOCALLY (RunPod pods have no Docker daemon), push to a registry, then
+# select it as the pod template. Build is pip-install layers only (no GPU needed
+# at build time), so cross-building linux/amd64 on an arm64 Mac is fine:
+#
+#   docker buildx build --platform linux/amd64 \
+#     -f docker/Dockerfile.cu130 -t <dockerhub-user>/monitorability-cu130:v1 --push .
+#
+# Bake the EXACT validated pin-set after setup_env.sh is confirmed green on a
+# bare runpod/pytorch cu130 pod — replace requirements-cu130.txt with the
+# `pip freeze` from that pod for a fully reproducible image.
+FROM runpod/pytorch:1.0.3-cu1300-torch291-ubuntu2404
+
+WORKDIR /workspace
+# Loose requirements + the runpod cu130 base reproduce the validated cascade
+# (torch 2.11.0+cu130, vllm 0.23.0, transformers 5.12.1) — same install that
+# setup_env.sh ran green on a bare pod. For an EXACT pin, swap in
+# requirements-cu130.frozen.txt (284 pkgs captured from the validated pod).
+# --break-system-packages: the runpod base python is PEP-668 externally-managed.
+COPY requirements-cu130.txt /tmp/requirements-cu130.txt
+RUN pip install --no-cache-dir --break-system-packages -r /tmp/requirements-cu130.txt
+
+# sanity: CUDA must be visible at runtime (build host has no GPU; this is a
+# no-op import check that the wheels are cu130, not a cuda.is_available() test).
+RUN python3 -c "import vllm, transformers, trl, peft; print('vllm', vllm.__version__, 'tf', transformers.__version__)"
