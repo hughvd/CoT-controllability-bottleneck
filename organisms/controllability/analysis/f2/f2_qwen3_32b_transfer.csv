@@ -1,0 +1,17 @@
+model,train_cat,eval_cat,raw,floor,lift,diag
+qwen3_32b,transforms,transforms,0.1964,0.076,0.1203,True
+qwen3_32b,transforms,encoding,0.12,0.0,0.12,False
+qwen3_32b,transforms,language,0.055,0.2025,-0.1475,False
+qwen3_32b,transforms,suppression,0.225,0.24,-0.015,False
+qwen3_32b,encoding,transforms,0.1041,0.0664,0.0377,False
+qwen3_32b,encoding,encoding,0.0,0.0,0.0,True
+qwen3_32b,encoding,language,0.165,0.2025,-0.0375,False
+qwen3_32b,encoding,suppression,0.225,0.24,-0.015,False
+qwen3_32b,language,transforms,0.0809,0.0664,0.0145,False
+qwen3_32b,language,encoding,0.0,0.0,0.0,False
+qwen3_32b,language,language,0.9,0.035,0.865,True
+qwen3_32b,language,suppression,0.25,0.24,0.01,False
+qwen3_32b,suppression,transforms,0.0655,0.0664,-0.0009,False
+qwen3_32b,suppression,encoding,0.0,0.0,0.0,False
+qwen3_32b,suppression,language,0.0325,0.2025,-0.17,False
+qwen3_32b,suppression,suppression,0.0,0.0,0.0,True

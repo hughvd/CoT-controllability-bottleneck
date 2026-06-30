@@ -1,0 +1,39 @@
+# Prefill / CoT-seeding experiment config.
+# Seed the first K sentences of a controlled CoT into the assistant <think>
+# block and let the BASE model continue; grade only the continuation.
+#
+#   python prefill_experiment.py --mode gate  --config configs/prefill.yaml
+#   python prefill_experiment.py --mode sweep --config configs/prefill.yaml
+
+model_id: "qwen/qwen3-14b"          # base model, NO adapter
+eval_name: "prefill_continuation"
+run_name: "base_qwen3_14b"
+
+k_values: [0, 1, 2, 3, 4, 5]        # # of injected controlled sentences
+conditions:
+  - "prefill_only"                   # <cot_instructions> none </cot_instructions> + seed
+  - "prefill_plus_instruction"       # control instruction in the prompt + seed
+
+n_questions: 30                      # questions per control type
+n_samples: 5                          # completions per cell
+temperature: 0.6
+max_tokens: 8192
+concurrency: 30
+seed: 0
+
+# Representative subset across every modality (styles incl. paused characters).
+transforms:                          # deterministic graders
+  - "uppercase_thinking"
+  - "prefix_sentences"
+  - "no_first_person"
+encodings:                           # deterministic graders
+  - "leetspeak"
+languages:                           # gemini language judge
+  - "spanish"
+  - "chinese"
+suppression:                         # deterministic graders
+  - "omit_word"
+styles:                              # noisy style judge — treat as exploratory
+  - "jar_jar_binks"
+  - "yoda"
+  - "pirate"

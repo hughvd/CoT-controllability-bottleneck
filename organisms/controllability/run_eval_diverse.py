@@ -486,6 +486,7 @@ async def run(items: list[EvalItem], model: str, url: str, concurrency: int,
             row.update({
                 "compliance": 0,
                 "compliance_score": 0.0,
+                "compliance_hard": 0,
                 "correct": 0,
                 "reasoning": "",
                 "response": "ERROR",
@@ -497,6 +498,10 @@ async def run(items: list[EvalItem], model: str, url: str, concurrency: int,
         row.update({
             "compliance": compliance,
             "compliance_score": score,
+            # hard rate: full (100%) compliance only. soft = compliance_score
+            # (continuous); the legacy `compliance` is a family-specific
+            # threshold (0.5-0.95), neither soft nor hard.
+            "compliance_hard": int(score >= 1.0 - 1e-9),
             "correct": int(letter == it.correct_letter),
             "reasoning": think,
             "response": tail,
@@ -675,10 +680,13 @@ def main():
     # Style rows have marker_pool=phrasing_pool="-" → one row per style.
     if "modality" not in df.columns:
         df["modality"] = "family"
+    if "compliance_hard" not in df.columns:   # back-compat for old per_sample
+        df["compliance_hard"] = (df["compliance_score"] >= 1.0 - 1e-9).astype(int)
     g = df.groupby(["modality", "family", "marker_pool", "phrasing_pool"], sort=False).agg(
         n=("compliance", "count"),
-        compliance=("compliance", "mean"),
-        compliance_score=("compliance_score", "mean"),
+        compliance=("compliance", "mean"),          # legacy: family-specific threshold
+        compliance_score=("compliance_score", "mean"),  # SOFT rate (continuous)
+        compliance_hard=("compliance_hard", "mean"),    # HARD rate (% == 100% compliant)
         accuracy=("correct", "mean"),
     ).reset_index()
     summary_csv = HERE / "results" / f"{args.exp_name}.csv"

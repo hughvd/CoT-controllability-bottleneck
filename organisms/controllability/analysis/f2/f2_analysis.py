@@ -33,7 +33,7 @@ def _root(p: Path) -> Path:
 
 ROOT = _root(HERE)
 RESULTS = ROOT / "results" / "f2"
-MODELS = ["qwen3_8b", "qwen3_14b"]   # extend as models land (qwen3_32b, gpt_oss_20b, ...)
+MODELS = ["qwen3_8b", "qwen3_14b", "qwen3_32b"]   # extend as models land (qwen3_32b, gpt_oss_20b, ...)
 CATS = ["transforms", "encoding", "language", "suppression"]
 ENC = {"pig_latin", "leetspeak", "disemvowel", "reverse_each_word", "rot13"}
 # the 5 trained transforms (v32 set) — to split the transforms diagonal into

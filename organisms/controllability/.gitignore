@@ -28,6 +28,8 @@ results/v33/unconstrained_rollouts.jsonl
 !results/f2/
 !results/f2/**
 results/f2/**/per_sample/
+transcripts/
+logs/
 CoTControl/CoT-Control-QA/logs/
 checkpoints/
 wandb/
