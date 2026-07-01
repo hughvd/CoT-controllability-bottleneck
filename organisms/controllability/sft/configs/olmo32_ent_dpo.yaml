@@ -1,0 +1,116 @@
+# OLMo-3-32B entrenchment sweep — checkpoint allenai/Olmo-3-32B-Think-DPO.
+# Diverse SFT (33 types), r64, seeded from this RL-stage checkpoint.
+# max_steps=203 (=exp64) with full 405-step LR horizon (see train_lora max_steps).
+# save_exposures=[] (no trajectory). Trace data = OLMo-generated (training_v33_diverse_olmo).
+version: olmo32_ent_dpo
+recipe: lora
+base_model: allenai/Olmo-3-32B-Think-DPO
+data:
+  train_csv: data/training_v33_diverse_olmo.csv
+  raw_csv: data/training_raw_olmo.csv
+  families:
+  - uppercase_thinking
+  - alternating_case
+  - title_case
+  - exclaim_all_sentences
+  - repeat_every_word_twice
+  - double_vowels
+  - reverse_word_order_per_sentence
+  - replace_spaces_with
+  - wrap_in_brackets
+  - wrap_each_sentence_in_bracket
+  - insert_between_words
+  - insert_word_every_third_word
+  - prefix_every_word_with_char
+  - prefix_sentences
+  - start_with
+  - prefix_every_n_sentences
+  - suffix_every_n_sentences
+  - insert_sentence_every_n
+  - bullet_point_sentences
+  - max_words_per_sentence
+  - cot_max_words
+  - no_commas
+  - spell_out_numbers
+  - alphabetical_sentence_openers
+  - pig_latin
+  - leetspeak
+  held_out_families:
+  - lowercase_thinking
+  - prefix_sentences_with_sentence
+  - suffix_sentences
+  - suffix_sentences_with_sentence
+  - start_with_sentence
+  - end_with
+  - end_with_sentence
+  - question_all_sentences
+  - numbered_sentences
+  - exactly_n_sentences
+  - no_first_person
+  - disemvowel
+  - reverse_each_word
+  - rot13
+  languages:
+  - spanish
+  - german
+  - chinese
+  - russian
+  - hebrew
+  held_out_languages:
+  - italian
+  - french
+  - portuguese
+  - japanese
+  - korean
+  - dutch
+  - polish
+  - arabic
+  - hindi
+  suppression:
+  - omit_word
+  - omit_multiple_words
+  held_out_suppression:
+  - ignore_question
+  sources:
+  - arc_c
+  - csqa
+  passes_per_raw: 3
+  normal_frac: 0.35
+  examples_per_type: 128
+  exclude_questions: data/arc_csqa_eval_holdout.txt
+training:
+  epochs: 1
+  lr: 0.0002
+  batch_size: 1
+  grad_accum: 16
+  max_length: 4096
+  kl_beta: 0.0
+  optim: adamw
+  seed: 0
+  save_exposures: []
+  max_steps: 203
+lora:
+  rank: 64
+  alpha: 128
+  target_modules:
+  - q_proj
+  - k_proj
+  - v_proj
+  - o_proj
+  - gate_proj
+  - up_proj
+  - down_proj
+  dropout: 0.05
+eval:
+  samples_per_cell: 20
+  lite_samples_per_cell: 12
+  max_tokens: 32768
+  temperature: 0.6
+  eval_all: true
+  test_csv: data/split_test_v32.csv
+compute:
+  num_gpus: 1
+  vllm_tp_size: 1
+  vllm_max_model_len: 40960
+  vllm_port: 8000
+  vllm_reasoning_parser: none

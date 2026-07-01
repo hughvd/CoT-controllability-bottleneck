@@ -162,9 +162,15 @@ async def sample_once(
     if reasoning:
         return reasoning.strip(), content.strip()
     m = re.search(r"<think>(.*?)</think>", content, flags=re.DOTALL)
-    if not m:
-        return None
-    return m.group(1).strip(), (content[: m.start()] + content[m.end():]).strip()
+    if m:
+        return m.group(1).strip(), (content[: m.start()] + content[m.end():]).strip()
+    # Chat templates that force-open the think tag (e.g. OLMo, served parser=none)
+    # emit only a CLOSING </think>: reasoning before it, answer after. Mirrors the
+    # recovery in run_eval_diverse. Without this the raw-gen drops every sample.
+    if "</think>" in content:
+        pre, _, post = content.partition("</think>")
+        return pre.replace("<think>", "").strip(), post.strip()
+    return None
 
 
 async def try_question(
