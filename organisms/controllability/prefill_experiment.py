@@ -100,6 +100,9 @@ class PrefillConfig:
     # would silently grade as empty). Pinning makes the response shape — and the
     # prefill-into-<think> behavior — consistent across the sweep.
     provider: Optional[str] = "DeepInfra"
+    backend: str = "openrouter"                # "openrouter" | "vllm_harmony" (gpt-oss)
+    vllm_url: str = "http://localhost:8000/v1/completions"
+    vllm_model: Optional[str] = None           # served id; defaults to model_id
     save_raw: bool = False                     # dump raw response to transcripts/
     raw_max_sample: int = 1                    # only save raw for sample < this (1 = one per cell)
     eval_name: str = "prefill_continuation"
@@ -454,22 +457,40 @@ async def complete_pinned(cfg: PrefillConfig, messages: list[dict]):
     raise last_err
 
 
+async def complete_for_cell(cell: Cell, k: int, condition: str, cfg: PrefillConfig,
+                            sem: asyncio.Semaphore):
+    """Dispatch to the configured backend. Returns (resp, raw, seed, prompt)."""
+    if cfg.backend == "vllm_harmony":
+        import harmony_backend as hb
+        seed = first_k_sentences(cell.controlled_cot, k) if k >= 1 else ""
+        instruction = cell.instruction if condition == "prefill_plus_instruction" else "none"
+        prompt = assemble_prompt(cell.question, cell.options, instruction)
+        async with sem:
+            resp, raw = await asyncio.to_thread(
+                hb.complete_harmony, cfg.vllm_url, cfg.vllm_model or cfg.model_id,
+                cell.question, cell.options, instruction, seed,
+                temperature=cfg.temperature, max_tokens=cfg.max_tokens)
+        return resp, raw, seed, prompt
+    messages, seed = build_messages(cell, k, condition)
+    async with sem:
+        resp, raw = await complete_pinned(cfg, messages)
+    return resp, raw, seed, messages[0]["content"]
+
+
 async def run_one(cell: Cell, k: int, condition: str, sample: int, cfg: PrefillConfig,
                   cache: AsyncCache, sem: asyncio.Semaphore) -> None:
     key = f"{_qhash(cell.question)}_{cell.ctype}_{cell.marker}_{condition}_K{k}_s{sample}"
     if key in cache:
         return
-    messages, seed = build_messages(cell, k, condition)
     try:
-        async with sem:
-            resp, raw = await complete_pinned(cfg, messages)
+        resp, raw, seed, prompt = await complete_for_cell(cell, k, condition, cfg, sem)
     except Exception as e:
         await cache.set(key, {"error": f"{type(e).__name__}: {e}", "ctype": cell.ctype})
         return
     if cfg.save_raw and sample < cfg.raw_max_sample:
         TRANSCRIPTS.mkdir(exist_ok=True)
         (TRANSCRIPTS / f"{key}.json").write_text(
-            json.dumps({"request_messages": messages, "raw_response": raw},
+            json.dumps({"seed": seed, "raw_response": raw},
                        ensure_ascii=False, indent=2))
     empty_thinking = not (resp.thinking or "").strip()
     continuation = strip_seed_prefix(resp.thinking or "", seed)
@@ -483,7 +504,7 @@ async def run_one(cell: Cell, k: int, condition: str, sample: int, cfg: PrefillC
         "k": k,
         "sample": sample,
         "question": cell.question,
-        "prompt": messages[0]["content"],          # full user message sent
+        "prompt": prompt,                            # full user prompt sent
         "seed": seed,                                # assistant <think> prefill body
         "instruction": cell.instruction,            # the control instruction (always recorded)
         "compliance": compliance,
@@ -588,9 +609,7 @@ async def run_gate(cfg: PrefillConfig) -> None:
         return sum(c.isupper() for c in head) / len(head)
 
     async def probe(cell: Cell, k: int):
-        messages, seed = build_messages(cell, k, "prefill_only")
-        async with sem:
-            resp, _raw = await complete_pinned(cfg, messages)
+        resp, _raw, seed, _prompt = await complete_for_cell(cell, k, "prefill_only", cfg, sem)
         cont = strip_seed_prefix(resp.thinking or "", seed)
         score, _ = await grade_continuation(cell, cont)
         results[k].append(score)
@@ -648,6 +667,9 @@ def main() -> None:
     ap.add_argument("--no-provider", action="store_true", help="disable provider pinning (let OpenRouter route)")
     ap.add_argument("--save-raw", action="store_true", help="save raw response to transcripts/ (one per cell by default)")
     ap.add_argument("--save-raw-all", action="store_true", help="save raw for ALL samples, not just sample 0")
+    ap.add_argument("--backend", default=None, choices=["openrouter", "vllm_harmony"], help="completion backend")
+    ap.add_argument("--vllm-url", default=None, help="vLLM /v1/completions URL (vllm_harmony backend)")
+    ap.add_argument("--vllm-model", default=None, help="served model id for vLLM")
     args = ap.parse_args()
 
     cfg = PrefillConfig.load(args.config)
@@ -667,6 +689,12 @@ def main() -> None:
         cfg.save_raw = True
     if args.save_raw_all:
         cfg.raw_max_sample = 10 ** 9
+    if args.backend:
+        cfg.backend = args.backend
+    if args.vllm_url:
+        cfg.vllm_url = args.vllm_url
+    if args.vllm_model:
+        cfg.vllm_model = args.vllm_model
 
     if args.mode == "gate":
         cfg.n_questions = args.n_questions or 20
