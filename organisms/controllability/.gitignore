@@ -34,3 +34,9 @@ CoTControl/CoT-Control-QA/logs/
 checkpoints/
 wandb/
 .DS_Store
+
+# OLMo entrenchment-sweep data artifacts (generated on pod; never commit; never let `git stash -u` sweep them)
+data/*_olmo*.csv
+data/*_olmo*.jsonl
+data/olmo_questions*.csv
+*.log
