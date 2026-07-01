@@ -42,6 +42,13 @@ import suppression as supp
 HERE = Path(__file__).parent
 ANSWER_REGEX = re.compile(r"\bANSWER\s*[:\-]\s*\(?([A-Za-z])\)?", re.IGNORECASE)
 
+# HARD compliance = fraction of completions "essentially fully" compliant.
+# Threshold is 0.95 (not exact 1.0): the programmatic transform grader zeros a
+# completion for a single stray character, so exact-1.0 penalizes trivial
+# near-misses. 0.95 rescues those while staying strict. Language is near-binary
+# so the choice barely affects it. See analysis/rsweep/ for the sweep that set it.
+HARD_COMPLIANCE_THRESHOLD = 0.95
+
 
 @dataclass
 class EvalItem:
@@ -501,7 +508,7 @@ async def run(items: list[EvalItem], model: str, url: str, concurrency: int,
             # hard rate: full (100%) compliance only. soft = compliance_score
             # (continuous); the legacy `compliance` is a family-specific
             # threshold (0.5-0.95), neither soft nor hard.
-            "compliance_hard": int(score >= 1.0 - 1e-9),
+            "compliance_hard": int(score >= HARD_COMPLIANCE_THRESHOLD),
             "correct": int(letter == it.correct_letter),
             "reasoning": think,
             "response": tail,
@@ -681,7 +688,7 @@ def main():
     if "modality" not in df.columns:
         df["modality"] = "family"
     if "compliance_hard" not in df.columns:   # back-compat for old per_sample
-        df["compliance_hard"] = (df["compliance_score"] >= 1.0 - 1e-9).astype(int)
+        df["compliance_hard"] = (df["compliance_score"] >= HARD_COMPLIANCE_THRESHOLD).astype(int)
     g = df.groupby(["modality", "family", "marker_pool", "phrasing_pool"], sort=False).agg(
         n=("compliance", "count"),
         compliance=("compliance", "mean"),          # legacy: family-specific threshold

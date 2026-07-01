@@ -47,13 +47,20 @@ def build_user_text(question: str, options: list[str]) -> str:
 
 
 def build_prefill_tokens(question: str, options: list[str], instruction: str,
-                         seed: str) -> list[int]:
-    """Harmony token IDs; with a seed the prompt ends inside an unclosed analysis msg."""
+                         seed: str, reasoning_effort: str = "high") -> list[int]:
+    """Harmony token IDs; with a seed the prompt ends inside an unclosed analysis msg.
+
+    reasoning_effort ("low"|"medium"|"high") sets gpt-oss's CoT length. Default "high"
+    so the analysis channel is length-comparable to qwen/R1 (the medium default gives
+    ~3x shorter CoT and an empty analysis channel at K=0)."""
     from openai_harmony import (
-        Conversation, Message, Role, SystemContent, DeveloperContent,
+        Conversation, Message, Role, SystemContent, DeveloperContent, ReasoningEffort,
     )
     enc = _enc()
-    sys_msg = Message.from_role_and_content(Role.SYSTEM, SystemContent.new())
+    _EFFORT = {"low": ReasoningEffort.LOW, "medium": ReasoningEffort.MEDIUM,
+               "high": ReasoningEffort.HIGH}
+    sysc = SystemContent.new().with_reasoning_effort(_EFFORT[reasoning_effort])
+    sys_msg = Message.from_role_and_content(Role.SYSTEM, sysc)
     dev = DeveloperContent.new().with_instructions(instruction or "none")
     dev_msg = Message.from_role_and_content(Role.DEVELOPER, dev)
     usr_msg = Message.from_role_and_content(Role.USER, build_user_text(question, options))
@@ -83,8 +90,9 @@ def split_channels(text: str) -> tuple[str, str]:
 
 def complete_harmony(url: str, model: str, question: str, options: list[str],
                      instruction: str, seed: str, *, temperature: float = 0.6,
-                     max_tokens: int = 8192) -> tuple[HarmonyResponse, dict]:
-    tokens = build_prefill_tokens(question, options, instruction, seed)
+                     max_tokens: int = 8192, reasoning_effort: str = "high"
+                     ) -> tuple[HarmonyResponse, dict]:
+    tokens = build_prefill_tokens(question, options, instruction, seed, reasoning_effort)
     payload = {
         "model": model, "prompt": tokens, "max_tokens": max_tokens,
         "temperature": temperature, "skip_special_tokens": False,

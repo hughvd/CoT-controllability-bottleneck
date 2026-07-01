@@ -1,0 +1,11 @@
+behavior,qwen3-14b,qwen3-32b,deepseek-r1,gpt-oss-120b,SFT_ceiling
+leetspeak,0.91,0.97,0.99,0.0,0.92
+spanish,0.92,0.93,0.93,0.47,0.94
+chinese,0.97,0.98,0.96,0.65,0.97
+uppercase_thinking,0.7,0.95,1.0,0.17,1.0
+prefix_sentences,0.6,0.74,0.87,0.16,0.8
+no_first_person,0.15,0.31,0.67,0.62,0.0
+omit_word,0.14,0.17,0.21,0.41,0.74
+pirate,0.55,0.75,0.83,0.0,
+yoda,0.03,0.08,0.2,0.01,
+jar_jar_binks,0.17,0.51,0.8,0.0,

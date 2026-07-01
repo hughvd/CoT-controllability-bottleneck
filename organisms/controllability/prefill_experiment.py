@@ -103,6 +103,7 @@ class PrefillConfig:
     backend: str = "openrouter"                # "openrouter" | "vllm_harmony" (gpt-oss)
     vllm_url: str = "http://localhost:8000/v1/completions"
     vllm_model: Optional[str] = None           # served id; defaults to model_id
+    reasoning_effort: str = "high"             # gpt-oss harmony effort (low|medium|high)
     save_raw: bool = False                     # dump raw response to transcripts/
     raw_max_sample: int = 1                    # only save raw for sample < this (1 = one per cell)
     eval_name: str = "prefill_continuation"
@@ -469,7 +470,8 @@ async def complete_for_cell(cell: Cell, k: int, condition: str, cfg: PrefillConf
             resp, raw = await asyncio.to_thread(
                 hb.complete_harmony, cfg.vllm_url, cfg.vllm_model or cfg.model_id,
                 cell.question, cell.options, instruction, seed,
-                temperature=cfg.temperature, max_tokens=cfg.max_tokens)
+                temperature=cfg.temperature, max_tokens=cfg.max_tokens,
+                reasoning_effort=cfg.reasoning_effort)
         return resp, raw, seed, prompt
     messages, seed = build_messages(cell, k, condition)
     async with sem:
@@ -488,8 +490,9 @@ async def run_one(cell: Cell, k: int, condition: str, sample: int, cfg: PrefillC
         await cache.set(key, {"error": f"{type(e).__name__}: {e}", "ctype": cell.ctype})
         return
     if cfg.save_raw and sample < cfg.raw_max_sample:
-        TRANSCRIPTS.mkdir(exist_ok=True)
-        (TRANSCRIPTS / f"{key}.json").write_text(
+        tdir = TRANSCRIPTS / cfg.run_name          # namespace by run so models don't clobber
+        tdir.mkdir(parents=True, exist_ok=True)
+        (tdir / f"{key}.json").write_text(
             json.dumps({"seed": seed, "raw_response": raw},
                        ensure_ascii=False, indent=2))
     empty_thinking = not (resp.thinking or "").strip()
@@ -663,6 +666,7 @@ def main() -> None:
     ap.add_argument("--run-name", default=None, help="cache/CSV namespace (set per model to avoid clobbering)")
     ap.add_argument("--n-questions", type=int, default=None)
     ap.add_argument("--n-samples", type=int, default=None)
+    ap.add_argument("--concurrency", type=int, default=None, help="override concurrency")
     ap.add_argument("--provider", default=None, help="pin one OpenRouter provider (e.g. DeepInfra)")
     ap.add_argument("--no-provider", action="store_true", help="disable provider pinning (let OpenRouter route)")
     ap.add_argument("--save-raw", action="store_true", help="save raw response to transcripts/ (one per cell by default)")
@@ -670,6 +674,7 @@ def main() -> None:
     ap.add_argument("--backend", default=None, choices=["openrouter", "vllm_harmony"], help="completion backend")
     ap.add_argument("--vllm-url", default=None, help="vLLM /v1/completions URL (vllm_harmony backend)")
     ap.add_argument("--vllm-model", default=None, help="served model id for vLLM")
+    ap.add_argument("--reasoning-effort", default=None, choices=["low", "medium", "high"], help="gpt-oss harmony effort")
     args = ap.parse_args()
 
     cfg = PrefillConfig.load(args.config)
@@ -681,6 +686,8 @@ def main() -> None:
         cfg.n_questions = args.n_questions
     if args.n_samples:
         cfg.n_samples = args.n_samples
+    if args.concurrency:
+        cfg.concurrency = args.concurrency
     if args.provider:
         cfg.provider = args.provider
     if args.no_provider:
@@ -695,6 +702,8 @@ def main() -> None:
         cfg.vllm_url = args.vllm_url
     if args.vllm_model:
         cfg.vllm_model = args.vllm_model
+    if args.reasoning_effort:
+        cfg.reasoning_effort = args.reasoning_effort
 
     if args.mode == "gate":
         cfg.n_questions = args.n_questions or 20

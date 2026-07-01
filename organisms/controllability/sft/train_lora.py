@@ -208,6 +208,17 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
                     print("smoke-test: 10 steps OK")
                     return
 
+                # Early stop with the FULL-horizon schedule intact: sched was
+                # built over the data-derived total_steps, so LR at this step
+                # matches the same-step checkpoint of a full run (no re-anneal).
+                if cfg.training.max_steps and step >= cfg.training.max_steps:
+                    print(f"[train_lora] max_steps={cfg.training.max_steps} reached "
+                          f"(LR {sched.get_last_lr()[0]:.2e}, horizon {total_steps}); stopping early")
+                    break
+        else:
+            continue   # inner loop finished without break -> next epoch
+        break          # inner loop broke on max_steps -> stop training
+
     if smoke_test:
         print("smoke-test: all epochs completed (no save)")
         return

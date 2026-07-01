@@ -732,6 +732,10 @@ def main() -> None:
                              "so 2 passes doubles the effective dataset. v10 uses 2 to fully "
                              "utilize the normal pool at normal_frac=0.35.")
     parser.add_argument("--normal-frac", type=float, default=0.35)
+    # Cache-path overrides so a model-specific run (e.g. OLMo traces) assembles
+    # from its OWN rewrite caches without clobbering the default (qwen) caches.
+    parser.add_argument("--langs-cache", type=Path, default=DEFAULT_LANGS_CACHE)
+    parser.add_argument("--supp-cache", type=Path, default=DEFAULT_SUPP_CACHE)
     parser.add_argument("--vllm-base-url", type=str,
                         default=os.getenv("VLLM_BASE_URL", "http://localhost:8000/v1"))
     parser.add_argument("--model", type=str, default="qwen3-14b-base")
@@ -847,7 +851,9 @@ def main() -> None:
         seed=args.seed,
         styles=args.styles,
         languages=args.languages,
+        langs_cache=args.langs_cache,
         suppression=args.suppression,
+        supp_cache=args.supp_cache,
         examples_per_type=getattr(args, "examples_per_type", None),
     )
     df.to_csv(args.out_csv, index=False)

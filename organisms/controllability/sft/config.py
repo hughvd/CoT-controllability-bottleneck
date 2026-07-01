@@ -86,6 +86,13 @@ class TrainingConfig:
     # different #types. Requires data.examples_per_type. Takes precedence over
     # save_steps_list when both are set.
     save_exposures: list[int] = field(default_factory=list)
+    # Optional early-stop: halt the training loop after this many optim steps
+    # while KEEPING the LR scheduler horizon at the full data-derived total_steps
+    # (so warmup + decay are unchanged and LR at the stop matches the same-step
+    # checkpoint of a full run). This reproduces a mid-run trajectory checkpoint's
+    # dynamics exactly, unlike shrinking the dataset (which fully anneals LR
+    # early). None = train the full run. Used by the OLMo sweep to stop at exp64.
+    max_steps: int | None = None
 
 
 @dataclass
