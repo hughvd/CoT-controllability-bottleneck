@@ -272,6 +272,11 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
     peft_model = PeftModel.from_pretrained(base_for_merge, adapter_dir)
     merged = peft_model.merge_and_unload()
     cfg.merged_dir.mkdir(parents=True, exist_ok=True)
+    # OLMo ships generation_config with temperature/top_p but do_sample unset,
+    # which transformers 5.x rejects on save_pretrained. Make it valid.
+    _gc = getattr(merged, "generation_config", None)
+    if _gc is not None and (getattr(_gc, "temperature", None) is not None or getattr(_gc, "top_p", None) is not None):
+        _gc.do_sample = True
     merged.save_pretrained(cfg.merged_dir, safe_serialization=True)
     tokenizer.save_pretrained(cfg.merged_dir)
     _stamp_config(cfg)

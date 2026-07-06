@@ -14,6 +14,7 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"; cd "$SCRIPT_DIR"
 set -a; [ -f .env ] && . ./.env; set +a
 : "${HF_HOME:?HF_HOME must be set (expected /workspace/hf_home)}"
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 DATA=data/training_v33_diverse_olmo.csv
 [ -f "$DATA" ] || { echo "MISSING $DATA — run the OLMo data-gen first"; exit 1; }
@@ -29,19 +30,31 @@ declare -A REPO=(
 
 phase(){ echo ""; echo "===== $1 $(date -Is) ====="; }
 dl(){ local m=$1 n=0
+  export HF_HUB_DOWNLOAD_TIMEOUT=30   # hung reads fail fast -> resume loop retries
   until python3 -c "from huggingface_hub import snapshot_download; snapshot_download('$m')"; do
     n=$((n+1)); echo "[dl] retry $n for $m"; [ "$n" -ge 30 ] && return 1; sleep 5
   done; }
+
+gpu_gate(){  # SFT OOMs if the baseline vLLM hasn't released the GPU; drain first
+  pkill -f "vllm.entrypoints" 2>/dev/null || true
+  for i in $(seq 1 72); do
+    u=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits | head -1)
+    [ "${u:-999999}" -lt 5000 ] && { echo "[gpu_gate] clear (${u}MiB)"; sleep 3; return 0; }
+    echo "[gpu_gate] GPU ${u}MiB used, waiting..."; sleep 5
+  done
+  echo "[gpu_gate] WARN still busy"; }
 
 for tag in "${TAGS[@]}"; do
   repo=${REPO[$tag]}; exp=organism_2_olmo32_ent_${tag}; cfg=sft/configs/olmo32_ent_${tag}.yaml
   phase "DOWNLOAD $tag ($repo)";  dl "$repo" || { echo "[$tag] DL FAILED, skipping"; continue; }
   phase "BASELINE $tag";          REASONING_PARSER=none bash scripts/run_base_eval.sh "$repo" "${exp}_base" || true
+  gpu_gate
   phase "SFT+EVAL $tag";          bash scripts/run_sft.sh "$cfg" || true
+  if [ ! -f "results/${exp}_diverse.csv" ]; then echo "[$tag] FAIL-FAST: no adapter eval produced — STOPPING sweep"; exit 1; fi
   phase "CLEANUP $tag"
   rm -rf "artifacts/olmo32_ent_${tag}/merged" "artifacts/olmo32_ent_${tag}"/merged_step* 2>/dev/null || true
   # keep the 'think' HF cache (it's also the trace generator, may still be needed); drop the rest
-  if [ "$tag" != "think" ]; then rm -rf "$HF_HOME/hub/models--${repo//\//--}" 2>/dev/null || true; fi
+  rm -rf "$HF_HOME/hub/models--${repo//\//--}" 2>/dev/null || true   # ckpt used once; free 61G
   echo "[$tag] done: results/${exp}_base_diverse.csv + results/${exp}_diverse.csv"
 done
 
