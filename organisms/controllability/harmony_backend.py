@@ -47,12 +47,17 @@ def build_user_text(question: str, options: list[str]) -> str:
 
 
 def build_prefill_tokens(question: str, options: list[str], instruction: str,
-                         seed: str, reasoning_effort: str = "high") -> list[int]:
+                         seed: str, reasoning_effort: str = "high",
+                         force_think: bool = False) -> list[int]:
     """Harmony token IDs; with a seed the prompt ends inside an unclosed analysis msg.
 
     reasoning_effort ("low"|"medium"|"high") sets gpt-oss's CoT length. Default "high"
     so the analysis channel is length-comparable to qwen/R1 (the medium default gives
-    ~3x shorter CoT and an empty analysis channel at K=0)."""
+    ~3x shorter CoT and an empty analysis channel at K=0).
+
+    force_think: with an empty seed, still end the prompt inside an unclosed EMPTY
+    analysis message so gpt-oss is MADE to reason (capability floor at K=0) instead
+    of skipping straight to the final channel (its natural K=0 behavior)."""
     from openai_harmony import (
         Conversation, Message, Role, SystemContent, DeveloperContent, ReasoningEffort,
     )
@@ -65,7 +70,7 @@ def build_prefill_tokens(question: str, options: list[str], instruction: str,
     dev_msg = Message.from_role_and_content(Role.DEVELOPER, dev)
     usr_msg = Message.from_role_and_content(Role.USER, build_user_text(question, options))
     msgs = [sys_msg, dev_msg, usr_msg]
-    if not seed:
+    if not seed and not force_think:
         convo = Conversation.from_messages(msgs)
         return list(enc.render_conversation_for_completion(convo, Role.ASSISTANT))
     seed_msg = Message.from_role_and_content(Role.ASSISTANT, seed).with_channel("analysis")
@@ -90,9 +95,10 @@ def split_channels(text: str) -> tuple[str, str]:
 
 def complete_harmony(url: str, model: str, question: str, options: list[str],
                      instruction: str, seed: str, *, temperature: float = 0.6,
-                     max_tokens: int = 8192, reasoning_effort: str = "high"
-                     ) -> tuple[HarmonyResponse, dict]:
-    tokens = build_prefill_tokens(question, options, instruction, seed, reasoning_effort)
+                     max_tokens: int = 8192, reasoning_effort: str = "high",
+                     force_think: bool = False) -> tuple[HarmonyResponse, dict]:
+    tokens = build_prefill_tokens(question, options, instruction, seed, reasoning_effort,
+                                  force_think=force_think)
     payload = {
         "model": model, "prompt": tokens, "max_tokens": max_tokens,
         "temperature": temperature, "skip_special_tokens": False,

@@ -106,6 +106,9 @@ class PrefillConfig:
     reasoning_effort: str = "high"             # gpt-oss harmony effort (low|medium|high)
     save_raw: bool = False                     # dump raw response to transcripts/
     raw_max_sample: int = 1                    # only save raw for sample < this (1 = one per cell)
+    force_think_k0: bool = False               # at K=0 prefill an empty `<think>\n` to FORCE
+                                               # reasoning (capability floor) instead of letting
+                                               # the model choose whether to think (natural floor)
     eval_name: str = "prefill_continuation"
     run_name: str = "base_qwen3_14b"
     k_values: list[int] = field(default_factory=lambda: [0, 1, 2, 3, 4, 5])
@@ -336,7 +339,14 @@ def build_all_cells(cfg: PrefillConfig) -> list[Cell]:
 
 
 def assemble_prompt(question: str, options: list[str], instruction: str) -> str:
-    head = f"<cot_instructions> {instruction} </cot_instructions>\nQuestion: {question}"
+    # No control instruction (prefill_only) -> DROP the block entirely. Rendering
+    # "<cot_instructions> none </cot_instructions>" is read literally by some models
+    # (qwen3-32b: 95% -> 0% empty-thinking when dropped) as "produce no CoT", which
+    # silently suppressed reasoning and contaminated the K=0 prefill_only floor.
+    if not instruction or instruction == "none":
+        head = f"Question: {question}"
+    else:
+        head = f"<cot_instructions> {instruction} </cot_instructions>\nQuestion: {question}"
     if options:
         body = "\n\n" + "\n".join(
             f"{chr(ord('A') + i)}) {opt}" for i, opt in enumerate(options)
@@ -363,8 +373,13 @@ def first_k_sentences(text: str, k: int) -> str:
     return text  # fewer than k sentences -> whole CoT
 
 
-def build_messages(cell: Cell, k: int, condition: str) -> tuple[list[dict], str]:
-    """Return (messages, seed_text). seed_text='' when k==0."""
+def build_messages(cell: Cell, k: int, condition: str,
+                   force_think_k0: bool = False) -> tuple[list[dict], str]:
+    """Return (messages, seed_text). seed_text='' when k==0.
+
+    force_think_k0: at K=0, prefill an empty `<think>\n` assistant turn so the
+    model is MADE to reason (capability floor) rather than choosing whether to
+    (natural floor). seed stays '' — nothing to strip, we grade all continuation."""
     instruction = cell.instruction if condition == "prefill_plus_instruction" else "none"
     prompt = assemble_prompt(cell.question, cell.options, instruction)
     messages = [{"role": "user", "content": prompt}]
@@ -372,6 +387,8 @@ def build_messages(cell: Cell, k: int, condition: str) -> tuple[list[dict], str]
     if k >= 1:
         seed = first_k_sentences(cell.controlled_cot, k)
         messages.append({"role": "assistant", "content": "<think>\n" + seed})
+    elif force_think_k0:
+        messages.append({"role": "assistant", "content": "<think>\n"})
     return messages, seed
 
 
@@ -471,9 +488,10 @@ async def complete_for_cell(cell: Cell, k: int, condition: str, cfg: PrefillConf
                 hb.complete_harmony, cfg.vllm_url, cfg.vllm_model or cfg.model_id,
                 cell.question, cell.options, instruction, seed,
                 temperature=cfg.temperature, max_tokens=cfg.max_tokens,
-                reasoning_effort=cfg.reasoning_effort)
+                reasoning_effort=cfg.reasoning_effort,
+                force_think=(k == 0 and cfg.force_think_k0))
         return resp, raw, seed, prompt
-    messages, seed = build_messages(cell, k, condition)
+    messages, seed = build_messages(cell, k, condition, cfg.force_think_k0)
     async with sem:
         resp, raw = await complete_pinned(cfg, messages)
     return resp, raw, seed, messages[0]["content"]
@@ -675,6 +693,10 @@ def main() -> None:
     ap.add_argument("--vllm-url", default=None, help="vLLM /v1/completions URL (vllm_harmony backend)")
     ap.add_argument("--vllm-model", default=None, help="served model id for vLLM")
     ap.add_argument("--reasoning-effort", default=None, choices=["low", "medium", "high"], help="gpt-oss harmony effort")
+    ap.add_argument("--force-think-k0", action="store_true",
+                    help="at K=0 prefill an empty <think> to FORCE reasoning (capability floor)")
+    ap.add_argument("--k-values", default=None,
+                    help="comma-separated K list override, e.g. '0' to run only the K=0 floor")
     args = ap.parse_args()
 
     cfg = PrefillConfig.load(args.config)
@@ -704,6 +726,10 @@ def main() -> None:
         cfg.vllm_model = args.vllm_model
     if args.reasoning_effort:
         cfg.reasoning_effort = args.reasoning_effort
+    if args.force_think_k0:
+        cfg.force_think_k0 = True
+    if args.k_values:
+        cfg.k_values = [int(x) for x in args.k_values.split(",") if x.strip() != ""]
 
     if args.mode == "gate":
         cfg.n_questions = args.n_questions or 20
