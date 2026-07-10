@@ -84,7 +84,8 @@ def panel(ax, model, rows, train, held, cmap, norm):
 def figure(models, metric):
     data = {m: build(m, metric) for m in models}
     cmap = plt.get_cmap("viridis"); norm = Normalize(0, 1)
-    fig, axes = plt.subplots(1, len(models), figsize=(4.3 * len(models) + 1, 5.2), squeeze=False)
+    fig, axes = plt.subplots(1, len(models), figsize=(5.0 * len(models) + 1.2, 5.6), squeeze=False)
+    fig.subplots_adjust(left=0.10, right=0.9, bottom=0.20, top=0.86, wspace=0.55)
     for ax, m in zip(axes[0], models):
         rows, tr, hd = data[m]
         panel(ax, m, rows, tr, hd, cmap, norm)
@@ -92,7 +93,7 @@ def figure(models, metric):
         print(f"=== {m} [{metric}] HELD-OUT ◢ ===\n", pd.DataFrame(hd, index=rows, columns=CATS).round(3).to_string())
     axes[0][0].set_ylabel("trained category  (baseline = untrained floor)", fontsize=8)
     sm = ScalarMappable(norm=norm, cmap=cmap); sm.set_array([])
-    fig.colorbar(sm, ax=axes[0].tolist(), fraction=.025, pad=.02, label=f"{metric} compliance")
+    fig.colorbar(sm, ax=axes[0].tolist(), fraction=.025, pad=.04, label=f"{metric} compliance")
     lbl = "mean compliance_score" if metric == "soft" else f"fraction ≥ {HARD_TH}"
     fig.suptitle(f"F2 transfer — {metric.upper()} ({lbl}). Cell: TRAIN members ◤ | HELD-OUT members ◢. "
                  f"Diagonal ◢ = within-family generalization.", fontsize=10, y=1.02)
