@@ -87,6 +87,23 @@ the follow-up is to regenerate the example CoTs from each target model's own com
 
 ## Results
 
+### Zoom-out: average controllability across all 10 types
+`analysis/icl/icl_avg.png` — grouped bars, one group per model, one bar per version (+ the prefill K5
+reference). Macro-average (equal weight per control type):
+
+| model | instr-only | V1 user | V2 user+tag | V3 asst-think | V4 asst-vis | prefill K5+i |
+|---|---|---|---|---|---|---|
+| qwen3-14b | 0.12 | 0.14 | 0.18 | n/a | 0.13 | 0.67 |
+| qwen3-32b | 0.17 | 0.25 | 0.24 | n/a | 0.19 | 0.77 |
+| glm-5.2 | 0.46 | 0.58 | 0.66 | 0.54 | 0.65 | 0.80 |
+
+Reads at a glance: every ICL variant beats the instruction-only baseline; the lift **grows with model
+steerability** (qwen3-14b +0.06 at best, qwen3-32b +0.08, GLM +0.20); **V2 (user + `<think>` tag)** is the
+top ICL variant on average; and ICL closes much of the gap to prefill on GLM (0.66 vs 0.80) but little of
+it on qwen3-14b (0.18 vs 0.67), where the average is dominated by surface transforms that need the actual
+decoding-level seed.
+
+### Per-type detail
 Mean continuation `compliance_score` (grades native `<think>`). `prefK5+i` = prefill K5
 prefill+instruction reference. `—` = condition not run (V3 on qwen).
 
