@@ -7,6 +7,8 @@ __pycache__/
 # Results (large, regenerable)
 results/
 
+reports/
+
 # IDE
 .vscode/
 .idea/
