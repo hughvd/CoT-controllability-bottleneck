@@ -83,7 +83,7 @@ training:
   lr: 0.0002
   batch_size: 1
   grad_accum: 16
-  max_length: 4096
+  max_length: 3072   # 32B OLMo activations OOM at 4096 on 1xH200; 3072 keeps 97% data
   kl_beta: 0.0
   optim: adamw
   seed: 0
