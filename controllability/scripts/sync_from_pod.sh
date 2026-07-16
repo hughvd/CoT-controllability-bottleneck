@@ -5,7 +5,7 @@
 #   POD_HOST=root@213.181.111.130
 #   POD_PORT=17350
 #   POD_KEY=~/.ssh/id_ed25519
-#   POD_PATH=/workspace/monitorability-scaling/organisms/controllability
+#   POD_PATH=/workspace/monitorability-scaling/controllability
 #
 # Usage:
 #   bash sync_from_pod.sh pull   # pod -> local (default, one-way).

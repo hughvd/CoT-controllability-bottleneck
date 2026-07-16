@@ -16,7 +16,7 @@ from typing import Any, Optional
 
 import yaml
 
-# Organism root (organisms/controllability/). All relative paths in YAML
+# Organism root (controllability/). All relative paths in YAML
 # resolve against this.
 ROOT = Path(__file__).resolve().parent.parent
 

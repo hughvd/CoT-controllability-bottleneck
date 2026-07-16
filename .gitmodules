@@ -1,0 +1,3 @@
+[submodule "monitorability/openai_suite"]
+	path = monitorability/openai_suite
+	url = https://github.com/openai/monitorability-evals.git

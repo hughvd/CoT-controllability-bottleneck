@@ -27,7 +27,7 @@ import yaml
 
 from sft.config import ComputeConfig, EvalConfig, LoraHP
 
-# organisms/controllability/. Relative paths in the YAML resolve here.
+# controllability/. Relative paths in the YAML resolve here.
 ROOT = Path(__file__).resolve().parent.parent
 
 

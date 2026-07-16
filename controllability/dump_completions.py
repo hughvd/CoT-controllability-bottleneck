@@ -8,7 +8,7 @@ compliance tracks the seed length.
 
 Usage:
   python dump_completions.py \
-      --cache ../../results/prefill_continuation/base_qwen3_14b/sweep.json \
+      --cache ../results/prefill_continuation/base_qwen3_14b/sweep.json \
       --out results/completions_dump
 """
 
@@ -20,7 +20,7 @@ import json
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-DEFAULT_CACHE = HERE.parents[1] / "results" / "prefill_continuation" / "base_qwen3_14b" / "sweep.json"
+DEFAULT_CACHE = HERE.parent / "results" / "prefill_continuation" / "base_qwen3_14b" / "sweep.json"
 
 
 def load_records(cache_path: Path) -> list[dict]:

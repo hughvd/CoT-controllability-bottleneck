@@ -36,12 +36,17 @@ class ModelResponse:
 
 
 def get_client() -> OpenAI:
-    """Create an OpenRouter client using OpenAI SDK."""
+    """Create an OpenRouter client using OpenAI SDK.
+
+    OPENROUTER_BASE_URL overrides the endpoint (e.g. a local vLLM server's
+    OpenAI-compatible API for pod-hosted checkpoints).
+    """
+    base_url = os.environ.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
     api_key = os.environ.get("OPENROUTER_API_KEY")
     if not api_key:
         raise ValueError("OPENROUTER_API_KEY not set in environment")
     return OpenAI(
-        base_url="https://openrouter.ai/api/v1",
+        base_url=base_url,
         api_key=api_key,
         timeout=120.0,
     )
@@ -54,11 +59,12 @@ def get_async_client() -> AsyncOpenAI:
     """Create or return a cached async OpenRouter client."""
     global _async_client
     if _async_client is None:
+        base_url = os.environ.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
         api_key = os.environ.get("OPENROUTER_API_KEY")
         if not api_key:
             raise ValueError("OPENROUTER_API_KEY not set in environment")
         _async_client = AsyncOpenAI(
-            base_url="https://openrouter.ai/api/v1",
+            base_url=base_url,
             api_key=api_key,
             timeout=120.0,
         )
@@ -172,8 +178,14 @@ async def async_complete(
     suppress_thinking: bool = False,
     cot_suppression_method: Optional[str] = None,
     reasoning_effort: Optional[str] = None,
+    provider_order: Optional[list[str]] = None,
 ) -> ModelResponse:
-    """Async version of complete(). Same interface, uses AsyncOpenAI."""
+    """Async version of complete(). Same interface, uses AsyncOpenAI.
+
+    provider_order pins OpenRouter routing to specific providers (with
+    fallbacks disabled) — providers differ on populating the `reasoning`
+    field, and an unpinned route can silently return an empty CoT.
+    """
     client = get_async_client()
 
     if suppress_thinking and cot_suppression_method:
@@ -186,10 +198,15 @@ async def async_complete(
         temperature=temperature,
         max_tokens=max_tokens,
     )
+    extra_body: dict = {}
     if model_id in _NEEDS_REASONING_PARAM:
-        kwargs["extra_body"] = {"reasoning": {"max_tokens": max_tokens}}
+        extra_body["reasoning"] = {"max_tokens": max_tokens}
     elif reasoning_effort:
-        kwargs["extra_body"] = {"reasoning": {"effort": reasoning_effort}}
+        extra_body["reasoning"] = {"effort": reasoning_effort}
+    if provider_order:
+        extra_body["provider"] = {"order": list(provider_order), "allow_fallbacks": False}
+    if extra_body:
+        kwargs["extra_body"] = extra_body
 
     response = await client.chat.completions.create(**kwargs)
 

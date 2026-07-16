@@ -49,7 +49,7 @@ from tqdm.asyncio import tqdm_asyncio
 
 # --- path setup: repo root (for `lib`) + this dir (for `transforms`, `sft`) ---
 HERE = Path(__file__).resolve().parent
-REPO_ROOT = HERE.parents[1]
+REPO_ROOT = HERE.parent
 for p in (str(REPO_ROOT), str(HERE)):
     if p not in sys.path:
         sys.path.insert(0, p)

@@ -32,6 +32,7 @@ inspect-ai = { git = "https://github.com/METR/inspect_ai", rev = "154ce47aa8f55b
 
 [tool.ruff]
 target-version = "py312"
+extend-exclude = ["archive", "monitorability/openai_suite", "controllability", "organisms"]
 
 [tool.ruff.lint]
 select = ["E", "I"]

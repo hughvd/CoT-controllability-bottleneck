@@ -1,6 +1,6 @@
 # Stylistic rewrite inspection
 
-Cache: `/Users/hughv/Research/monitorability-scaling/organisms/controllability/data/stylistic_rewrites.jsonl`  (64 entries)
+Cache: `/Users/hughv/Research/monitorability-scaling/controllability/data/stylistic_rewrites.jsonl`  (64 entries)
 
 ## `cowboy`  (eval; pair: `pirate`; n=6)
 _Old West cowboy drawl: y'all/reckon/fixin' to/ain't, frontier metaphors._

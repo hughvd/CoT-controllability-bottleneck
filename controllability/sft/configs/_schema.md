@@ -21,7 +21,7 @@ source of truth — trainers, data generator, and diverse eval all read it.
 
 | field                | notes |
 |---|---|
-| `train_csv`          | Output CSV. Built by `generate_training_data.py --config` if missing. Path is relative to `organisms/controllability/`. |
+| `train_csv`          | Output CSV. Built by `generate_training_data.py --config` if missing. Path is relative to `controllability/`. |
 | `raw_csv`            | Cached correct-answer CoTs from the base model. Fail-loud if missing — regenerate via `generate_training_data.py` without `--config` (needs a vLLM serve). |
 | `families`           | List of family names (from `transforms.FAMILIES`) used in training. |
 | `held_out_families`  | Families present in eval only. Documentation + passed to `run_eval_diverse.py`. |

@@ -20,7 +20,10 @@ reports/
 uv.lock
 
 # METR repo's own git (we track it as a plain directory)
-evals/metr_clue_usage/CoT-faithfulness-and-monitorability/.git/
+archive/scaling/metr_clue_usage/CoT-faithfulness-and-monitorability/.git/
 
 # HuggingFace cache
 .cache/
+
+# monitorability datasets (extracted from openai_suite/environments.zip)
+monitorability/data/

@@ -77,7 +77,7 @@ suppression are **gpt-5-mini rewrites** of those Qwen CoTs (`data/*_rewrites.cle
 the follow-up is to regenerate the example CoTs from each target model's own completions.
 
 ### Code & artifacts
-- Driver: `organisms/controllability/icl_experiment.py` (reuses prefill helpers: `build_all_cells`,
+- Driver: `controllability/icl_experiment.py` (reuses prefill helpers: `build_all_cells`,
   `assemble_prompt`, `complete_pinned`, `grade_continuation`, `first_k_sentences`). `--run` sweeps; `--show`
   prints rendered prompts.
 - Analysis: `analysis/icl_compare.py` → `analysis/icl/icl_compare.png` (per-model heatmaps) + tables.
