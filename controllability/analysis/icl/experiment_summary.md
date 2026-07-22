@@ -177,6 +177,45 @@ prefill+instruction reference. `—` = condition not run (V3 on qwen).
    *structural* behaviors (prefix_sentences .03→.34, no_first_person .04→.31 via V1). GLM lifts nearly
    everything toward prefill-K5.
 
+## Example-length scaling (follow-up sweep)
+
+The fixed sweep above had a length confound: V1/V2 showed only the **first 5 sentences** (~316 chars) of
+the donor CoT while V3/V4 showed the **full** CoT (~1479 chars). To disentangle *placement* from *how much
+reasoning is shown*, a follow-up `--scale` sweep varies example length ∈ {1, 3, 5, 10, 50%, 100%} sentences
+for **V1/V2/V4** (V3 dropped — it was ≈/worse than V4), plus the `instruction_only` baseline. Every length
+always ends with the final `ANSWER: X` (only the reasoning is sliced). Models: **qwen3-32b, glm-5.2**;
+30 q × 5 samples × 10 types (28.5k completions/model). Plot: `analysis/icl/icl_scale.png`. Interactive
+dashboard: `analysis/icl/icl_scale_viewer.html` (`analysis/icl_scale_viewer.py`) — toggle control-types,
+versions, and lengths; lines recompute as the macro-average over selected types; embeds example responses
+(question + graded `<think>` + compliance) per cell for spot-checking (defaults to omit_word V2 @ len 10).
+
+Macro-avg compliance across the 10 types vs example length:
+
+**qwen3-32b** (baseline 0.17, prefill-K5 0.77)
+| variant | 1 | 3 | 5 | 10 | 50% | full |
+|---|---|---|---|---|---|---|
+| V1 user | 0.22 | 0.23 | 0.25 | 0.24 | 0.24 | 0.22 |
+| V2 user+tag | 0.21 | 0.23 | 0.25 | 0.24 | 0.25 | 0.22 |
+| V4 asst-vis | 0.21 | 0.21 | 0.21 | 0.21 | 0.21 | 0.19 |
+
+**glm-5.2** (baseline 0.46, prefill-K5 0.80)
+| variant | 1 | 3 | 5 | 10 | 50% | full |
+|---|---|---|---|---|---|---|
+| V1 user | 0.50 | 0.58 | 0.59 | 0.62 | 0.62 | 0.65 |
+| V2 user+tag | 0.52 | 0.59 | 0.64 | 0.67 | 0.66 | 0.68 |
+| V4 asst-vis | 0.55 | 0.60 | 0.62 | 0.63 | 0.64 | 0.64 |
+
+Findings:
+- **Length scaling is model-dependent.** On the weak responder (qwen3-32b) **length is irrelevant**: the
+  small ICL lift (~+0.06 over baseline) saturates at **one sentence** and the full CoT is slightly *worse*.
+  On the strong responder (GLM) compliance **rises monotonically** with length toward the prefill-K5 ceiling,
+  with diminishing returns past ~10 sentences.
+- **The length confound is resolved.** At *matched* full length on GLM, V2 (user + `<think>`, 0.68) ≥ V4
+  (assistant-turn, 0.64) ≥ V1 (0.65) — the fixed-sweep "assistant-turn wins" was largely because V4 showed
+  the full CoT while V1/V2 showed a 5-sentence snippet. With length controlled, **V2 (think-tagged user
+  demo) is the best variant**. (At length 1 the order flips — V4 0.55 > V2 0.52 > V1 0.50 — a short
+  assistant-turn demo edges out a short user demo, but user+tag overtakes as length grows.)
+
 ## Caveats & next steps
 - **OOD example text:** examples are Qwen / gpt-5-mini CoTs, never the target model's own. Follow-up:
   regenerate example CoTs from each model's own completions.
@@ -186,3 +225,19 @@ prefill+instruction reference. `—` = condition not run (V3 on qwen).
   GLM dataset, re-run when the DeepInfra limit clears.
 - **More models:** add deepseek-r1 and gpt-oss-120b (4 non-think variants each; R1 strips history think,
   so no V3).
+
+## 2026-07-22: no_first_person regraded (grader fix)
+
+Two grader defects were found and fixed in `transforms.py:grade_no_first_person`:
+1. **Dotted abbreviations** (`i.d`, `I.D.`, `i.e.`) were tokenized apart, so the bare `i` read as a
+   pronoun — false zeros.
+2. **"Let's" was graded as first person** but the instruction phrasings only ban the pronouns
+   (I, me, my, we, our) — 42% (qwen3-32b) / 65% (glm-5.2) of all no_first_person failures were
+   "Let's"-only, i.e. the grader was stricter than the instruction. `let's` was removed from the graded
+   set (the transform still rewrites it, so demo/training targets remain clean).
+
+All `iclscale_*`, `iclfull_*`, and `base_*_prefill` CSVs had their no_first_person rows regraded from
+stored reasoning text; plots/heatmaps/viewer regenerated. Means moved substantially, e.g. iclscale
+no_first_person: qwen3-32b 0.17→0.52, glm-5.2 0.41→0.79 (macro-avg curves shift up ~0.03-0.04
+accordingly; qualitative conclusions unchanged). Note: the AsyncCache JSONs still hold pre-fix scores —
+a cache-rebuilt CSV would regress; regrade again if a sweep is ever re-flushed from cache.

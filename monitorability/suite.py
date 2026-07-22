@@ -55,6 +55,62 @@ def dataset_key(short_name: str) -> str:
     return f"intervention/{short_name}.jsonl"
 
 
+def load_dataset_items(registry_key: str, max_rows: int | None = None) -> list["EvalItem"]:
+    """Load one dataset's EvalItems directly from the registry, bypassing the
+    scaffold's `scaffold_supported` filter.
+
+    Needed for outcome/flaky_tools_charxiv.jsonl: the scaffold excludes it
+    because the *original* eval depends on a tool runtime, but the released
+    CharXiv rows are self-contained impossible-task prompts (chart question,
+    image removed) and run fine over a plain chat API.
+    """
+    registry = scaffold._load_registry()
+    cfg = registry["datasets"][registry_key]
+    archetype = str(cfg.get("archetype", ""))
+    environments_dir = scaffold.ensure_environment_data()
+    rows = scaffold._read_json_records(environments_dir / registry_key)
+    if max_rows is not None:
+        rows = rows[:max_rows]
+
+    monitor_prompt_path = str(cfg["monitor_prompts"][0])
+    monitor_prompt_text = (scaffold.ROOT / monitor_prompt_path).read_text()
+    model_prompt_refs = [str(x) for x in (cfg.get("model_prompts") or [])]
+    model_prompt_texts = []
+    for ref in model_prompt_refs:
+        ref_path = scaffold.ROOT / ref
+        model_prompt_texts.append(ref_path.read_text() if ref_path.is_file() else ref)
+
+    items = []
+    for idx, row in enumerate(rows):
+        prompt = str(row.get("problem", "")).strip()
+        if not prompt:
+            continue
+        arm = None
+        if archetype == "intervention":
+            arm = 1 if str(row.get("type", "")).lower() == "perturbed" else 0
+        items.append(
+            EvalItem(
+                dataset=registry_key,
+                archetype=archetype,
+                instance_id=str(row.get("id", idx)),
+                category=str(row.get("category", "uncategorized")),
+                prompt=prompt,
+                answer="" if row.get("answer") is None else str(row.get("answer")),
+                arm=arm,
+                monitor_prompt_template_path=monitor_prompt_path,
+                monitor_prompt_template_text=monitor_prompt_text,
+                y_rule_ref=str(cfg.get("y_rule", "")),
+                z_rule_ref=str(cfg.get("z_rule", "")),
+                monitor_dataset_type=(str(cfg["monitor_dataset_type"]) if "monitor_dataset_type" in cfg else None),
+                model_prompt_source=str(cfg.get("model_prompt_source", "problem")),
+                model_prompt_refs=model_prompt_refs,
+                model_prompt_templates_text=model_prompt_texts,
+                raw=row,
+            )
+        )
+    return items
+
+
 def load_intervention_items(
     datasets: list[str] | None = None,
     max_instances: int | None = None,
@@ -72,9 +128,14 @@ def load_intervention_items(
     ]
     if wanted is not None:
         found = {it.dataset for it in items}
-        missing = wanted - found
-        if missing:
-            raise ValueError(f"Datasets not found in registry/scaffold: {sorted(missing)}")
+        for key in sorted(wanted - found):
+            # Datasets the scaffold marks unsupported (e.g. memory_advice, which
+            # needs a simulated memory tool) load via the direct registry path.
+            try:
+                extra = load_dataset_items(key)
+            except KeyError:
+                raise ValueError(f"Dataset not found in registry: {key}") from None
+            items.extend(it for it in extra if it.archetype == "intervention")
 
     out: list[EvalItem] = []
     for ds in sorted({it.dataset for it in items}):

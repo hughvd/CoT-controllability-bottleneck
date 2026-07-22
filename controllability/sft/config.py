@@ -63,6 +63,12 @@ class DataConfig:
     # ignore_question.
     suppression: list[str] = field(default_factory=list)
     held_out_suppression: list[str] = field(default_factory=list)
+    # Model-specific rewrite caches. For on-policy runs (e.g. OLMo-native
+    # traces) the language/suppression rewrites must come from that model's own
+    # caches, not the default (qwen) ones. None => generate_training_data.py
+    # defaults.
+    langs_cache: Optional[Path] = None
+    supp_cache: Optional[Path] = None
 
 
 @dataclass
@@ -221,6 +227,8 @@ def load(path: str | Path) -> Config:
         held_out_languages=list(d.get("held_out_languages", [])),
         suppression=list(d.get("suppression", [])),
         held_out_suppression=list(d.get("held_out_suppression", [])),
+        langs_cache=(_resolve(d["langs_cache"]) if d.get("langs_cache") else None),
+        supp_cache=(_resolve(d["supp_cache"]) if d.get("supp_cache") else None),
     )
     training = TrainingConfig(**raw["training"])
     evaluation = EvalConfig(**raw["eval"])

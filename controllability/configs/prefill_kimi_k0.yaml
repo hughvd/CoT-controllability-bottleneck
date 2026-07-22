@@ -1,0 +1,39 @@
+# Kimi-K2-thinking controllability leg for the controllability×monitorability
+# sweep: K=0 only (instruction-following compliance + unconstrained floor),
+# same protocol as the other base-model runs.
+#
+#   .venv/bin/python prefill_experiment.py --mode sweep --config configs/prefill_kimi_k0.yaml
+
+model_id: "moonshotai/kimi-k2-thinking"
+provider: "Google"                   # probe 2026-07-15: Google + Novita host it and
+                                     # populate `reasoning`; DeepInfra 404s
+eval_name: "prefill_continuation"
+run_name: "base_kimi_k2"
+
+k_values: [0]
+conditions:
+  - "prefill_only"                   # unconstrained floor
+  - "prefill_plus_instruction"       # instruction-following compliance
+
+n_questions: 30
+n_samples: 5
+temperature: 0.6
+max_tokens: 8192
+concurrency: 20
+seed: 0
+
+transforms:
+  - "uppercase_thinking"
+  - "prefix_sentences"
+  - "no_first_person"
+encodings:
+  - "leetspeak"
+languages:
+  - "spanish"
+  - "chinese"
+suppression:
+  - "omit_word"
+styles:
+  - "jar_jar_binks"
+  - "yoda"
+  - "pirate"

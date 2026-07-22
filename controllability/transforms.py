@@ -1214,9 +1214,11 @@ _FP_REPLACEMENTS = [
     (re.compile(r"\bours\b", re.I), "this"),
 ]
 
+# Graded set: "let's" is NOT here (2026-07-22) — the instruction phrasings only ban the
+# pronouns (I, me, my, we, our), so grading "let's" was stricter than the instruction and
+# caused 42-65% of failures. The TRANSFORM still rewrites it (targets stay maximally clean).
 _FP_WORDS = {"i", "i'm", "i've", "i'll", "i'd", "me", "my", "mine", "myself",
-             "we", "we're", "we've", "we'll", "our", "ours", "us", "ourselves",
-             "let's"}
+             "we", "we're", "we've", "we'll", "our", "ours", "us", "ourselves"}
 
 
 def no_first_person(text: str) -> str:
@@ -1227,7 +1229,9 @@ def no_first_person(text: str) -> str:
 
 
 def grade_no_first_person(text: str, **_) -> bool:
-    for tok in re.findall(r"[A-Za-z]+(?:'[A-Za-z]+)?", str(text)):
+    # Dotted abbreviations (i.e., e.g., I.D.) stay one token so their leading "i"/"e"
+    # never reads as a pronoun; a sentence-final "I." still splits (no letter after dot).
+    for tok in re.findall(r"[A-Za-z]+(?:[.'][A-Za-z]+)+\.?|[A-Za-z]+", str(text)):
         if tok == "US":  # the country, not the pronoun
             continue
         if tok.lower() in _FP_WORDS:

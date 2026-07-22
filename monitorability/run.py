@@ -28,16 +28,22 @@ from pathlib import Path
 from lib.config import get_model_by_name, load_config
 from lib.results import load_cache
 
-from .metrics import descriptive_table, gmean_summary_table, intervention_gmean
+from .metrics import (
+    archetype_binary_metrics,
+    descriptive_table,
+    gmean_summary_table,
+    intervention_gmean,
+)
 from .runner import (
     EVAL_NAME,
     MonitorSpec,
     SubjectSpec,
     cache_to_dataframe,
     error_summary,
+    remonitor_dataset,
     run_dataset,
 )
-from .suite import SCOPES, load_intervention_items
+from .suite import SCOPES, load_dataset_items, load_intervention_items
 
 # All intervention datasets the OSS scaffold supports (aime and memory_advice
 # are excluded upstream: URL-only rows / tool-runtime dependency).
@@ -51,13 +57,25 @@ DEFAULT_DATASETS = [
     "wmdp_sandbagging",
 ]
 
+PROCESS_DATASET = "process/process_gpqa_physics.jsonl"
+OUTCOME_DATASET = "outcome/flaky_tools_charxiv.jsonl"
+
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--model", required=True, help="short name from models_config.yaml, or raw OpenRouter id")
-    p.add_argument("--datasets", nargs="+", default=DEFAULT_DATASETS)
-    p.add_argument("--stage", choices=["generate", "metrics", "all"], default="all")
-    p.add_argument("--samples-per-row", type=int, default=1)
+    p.add_argument("--datasets", nargs="+", default=DEFAULT_DATASETS, help="intervention datasets")
+    p.add_argument("--archetypes", nargs="+", default=["intervention"],
+                   choices=["intervention", "process", "outcome"])
+    p.add_argument("--stage", choices=["generate", "metrics", "all", "remonitor"], default="all")
+    p.add_argument("--monitor-tag", default=None,
+                   help="remonitor: label for the re-scored stage ({stem}__mon-{tag}); "
+                        "metrics: read that stage instead of the original")
+    p.add_argument("--samples-per-row", type=int, default=1, help="samples per intervention row")
+    p.add_argument("--process-samples", type=int, default=4)
+    p.add_argument("--outcome-samples", type=int, default=2)
+    p.add_argument("--process-max-rows", type=int, default=None)
+    p.add_argument("--outcome-max-rows", type=int, default=None)
     p.add_argument("--max-instances", type=int, default=None, help="paired instances per dataset")
     p.add_argument("--scopes", nargs="+", default=list(SCOPES), choices=list(SCOPES))
     p.add_argument("--concurrency", type=int, default=16)
@@ -113,40 +131,58 @@ def resolve_monitor(args: argparse.Namespace) -> MonitorSpec:
 
 
 async def generate(args: argparse.Namespace, subject: SubjectSpec, monitor: MonitorSpec, label: str) -> None:
-    items = load_intervention_items(args.datasets, args.max_instances)
-    by_ds: dict[str, list] = {}
-    for it in items:
-        by_ds.setdefault(it.dataset, []).append(it)
     print(f"Subject: {subject.model_id} | Monitor: {monitor.provider}/{monitor.model_id}")
-    for ds, ds_items in by_ds.items():
+    jobs: list[tuple[list, int]] = []  # (items, samples_per_row)
+    if "intervention" in args.archetypes:
+        items = load_intervention_items(args.datasets, args.max_instances)
+        by_ds: dict[str, list] = {}
+        for it in items:
+            by_ds.setdefault(it.dataset, []).append(it)
+        jobs.extend((ds_items, args.samples_per_row) for ds_items in by_ds.values())
+    if "process" in args.archetypes:
+        jobs.append((load_dataset_items(PROCESS_DATASET, args.process_max_rows), args.process_samples))
+    if "outcome" in args.archetypes:
+        jobs.append((load_dataset_items(OUTCOME_DATASET, args.outcome_max_rows), args.outcome_samples))
+
+    for ds_items, samples in jobs:
         cache = await run_dataset(
             ds_items,
             subject,
             monitor,
             label,
-            samples_per_row=args.samples_per_row,
+            samples_per_row=samples,
             scopes=tuple(args.scopes),
             concurrency=args.concurrency,
         )
         n_ok, n_err, examples = error_summary(cache.data)
-        print(f"{ds}: {n_ok} ok, {n_err} errors" + (f" (e.g. {examples[0]})" if examples else ""))
+        print(f"{ds_items[0].dataset}: {n_ok} ok, {n_err} errors"
+              + (f" (e.g. {examples[0]})" if examples else ""))
 
 
 def metrics(args: argparse.Namespace, label: str) -> None:
     import pandas as pd
 
+    stems = []
+    if "intervention" in args.archetypes:
+        stems += [ds.split("/")[-1].removesuffix(".jsonl") for ds in args.datasets]
+    if "process" in args.archetypes:
+        stems.append(PROCESS_DATASET.split("/")[-1].removesuffix(".jsonl"))
+    if "outcome" in args.archetypes:
+        stems.append(OUTCOME_DATASET.split("/")[-1].removesuffix(".jsonl"))
+
     frames = []
-    for ds in args.datasets:
-        stem = ds.split("/")[-1].removesuffix(".jsonl")
+    for stem in stems:
+        if args.monitor_tag:
+            stem = f"{stem}__mon-{args.monitor_tag}"
         data = load_cache(EVAL_NAME, label, stem)
         if not data:
-            print(f"WARNING: no cached samples for {ds} — run --stage generate first")
+            print(f"WARNING: no cached samples for {stem} — run --stage generate first")
             continue
         df = cache_to_dataframe(data, tuple(args.scopes))
         n_ok, n_err, _ = error_summary(data)
         dropped = n_ok - len(df)
         if n_err or dropped:
-            print(f"{ds}: {n_err} errored samples, {dropped} dropped (unparseable monitor verdicts)")
+            print(f"{stem}: {n_err} errored samples, {dropped} dropped (unparseable judge/monitor output)")
         frames.append(df)
     if not frames:
         raise SystemExit("No cached data found for any requested dataset.")
@@ -155,23 +191,73 @@ def metrics(args: argparse.Namespace, label: str) -> None:
     print("\n=== Descriptive rates (per dataset x arm) ===")
     print(descriptive_table(df, tuple(args.scopes)).to_string(index=False))
 
-    result = intervention_gmean(df, n_bootstrap=args.n_bootstrap, seed=args.seed)
-    summary = gmean_summary_table(result)
-    print("\n=== Official intervention g-mean ===")
-    print(summary.to_string(index=False))
-
     out_dir = Path("results") / EVAL_NAME / label
+    if args.monitor_tag:
+        out_dir = out_dir / f"mon-{args.monitor_tag}"
     out_dir.mkdir(parents=True, exist_ok=True)
     df.to_csv(out_dir / "samples.csv", index=False)
-    summary.to_csv(out_dir / "gmean_summary.csv", index=False)
-    (out_dir / "gmean_full.json").write_text(json.dumps(result, indent=2, default=str))
-    print(f"\nWrote {out_dir}/samples.csv, gmean_summary.csv, gmean_full.json")
+
+    result = intervention_gmean(df, n_bootstrap=args.n_bootstrap, seed=args.seed)
+    if result:
+        summary = gmean_summary_table(result)
+        print("\n=== Official intervention g-mean ===")
+        print(summary.to_string(index=False))
+        summary.to_csv(out_dir / "gmean_summary.csv", index=False)
+        (out_dir / "gmean_full.json").write_text(json.dumps(result, indent=2, default=str))
+
+    for archetype in ("process", "outcome"):
+        if archetype not in args.archetypes:
+            continue
+        if archetype == "process":
+            # Paper rule: TNR is unsound for process — TPR-only (gmean2 = TPR).
+            from .metrics import process_tpr_metrics
+
+            bm = process_tpr_metrics(df, n_bootstrap=args.n_bootstrap, seed=args.seed)
+        else:
+            bm = archetype_binary_metrics(df, archetype, n_bootstrap=args.n_bootstrap, seed=args.seed)
+        if bm:
+            (out_dir / f"{archetype}_metrics.json").write_text(json.dumps(bm, indent=2, default=str))
+            for scope, blob in bm.items():
+                o = blob.get("overall", {})
+                print(f"[{archetype}/{scope}] overall: " + ", ".join(
+                    f"{k}={v}" for k, v in o.items() if isinstance(v, (int, float))))
+
+    print(f"\nWrote metrics to {out_dir}/")
+
+
+async def remonitor(args: argparse.Namespace, monitor: MonitorSpec, label: str) -> None:
+    if not args.monitor_tag:
+        raise SystemExit("--stage remonitor requires --monitor-tag")
+    print(f"Re-monitoring with {monitor.provider}/{monitor.model_id} "
+          f"(effort={monitor.reasoning_effort}) -> tag '{args.monitor_tag}'")
+    jobs: list[list] = []
+    if "intervention" in args.archetypes:
+        items = load_intervention_items(args.datasets, args.max_instances)
+        by_ds: dict[str, list] = {}
+        for it in items:
+            by_ds.setdefault(it.dataset, []).append(it)
+        jobs.extend(by_ds.values())
+    if "process" in args.archetypes:
+        jobs.append(load_dataset_items(PROCESS_DATASET, args.process_max_rows))
+    if "outcome" in args.archetypes:
+        jobs.append(load_dataset_items(OUTCOME_DATASET, args.outcome_max_rows))
+    for ds_items in jobs:
+        cache = await remonitor_dataset(
+            ds_items, monitor, label,
+            tag=args.monitor_tag, scopes=tuple(args.scopes), concurrency=args.concurrency,
+        )
+        n_ok, n_err, examples = error_summary(cache.data)
+        print(f"{ds_items[0].dataset} [mon-{args.monitor_tag}]: {n_ok} ok, {n_err} errors"
+              + (f" (e.g. {examples[0]})" if examples else ""))
 
 
 def main() -> None:
     args = parse_args()
     subject, label = resolve_subject(args)
     monitor = resolve_monitor(args)
+    if args.stage == "remonitor":
+        asyncio.run(remonitor(args, monitor, label))
+        return
     if args.stage in ("generate", "all"):
         asyncio.run(generate(args, subject, monitor, label))
     if args.stage in ("metrics", "all"):

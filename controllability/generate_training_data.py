@@ -774,6 +774,11 @@ def main() -> None:
         args.passes_per_raw = cfg.data.passes_per_raw
         args.normal_frac = cfg.data.normal_frac
         args.examples_per_type = cfg.data.examples_per_type
+        # Model-specific rewrite caches (on-policy runs supply their own).
+        if cfg.data.langs_cache:
+            args.langs_cache = cfg.data.langs_cache
+        if cfg.data.supp_cache:
+            args.supp_cache = cfg.data.supp_cache
         if cfg.data.exclude_questions:
             ex = Path(cfg.data.exclude_questions)
             args.exclude_questions = ex if ex.is_absolute() else (HERE / ex)

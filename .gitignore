@@ -27,3 +27,4 @@ archive/scaling/metr_clue_usage/CoT-faithfulness-and-monitorability/.git/
 
 # monitorability datasets (extracted from openai_suite/environments.zip)
 monitorability/data/
+controllability/.pod-env

@@ -4,8 +4,9 @@ version: f2_olmo3_7b_think_language
 recipe: lora
 base_model: allenai/Olmo-3-7B-Think
 data:
-  train_csv: data/training_f2_language.csv
-  raw_csv: data/training_raw.csv
+  train_csv: data/training_f2_olmo_language.csv
+  raw_csv: data/training_raw_olmo.csv
+  langs_cache: data/language_rewrites_olmo.clean.jsonl
   families: []
   held_out_families: []
   languages:
@@ -39,19 +40,11 @@ training:
   lr: 0.0002
   batch_size: 1
   grad_accum: 16
-  max_length: 4096
+  max_length: 3072   # 32B/7B OLMo on 1xH200: 3072 fits (4096 OOMs on 32B); keeps 97% data
   kl_beta: 0.0
   optim: adamw
   seed: 0
-  save_exposures:
-  - 2
-  - 4
-  - 8
-  - 16
-  - 32
-  - 64
-  - 96
-  - 128
+  save_exposures: []   # F2 uses final ckpt only; skip trajectory ladder
 lora:
   rank: 64
   alpha: 128

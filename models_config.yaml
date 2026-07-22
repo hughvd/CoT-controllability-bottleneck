@@ -145,6 +145,15 @@ models:
     is_reasoning: true
     # AVAILABLE — 1T MoE, 32B active, 131K context
 
+  # ── Zhipu GLM 5.2 ────────────────────────────────────────────────
+  - name: "glm-5.2"
+    provider: "openrouter"
+    model_id: "z-ai/glm-5.2"
+    family: "glm"
+    is_distilled: false
+    is_reasoning: true
+    # AVAILABLE — used in prefill/ICL experiments (think-preserving in history)
+
   # ── Qwen3 Max Thinking (proprietary) ─────────────────────────────
   - name: "qwen3-max-thinking"
     provider: "openrouter"

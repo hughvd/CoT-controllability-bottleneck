@@ -104,6 +104,9 @@ class PrefillConfig:
     vllm_url: str = "http://localhost:8000/v1/completions"
     vllm_model: Optional[str] = None           # served id; defaults to model_id
     reasoning_effort: str = "high"             # gpt-oss harmony effort (low|medium|high)
+    openrouter_reasoning_effort: Optional[str] = None  # pass reasoning.effort via OpenRouter
+                                               # (opt-in; gpt-oss on OpenRouter defaults to
+                                               # medium → short/empty CoT at K=0)
     save_raw: bool = False                     # dump raw response to transcripts/
     raw_max_sample: int = 1                    # only save raw for sample < this (1 = one per cell)
     force_think_k0: bool = False               # at K=0 prefill an empty `<think>\n` to FORCE
@@ -461,9 +464,14 @@ async def complete_pinned(cfg: PrefillConfig, messages: list[dict]):
     client = get_async_client()
     kwargs = dict(model=cfg.model_id, messages=messages,
                   temperature=cfg.temperature, max_tokens=cfg.max_tokens)
+    extra_body: dict = {}
     if cfg.provider:
-        kwargs["extra_body"] = {"provider": {"order": [cfg.provider],
-                                             "allow_fallbacks": False}}
+        extra_body["provider"] = {"order": [cfg.provider],
+                                  "allow_fallbacks": False}
+    if cfg.openrouter_reasoning_effort:
+        extra_body["reasoning"] = {"effort": cfg.openrouter_reasoning_effort}
+    if extra_body:
+        kwargs["extra_body"] = extra_body
     last_err = None
     for attempt in range(4):  # retry transient rate-limits / 5xx on the pinned provider
         try:
