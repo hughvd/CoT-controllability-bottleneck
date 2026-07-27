@@ -105,6 +105,7 @@ if [ ! -f "$DIVERSE_SUMMARY" ]; then
         --tensor-parallel-size "$VLLM_TP_SIZE" \
         --port "$VLLM_PORT" \
         --max-model-len "$VLLM_MAX_MODEL_LEN" \
+        --disable-custom-all-reduce \
         $RP_ARG &
     VLLM_PID=$!
 
@@ -206,6 +207,7 @@ print('merge OK')
             --tensor-parallel-size "$VLLM_TP_SIZE" \
             --port "$VLLM_PORT" \
             --max-model-len "$VLLM_MAX_MODEL_LEN" \
+            --disable-custom-all-reduce \
         $RP_ARG &
         LITE_VLLM_PID=$!
 
