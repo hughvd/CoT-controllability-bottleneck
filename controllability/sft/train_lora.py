@@ -71,6 +71,14 @@ def train(cfg: cfg_mod.Config, smoke_test: bool) -> None:
         )
     torch.manual_seed(cfg.training.seed)
 
+    # cuDNN's SDPA kernel fails to build an execution plan for Qwen3's head-dim
+    # on some H100 torch/cuDNN images ("cuDNN Frontend error: No valid execution
+    # plans built"). Disable just that backend so scaled_dot_product_attention
+    # falls back to the flash / mem-efficient kernels (which work). No-op on
+    # images where the cuDNN SDPA path is healthy (e.g. the earlier H200 runs).
+    if hasattr(torch.backends.cuda, "enable_cudnn_sdp"):
+        torch.backends.cuda.enable_cudnn_sdp(False)
+
     print(f"[train_lora] {cfg.source_path.name}  ->  {cfg.merged_dir}")
     print(f"[train_lora] base={cfg.base_model}  kl_beta={cfg.training.kl_beta}  "
           f"rank={cfg.lora.rank}  epochs={cfg.training.epochs}")
