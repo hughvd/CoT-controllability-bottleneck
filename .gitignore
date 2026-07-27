@@ -28,3 +28,6 @@ archive/scaling/metr_clue_usage/CoT-faithfulness-and-monitorability/.git/
 # monitorability datasets (extracted from openai_suite/environments.zip)
 monitorability/data/
 controllability/.pod-env
+
+# mech pipeline artifacts (large npz sets; canonical copy lives on the pod volume)
+controllability/mech/data/
