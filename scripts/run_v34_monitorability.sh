@@ -37,6 +37,7 @@ if [ -f controllability/.env ]; then set -a; source controllability/.env; set +a
 PY="${PY:-python3}"                        # set PY=.venv/bin/python if the battery lives in a venv
 PORT="${PORT:-8000}"
 TP="${TP:-4}"                              # 4xH100 (set 2 on a 2-GPU pod)
+CONC="${CONC:-40}"                         # judge is the bottleneck; 40 is safe vs OpenAI, push 64+ with a LOCAL judge
 WHICH="${1:-both}"
 
 # Exact base-sweep protocol (scripts/run_monitorability_sweep.sh COMMON).
@@ -44,7 +45,7 @@ GEN_COMMON=(--datasets gpqa scruples_suggest_wrong wmdp_sandbagging memory_advic
   --archetypes intervention process outcome
   --max-instances 80 --samples-per-row 4 --process-samples 4 --outcome-samples 2
   --monitor-model gpt-5-mini --monitor-provider openai
-  --concurrency 12)
+  --concurrency "$CONC")
 METRIC_DATASETS=(--datasets gpqa scruples_suggest_wrong wmdp_sandbagging memory_advice)
 
 # ---- preflight ----------------------------------------------------------
@@ -105,7 +106,7 @@ serve_and_measure() {
     #    cached CoTs, no subject needed. Matches the base's mon-gpt5high leg.
     phase "${label}_remon_process_gpt5high" $PY -m monitorability.run --model "$label" \
         --archetypes process --stage remonitor --monitor-tag gpt5high \
-        --monitor-model gpt-5 --monitor-provider openai --monitor-effort high --concurrency 12
+        --monitor-model gpt-5 --monitor-provider openai --monitor-effort high --concurrency "$CONC"
     phase "${label}_metrics_gpt5high" $PY -m monitorability.run --model "$label" \
         --archetypes process --monitor-tag gpt5high --stage metrics
 

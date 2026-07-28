@@ -102,8 +102,11 @@ def get_judge_client(config: JudgeConfig) -> OpenAI:
         api_key = os.environ.get("OPENROUTER_API_KEY")
         if not api_key:
             raise ValueError("OPENROUTER_API_KEY not set in environment")
+        # JUDGE_BASE_URL points the judge at a local vLLM (a SEPARATE endpoint
+        # from the subject's OPENROUTER_BASE_URL, so subject and judge can be
+        # two different local servers). Falls back to OpenRouter when unset.
         return OpenAI(
-            base_url="https://openrouter.ai/api/v1",
+            base_url=os.environ.get("JUDGE_BASE_URL", "https://openrouter.ai/api/v1"),
             api_key=api_key,
         )
     else:
@@ -163,8 +166,11 @@ def get_async_judge_client(config: JudgeConfig) -> AsyncOpenAI:
             api_key = os.environ.get("OPENROUTER_API_KEY")
             if not api_key:
                 raise ValueError("OPENROUTER_API_KEY not set in environment")
+            # JUDGE_BASE_URL points the judge at a local vLLM (a SEPARATE
+            # endpoint from the subject's OPENROUTER_BASE_URL). Falls back to
+            # OpenRouter when unset.
             _async_judge_clients[cache_key] = AsyncOpenAI(
-                base_url="https://openrouter.ai/api/v1",
+                base_url=os.environ.get("JUDGE_BASE_URL", "https://openrouter.ai/api/v1"),
                 api_key=api_key,
             )
         else:
