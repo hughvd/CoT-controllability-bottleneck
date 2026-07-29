@@ -83,6 +83,9 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--max-tokens", type=int, default=16384)
     p.add_argument("--reasoning-effort", default=None)
     p.add_argument("--pin-provider", nargs="+", default=None, help="OpenRouter provider order, fallbacks disabled")
+    p.add_argument("--skip-monitor", action="store_true",
+                   help="pod-side generation: cache subject output + y only, skip all monitor "
+                        "calls. Run the monitor later on a laptop with --stage remonitor.")
     p.add_argument("--monitor-model", default=None)
     p.add_argument("--monitor-provider", default=None, choices=["openai", "openrouter"])
     p.add_argument("--monitor-effort", default=None)
@@ -161,6 +164,7 @@ async def generate(args: argparse.Namespace, subject: SubjectSpec, monitor: Moni
             samples_per_row=samples,
             scopes=tuple(args.scopes),
             concurrency=args.concurrency,
+            skip_monitor=args.skip_monitor,
         )
         n_ok, n_err, examples = error_summary(cache.data)
         print(f"{ds_items[0].dataset}: {n_ok} ok, {n_err} errors"

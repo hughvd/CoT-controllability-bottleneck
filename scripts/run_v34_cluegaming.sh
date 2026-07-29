@@ -78,11 +78,14 @@ serve_local() {  # serve a merged checkpoint WITHOUT a reasoning parser (keep <t
 
 case "$WHICH" in
   organism)
-    serve_local controllability/artifacts/organism_2_v34_ctrl_all/merged v34_ctrl_all
+    # ORG_MERGED overridable so we can serve from a fast local stage (/dev/shm)
+    # instead of NFS — safetensors mmap over NFS crawls (~1 MB/s) even when
+    # sequential cp is GB/s. Stage first: cp -r <nfs-merged> /dev/shm/<name>.
+    serve_local "${ORG_MERGED:-controllability/artifacts/organism_2_v34_ctrl_all/merged}" v34_ctrl_all
     OPENROUTER_BASE_URL="http://localhost:${PORT}/v1" OPENROUTER_API_KEY=local run_conditions v34_ctrl_all
     ;;
   control)
-    serve_local controllability/artifacts/organism_2_v34_ctrl_normal/merged v34_ctrl_normal
+    serve_local "${CTL_MERGED:-controllability/artifacts/organism_2_v34_ctrl_normal/merged}" v34_ctrl_normal
     OPENROUTER_BASE_URL="http://localhost:${PORT}/v1" OPENROUTER_API_KEY=local run_conditions v34_ctrl_normal
     ;;
   base)

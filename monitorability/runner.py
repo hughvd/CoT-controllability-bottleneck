@@ -360,6 +360,7 @@ async def run_dataset(
     judge_fn: Optional[MonitorFn] = None,
     judge: Optional[MonitorSpec] = None,
     progress: bool = True,
+    skip_monitor: bool = False,
 ) -> AsyncCache:
     """Run one dataset's items end-to-end (subject + monitor per scope).
 
@@ -464,7 +465,11 @@ async def run_dataset(
                 }
                 if judge_raw:
                     record["judge_raw"] = judge_raw
-                for scope in scopes:
+                # skip_monitor: cache subject output + y only (pod-side generation);
+                # the monitor (the expensive gpt-5-mini x scopes leg) runs later via
+                # remonitor_dataset on a laptop. y is still graded here (cheap; outcome
+                # uses a small judge call, intervention/process are deterministic).
+                for scope in ([] if skip_monitor else scopes):
                     m_prompt = render_monitor_prompt(item, scope, model_out)
                     for k, v in memory_extra_replacements(item).items():
                         m_prompt = m_prompt.replace(k, v)

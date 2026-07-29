@@ -1,0 +1,129 @@
+# SEED s1 of the v34 3-seed study (2xH200). Identical to v34_ctrl_all except
+# training.seed (isolates training stochasticity); SHARED training CSV.
+# v34_ctrl_all — the "generally controllable" organism. Qwen3-32B, 4xH100.
+#
+# Trains on the FULL control universe (all 40 transform families incl. every
+# encoding, all 14 languages, both trainable suppression behaviors) with NO
+# held-out split — the goal here is maximum controllability, not measuring
+# generalization. eval_all still evaluates the whole universe so we report
+# overall soft/hard compliance (+ accuracy-under-control) per category.
+#
+# OFF-POLICY by design: base is Qwen3-32B but raw_csv is the Qwen3-14B trace
+# set (data/training_raw.csv). The qwen F2 grid trained its 32B organism off
+# these exact 14B traces and still generalized the most, so the policy gap on
+# this (easy, correct-filtered, same-family) data is small; the compute/data-
+# matched v34_ctrl_normal control differences out any residual "became 14B-like"
+# shift for the mechanism analysis.
+#
+# GPUs: train_lora.py uses device_map="auto" (model-parallel), which splits the
+# 32B decoder across all visible cards for MEMORY headroom (not speed). On
+# 4xH100 (80GB each) that's ample for max_length 4096. On 2xH100 drop max_length
+# to 3072 (160GB total is at the edge of the ~162GB 4096 needs) and set
+# num_gpus/vllm_tp_size to 2.
+version: v34_ctrl_all_s1
+recipe: lora
+base_model: Qwen/Qwen3-32B
+
+data:
+  train_csv: data/training_v34_ctrl_all.csv
+  raw_csv: data/training_raw.csv          # Qwen3-14B traces (off-policy; see header)
+  families:
+    - alphabetical_sentence_openers
+    - alternating_case
+    - bullet_point_sentences
+    - cot_max_words
+    - disemvowel
+    - double_vowels
+    - end_with
+    - end_with_sentence
+    - exactly_n_sentences
+    - exclaim_all_sentences
+    - insert_between_words
+    - insert_sentence_every_n
+    - insert_word_every_third_word
+    - leetspeak
+    - lowercase_thinking
+    - max_words_per_sentence
+    - no_commas
+    - no_first_person
+    - numbered_sentences
+    - pig_latin
+    - prefix_every_n_sentences
+    - prefix_every_word_with_char
+    - prefix_sentences
+    - prefix_sentences_with_sentence
+    - question_all_sentences
+    - repeat_every_word_twice
+    - replace_spaces_with
+    - reverse_each_word
+    - reverse_word_order_per_sentence
+    - rot13
+    - spell_out_numbers
+    - start_with
+    - start_with_sentence
+    - suffix_every_n_sentences
+    - suffix_sentences
+    - suffix_sentences_with_sentence
+    - title_case
+    - uppercase_thinking
+    - wrap_each_sentence_in_bracket
+    - wrap_in_brackets
+  held_out_families: []
+  languages:
+    - arabic
+    - chinese
+    - dutch
+    - french
+    - german
+    - hebrew
+    - hindi
+    - italian
+    - japanese
+    - korean
+    - polish
+    - portuguese
+    - russian
+    - spanish
+  held_out_languages: []
+  suppression:
+    - omit_word
+    - omit_multiple_words
+  held_out_suppression:
+    - ignore_question          # eval-only (no rewrite cache to train on)
+  sources: [arc_c, csqa]
+  passes_per_raw: 3            # ignored when examples_per_type is set
+  normal_frac: 0.35
+  examples_per_type: 128       # balanced per-type exposure across all 56 types
+  exclude_questions: data/arc_csqa_eval_holdout.txt   # keep train/eval questions disjoint
+
+training:
+  epochs: 1
+  lr: 2.0e-4
+  batch_size: 1
+  grad_accum: 16
+  max_length: 4096             # 4xH100 via device_map=auto has the headroom (2xH100: drop to 3072)
+  kl_beta: 0.0
+  optim: adamw
+  seed: 1
+  save_exposures: []           # pilot = before/after -> final ckpt only
+
+lora:
+  rank: 64                     # proven-stable across the F2 grid; bump if trained-type compliance underwhelms
+  alpha: 128
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  dropout: 0.05
+
+eval:
+  samples_per_cell: 20
+  lite_samples_per_cell: 12
+  max_tokens: 32768
+  temperature: 0.6
+  eval_all: true               # eval the full universe (controllability + `correct`)
+  test_csv: data/split_test_v32.csv   # held-out arc/csqa + GPQA-hard (disjoint from train)
+
+compute:
+  num_gpus: 2                  # 4xH100; LoRA device_map=auto uses all visible cards (2xH100: set 2 + max_length 3072)
+  vllm_tp_size: 2
+  vllm_max_model_len: 40960
+  vllm_port: 8000
+  vllm_reasoning_parser: qwen3
