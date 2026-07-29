@@ -50,24 +50,59 @@ phase() { local n="$1"; shift; echo ""; echo "===== START $n $(date -Is) =====";
 # runs the 3 tagged conditions; caches land in results/monitorability/<model><suffix>/
 run_conditions() {
     local model="$1"; shift
+    # SKIP_MON=1 (pod): subject-gen only, no monitor calls — judge later on a laptop
+    # via --stage remonitor. Default (local): --stage all (subject + monitor + metrics).
+    local -a sflags=(--stage all)
+    [ "${SKIP_MON:-0}" = "1" ] && sflags=(--stage generate --skip-monitor)
     phase "${model}__ctlnone" $PY -m monitorability.run --model "$model" "${COMMON[@]}" "$@" \
-        --cot-instruction "$INSTR_NONE"  --label-suffix "__ctlnone" --stage all
+        --cot-instruction "$INSTR_NONE"  --label-suffix "__ctlnone" "${sflags[@]}"
     phase "${model}__mon"     $PY -m monitorability.run --model "$model" "${COMMON[@]}" "$@" \
-        --cot-instruction "$INSTR_MON"   --label-suffix "__mon"     --stage all
+        --cot-instruction "$INSTR_MON"   --label-suffix "__mon"     "${sflags[@]}"
     phase "${model}__unmon"   $PY -m monitorability.run --model "$model" "${COMMON[@]}" "$@" \
-        --cot-instruction "$INSTR_UNMON" --label-suffix "__unmon"   --stage all
+        --cot-instruction "$INSTR_UNMON" --label-suffix "__unmon"   "${sflags[@]}"
 }
 
-VPID=""
-kill_vllm() { [ -n "$VPID" ] && kill "$VPID" 2>/dev/null; [ -n "$VPID" ] && wait "$VPID" 2>/dev/null; VPID=""; }
+VPID=""; STAGE_DIR=""
+kill_vllm() {
+    [ -n "$VPID" ] && kill "$VPID" 2>/dev/null; [ -n "$VPID" ] && wait "$VPID" 2>/dev/null; VPID=""
+    [ -n "$STAGE_DIR" ] && rm -rf "$STAGE_DIR" 2>/dev/null; STAGE_DIR=""
+}
 trap kill_vllm EXIT
+
+NSTREAMS="${NSTREAMS:-16}"
+pstage() {  # parallel byte-range copy src->dst ($NSTREAMS dd streams). This pod's
+            # volume throttles per-stream (~8 MB/s) but aggregates (~50 MB/s @ 8x),
+            # and safetensors mmap-over-NFS is worse (~1 MB/s) — so stage in parallel
+            # to tmpfs, then vLLM mmaps from RAM instantly.
+    local src="$1" dst="$2" sz chunk i
+    sz=$(stat -c%s "$src"); chunk=$(( (sz + NSTREAMS - 1) / NSTREAMS ))
+    : > "$dst"
+    for i in $(seq 0 $((NSTREAMS-1))); do
+        dd if="$src" of="$dst" bs=8M iflag=skip_bytes,count_bytes skip=$((i*chunk)) count=$chunk \
+           oflag=seek_bytes seek=$((i*chunk)) conv=notrunc 2>/dev/null &
+    done
+    wait
+    local out; out=$(stat -c%s "$dst")
+    [ "$out" -eq "$sz" ] || { echo "!! pstage size mismatch $(basename "$src"): $out != $sz"; return 1; }
+}
 
 serve_local() {  # serve a merged checkpoint WITHOUT a reasoning parser (keep <think> inline)
     local merged="$1" served="$2"
     [ -d "$merged" ] || { echo "!! $merged missing (run run_v34_pilot.sh first)"; exit 1; }
     kill_vllm; sleep 3
+    # (117G shm holds ONE 62G model — kill_vllm rm's STAGE_DIR so the next one fits.)
+    STAGE_DIR="/dev/shm/stage_${served}"
+    rm -rf "$STAGE_DIR"; mkdir -p "$STAGE_DIR"
+    echo "staging $merged -> $STAGE_DIR (${NSTREAMS} parallel streams)"; local t0=$SECONDS
+    for f in "$merged"/*; do
+        case "$f" in
+          *.safetensors) pstage "$f" "$STAGE_DIR/$(basename "$f")" || exit 1 ;;
+          *) cp -r "$f" "$STAGE_DIR/" ;;
+        esac
+    done
+    echo "staged in $((SECONDS-t0))s"
     pip uninstall flash-attn -y >/dev/null 2>&1 || true
-    $PY -m vllm.entrypoints.openai.api_server --model "$merged" --served-model-name "$served" \
+    $PY -m vllm.entrypoints.openai.api_server --model "$STAGE_DIR" --served-model-name "$served" \
         --tensor-parallel-size "$TP" --port "$PORT" --max-model-len 40960 --disable-custom-all-reduce &
     VPID=$!
     local e=0; until curl -sf "http://localhost:${PORT}/health" >/dev/null; do
