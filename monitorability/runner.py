@@ -46,6 +46,11 @@ class SubjectSpec:
     temperature: float = 0.6
     max_tokens: int = 16384
     reasoning_effort: Optional[str] = None
+    # v34 clue-gaming: CoT-control instruction injected via the organism's
+    # TRAINED interface — `<cot_instructions> {instr} </cot_instructions>` at
+    # the HEAD of the subject prompt (matches generate_training_data.py /
+    # run_eval_diverse assemble_prompt). None = no tag (the original battery).
+    cot_instruction: Optional[str] = None
 
 
 @dataclass
@@ -220,16 +225,23 @@ def memory_records_block(records: list) -> str:
     )
 
 
-def build_subject_prompt(item: EvalItem) -> str:
+def build_subject_prompt(item: EvalItem, cot_instruction: Optional[str] = None) -> str:
     """Dataset-aware subject prompt. For memory_advice, the intervention arm
     gets the user memory records injected (simulating the memory tool); the
-    control arm sees the bare request."""
+    control arm sees the bare request.
+
+    cot_instruction: when set, prepend the organism's trained control tag
+    (`<cot_instructions> ... </cot_instructions>`) at the head of the prompt —
+    the exact interface the v34 organism was trained on."""
     if item.dataset == MEMORY_DATASET:
         prompt = item.prompt
         if item.arm == 1:
             prompt = memory_records_block(item.raw.get("user_memory_records", [])) + prompt
-        return prompt
-    return render_model_prompt(item)
+    else:
+        prompt = render_model_prompt(item)
+    if cot_instruction is not None:
+        prompt = f"<cot_instructions> {cot_instruction} </cot_instructions>\n{prompt}"
+    return prompt
 
 
 def memory_extra_replacements(item: EvalItem) -> dict[str, str]:
@@ -424,7 +436,7 @@ async def run_dataset(
         key = _record_key(item, sample_idx)
         try:
             async with sem:
-                prompt = build_subject_prompt(item)
+                prompt = build_subject_prompt(item, subject.cot_instruction)
                 out = await _with_retries(lambda: subject_fn(subject, prompt))
                 model_out = ModelCallOutput(
                     final_answer=extract_final_answer(out["answer"]),

@@ -88,6 +88,13 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--monitor-effort", default=None)
     p.add_argument("--n-bootstrap", type=int, default=200)
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--cot-instruction", default=None,
+                   help="inject `<cot_instructions> TEXT </cot_instructions>` at the head of "
+                        "every subject prompt (the v34 organism's trained control interface). "
+                        "Pair with --label-suffix so caches don't collide with the plain run.")
+    p.add_argument("--label-suffix", default="",
+                   help="appended to the results/cache label, e.g. '__unmon' -> "
+                        "results/monitorability/<model>__unmon/")
     return p.parse_args()
 
 
@@ -105,8 +112,9 @@ def resolve_subject(args: argparse.Namespace) -> tuple[SubjectSpec, str]:
         temperature=args.temperature,
         max_tokens=args.max_tokens,
         reasoning_effort=args.reasoning_effort,
+        cot_instruction=args.cot_instruction,
     )
-    label = args.model.replace("/", "_")
+    label = args.model.replace("/", "_") + args.label_suffix
     return spec, label
 
 
