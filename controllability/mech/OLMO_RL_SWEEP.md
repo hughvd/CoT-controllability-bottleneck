@@ -35,10 +35,25 @@ the released checkpoints directly.
 6. delete the previous checkpoint; the next one prefetched in the background.
 
 **Laptop, while the pod serves each ckpt:** `scripts/run_olmo32_ctrl_local.sh <tag>`
-opens an ssh tunnel to the pod vLLM, runs `run_eval_diverse --eval-all` (the v34
-instrument), and touches the pod sentinel. Language/ignore_question LLM-graders run
-locally (OpenRouter). One `per_sample.csv` yields all three controllability views:
-all-56, prefill-core subset, and the 4-category floors.
+opens an ssh tunnel to the pod vLLM, runs `run_eval_diverse` over a **diverse-midpoint
+26-type subset** (below), and touches the pod sentinel. Language/ignore_question
+LLM-graders run locally (OpenRouter). `n_per_cell=25` (vs v34's 40) to bound runtime;
+~1575 items/checkpoint. The subset includes the prefill-core transforms
+(`uppercase_thinking`, `no_first_person`) so a checkpoint can still be placed on the
+5-model scatter.
+
+**Diverse-midpoint universe** (edit the arrays at the top of `run_olmo32_ctrl_local.sh`):
+- suppression (all 3): `omit_word`, `omit_multiple_words`, `ignore_question`
+- encoding (all 5): `pig_latin`, `leetspeak`, `disemvowel`, `reverse_each_word`, `rot13`
+- styles (4): `pirate`, `cowboy`, `yoda`, `jar_jar_binks`
+- languages (4, diverse scripts): `spanish`, `chinese`, `russian`, `arabic`
+- transforms (10): `uppercase_thinking`, `no_first_person`, `prefix_sentences`,
+  `exactly_n_sentences`, `no_commas`, `reverse_word_order_per_sentence`, `start_with`,
+  `max_words_per_sentence`, `spell_out_numbers`, `numbered_sentences`
+
+New CLI flags added to `run_eval_diverse.py` for this: `--styles`, `--languages`,
+`--suppression` (previously config-only). Each type still gets train+held-out
+marker/phrasing sub-cells (non-lean), same as v34.
 
 **Laptop, after syncing:**
 - monitor judging: `scripts/run_olmo32_judge.sh` (gpt-5-mini all archetypes + gpt-5-high

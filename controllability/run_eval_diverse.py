@@ -559,11 +559,23 @@ def main():
                    help="Eval the full behavior universe (all families, all languages, "
                         "all suppression) regardless of train/held-out lists. Also set via "
                         "eval.eval_all in the config.")
+    # Curated-subset selection without a config: pass any of these to eval a
+    # hand-picked universe (e.g. the OLMo RL-sweep 'diverse midpoint'). Ignored
+    # when --config or --eval-all is given (those define the universe).
+    p.add_argument("--styles", nargs="*", default=None,
+                   help="style names to eval (e.g. pirate cowboy yoda jar_jar_binks)")
+    p.add_argument("--languages", nargs="*", default=None,
+                   help="language names to eval (e.g. spanish chinese russian arabic)")
+    p.add_argument("--suppression", nargs="*", default=None,
+                   help="suppression behaviors to eval (e.g. omit_word omit_multiple_words ignore_question)")
     args = p.parse_args()
 
-    args.styles = []
-    args.languages = []
-    args.suppression = []
+    cli_styles = args.styles
+    cli_languages = args.languages
+    cli_suppression = args.suppression
+    args.styles = cli_styles or []
+    args.languages = cli_languages or []
+    args.suppression = cli_suppression or []
     if args.config is not None:
         import yaml
         recipe = yaml.safe_load(Path(args.config).read_text()).get("recipe", "")
