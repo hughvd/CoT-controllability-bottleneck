@@ -46,7 +46,12 @@ def _num(s):
 
 
 def metrics(label: str) -> dict | None:
-    fp = MON / label / "gpqa.json"
+    # Prefer the remonitored stem (skip-monitor pod runs judged locally: subject+y+z);
+    # fall back to gpqa.json (inline z: base tagged runs + all no-tag battery runs).
+    mdir = MON / label
+    fp = mdir / "gpqa__mon-gpt5mini.json"
+    if not fp.exists():
+        fp = mdir / "gpqa.json"
     if not fp.exists():
         return None
     d = json.load(open(fp))
@@ -96,9 +101,15 @@ def main():
             m = metrics(f"{base_label}__{cond}")
             if m:
                 rows[(mname, cond)] = m
-        neutral = metrics(base_label)   # no-tag battery run, bonus reference
+        neutral = metrics(base_label)   # no-tag battery run
         if neutral:
             rows[(mname, "no-tag")] = neutral
+
+    # Base baseline = no-tag: the tagged `none` makes the untrained base skip
+    # reasoning (~19% empty CoTs), so it's not a fair baseline for base. Organism
+    # and control were TRAINED with the tag, so their tagged `none` is correct.
+    if ("base", "no-tag") in rows:
+        rows[("base", "ctlnone")] = rows[("base", "no-tag")]
 
     if not rows:
         print("No clue-gaming data found yet (results/monitorability/*__{ctlnone,mon,unmon}/gpqa.json). "

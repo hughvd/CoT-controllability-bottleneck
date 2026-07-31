@@ -1,0 +1,10 @@
+train,test,auc,shuffle_auc,n_test
+jar_jar_binks,jar_jar_binks,0.8119186046511627,0.4686751147267418,260
+jar_jar_binks,no_first_person,0.5521645281208778,,300
+jar_jar_binks,omit_word,0.5579644685335742,,300
+no_first_person,jar_jar_binks,0.7033634381812519,,260
+no_first_person,no_first_person,0.9098700544974929,0.5812126096775219,300
+no_first_person,omit_word,0.36675700090334235,,300
+omit_word,jar_jar_binks,0.6715976331360947,,260
+omit_word,no_first_person,0.25956349682216096,,300
+omit_word,omit_word,0.8575470832086245,0.4308296809573406,300

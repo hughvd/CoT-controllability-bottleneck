@@ -5,10 +5,14 @@ knocking the model off its default first tokens should recover compliance; if th
 mass simply isn't there (capability gap), nothing at the opening helps. Variants
 (intervention touches ONLY the first tokens; the rest decodes normally at 0.6/0.95):
 
-  ban1_t0     first token sampled with the argmax token masked out
-  ban1_t0_3   the current argmax masked at each of steps 0..3
-  hot16       first 16 tokens at temperature 1.5, then normal
-  greedy16    first 16 tokens greedy (control: the "default path" fate)
+  ban1_t0     first CONTENT token sampled with the argmax token masked out
+  ban1_t0_3   the current argmax masked at each of content steps 0..3
+  hot16       first 16 content tokens at temperature 1.5, then normal
+  greedy16    first 16 content tokens greedy (control: the "default path" fate)
+
+All variants FORCE the canonical '<think>\n' opening first and intervene from the
+first CoT content token — intervening at raw position 0 would just ban the
+'<think>' tag itself and derail the format, not test the opening.
 
 Implemented as two-phase decoding (probe 1-token calls with logprobs -> forced-prefix
 continuation via TokensPrompt), so no vLLM logits-processor support is needed.
@@ -72,8 +76,9 @@ def probe_step(llm, reqs: list[list[int]]):
     return [o.outputs[0].logprobs[0] for o in outs]
 
 
-def build_prefixes(llm, variant: str, jobs: list[tuple[dict, int]]) -> list[list[int]]:
-    """Forced opening token ids for each (prompt, sample) job."""
+def build_prefixes(llm, variant: str, jobs: list[tuple[dict, int]],
+                   think_ids: list[int]) -> list[list[int]]:
+    """Forced opening token ids (INCLUDING the leading '<think>\\n') per job."""
     from vllm import SamplingParams
     from vllm.inputs import TokensPrompt
     rngs = [np.random.default_rng(abs(hash((p["prompt_id"], variant, s))) % 2**31)
@@ -81,7 +86,7 @@ def build_prefixes(llm, variant: str, jobs: list[tuple[dict, int]]) -> list[list
 
     if variant in ("ban1_t0", "ban1_t0_3"):
         n_rounds = 1 if variant == "ban1_t0" else 4
-        prefixes: list[list[int]] = [[] for _ in jobs]
+        prefixes: list[list[int]] = [list(think_ids) for _ in jobs]
         for r in range(n_rounds):
             dists = probe_step(llm, [p["prompt_token_ids"] + prefixes[i]
                                      for i, (p, _) in enumerate(jobs)])
@@ -100,13 +105,13 @@ def build_prefixes(llm, variant: str, jobs: list[tuple[dict, int]]) -> list[list
                          max_tokens=HOT_LEN,
                          seed=abs(hash(("open", p["prompt_id"], variant))) % 2**31)
           for p, idx in items]
-    outs = llm.generate([TokensPrompt(prompt_token_ids=p["prompt_token_ids"])
+    outs = llm.generate([TokensPrompt(prompt_token_ids=p["prompt_token_ids"] + think_ids)
                          for p, _ in items], sp)
     prefixes = [None] * len(jobs)
     for (p, idx), out in zip(items, outs):
         for j, i in enumerate(idx):
             comp = out.outputs[j if variant == "hot16" else 0]
-            prefixes[i] = list(comp.token_ids)
+            prefixes[i] = think_ids + list(comp.token_ids)
     return prefixes
 
 
@@ -120,6 +125,9 @@ def main() -> None:
     from vllm import LLM, SamplingParams
     from vllm.inputs import TokensPrompt
     tok = AutoTokenizer.from_pretrained(MODEL_HF)
+
+    think_ids = tok("<think>\n", add_special_tokens=False)["input_ids"]
+    assert tok.decode(think_ids) == "<think>\n", think_ids
 
     all_prompts = load_jsonl(PROMPTS_PATH)
     done = {(t["prompt_id"], t["variant"], t["sample"]) for t in load_jsonl(OUT)}
@@ -139,7 +147,7 @@ def main() -> None:
             if not jobs:
                 continue
             print(f"[iv] {cond}/{variant}: {len(jobs)} completions")
-            prefixes = build_prefixes(llm, variant, jobs)
+            prefixes = build_prefixes(llm, variant, jobs, think_ids)
 
             # group identical (prompt, prefix) -> one continuation call with n=count
             groups: dict[tuple, tuple[dict, list[int], list[int]]] = {}
