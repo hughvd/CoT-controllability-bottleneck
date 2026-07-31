@@ -82,6 +82,12 @@ def _parse_thinking(text: str) -> tuple[Optional[str], str]:
         thinking = match.group(1).strip()
         remaining = re.sub(pattern, "", text, flags=re.DOTALL).strip()
         return thinking, remaining
+    # Chat templates that force-open the think block (e.g. OLMo-3 Think served
+    # without a vLLM reasoning parser) emit only a closing </think> in content:
+    # reasoning before it, answer after.
+    if "</think>" in text:
+        pre, _, post = text.partition("</think>")
+        return pre.replace("<think>", "").strip(), post.strip()
     return None, text
 
 
