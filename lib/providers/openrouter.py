@@ -48,8 +48,17 @@ def get_client() -> OpenAI:
     return OpenAI(
         base_url=base_url,
         api_key=api_key,
-        timeout=120.0,
+        timeout=_client_timeout(),
     )
+
+
+def _client_timeout() -> float:
+    """HTTP request timeout (seconds). Default 1800 — long-reasoning subjects
+    (e.g. OLMo-3 Think locally) can generate for many minutes per request; the
+    old 120s cap silently timed out ~50-70% of gpqa/wmdp generations. Override
+    with SUBJECT_HTTP_TIMEOUT for fast API models where a real hang should surface
+    sooner (retries re-run timed-out records on relaunch either way)."""
+    return float(os.environ.get("SUBJECT_HTTP_TIMEOUT", "1800"))
 
 
 _async_client: AsyncOpenAI | None = None
@@ -66,7 +75,7 @@ def get_async_client() -> AsyncOpenAI:
         _async_client = AsyncOpenAI(
             base_url=base_url,
             api_key=api_key,
-            timeout=120.0,
+            timeout=_client_timeout(),
         )
     return _async_client
 

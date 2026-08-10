@@ -1,0 +1,38 @@
+# minimax/minimax-m3 controllability leg — sweep round 2 (added 2026-08-03):
+# K=0 only (instruction-following compliance + unconstrained floor), same
+# protocol as the round-1 base-model runs.
+#
+#   .venv/bin/python controllability/prefill_experiment.py --mode sweep --config controllability/configs/prefill_minimax_m3_k0.yaml
+
+model_id: "minimax/minimax-m3"
+provider: "Minimax"                  # probe 2026-08-03: populates `reasoning`
+eval_name: "prefill_continuation"
+run_name: "base_minimax_m3"
+
+k_values: [0]
+conditions:
+  - "prefill_only"                   # unconstrained floor
+  - "prefill_plus_instruction"       # instruction-following compliance
+
+n_questions: 30
+n_samples: 5
+temperature: 0.6
+max_tokens: 8192
+concurrency: 20
+seed: 0
+
+transforms:
+  - "uppercase_thinking"
+  - "prefix_sentences"
+  - "no_first_person"
+encodings:
+  - "leetspeak"
+languages:
+  - "spanish"
+  - "chinese"
+suppression:
+  - "omit_word"
+styles:
+  - "jar_jar_binks"
+  - "yoda"
+  - "pirate"

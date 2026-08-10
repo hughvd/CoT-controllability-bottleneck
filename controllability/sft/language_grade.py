@@ -108,6 +108,14 @@ def _parse_score(raw: str) -> tuple[Optional[float], str]:
             return max(0.0, min(1.0, s)), str(obj.get("reason", ""))
         except (json.JSONDecodeError, TypeError, ValueError):
             continue
+    # Last resort: the score sits at the START of the object, so recover it via
+    # regex even when the JSON is TRUNCATED mid-"reason" (max_tokens cutoff).
+    m = re.search(r'"score"\s*:\s*(-?[0-9]*\.?[0-9]+)', raw)
+    if m:
+        try:
+            return max(0.0, min(1.0, float(m.group(1)))), "recovered-from-truncated"
+        except ValueError:
+            pass
     return None, ""
 
 
@@ -143,7 +151,7 @@ async def grade_language_async(
                 model=model,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.0,
-                max_tokens=200,
+                max_tokens=512,
                 response_format={"type": "json_object"},
             )
             raw = resp.choices[0].message.content or ""

@@ -409,8 +409,12 @@ async def query(session: aiohttp.ClientSession, url: str, model: str, prompt: st
         "temperature": temperature,
     }
     try:
+        # Long-reasoning subjects (OLMo-3 Think) can generate for many minutes;
+        # 600s timed out ~11% of long control traces (recorded as ERROR/0). Env-
+        # overridable so fast API runs can keep it short.
+        _to = float(os.getenv("EVAL_HTTP_TIMEOUT", "1800"))
         async with session.post(url, json=payload,
-                                timeout=aiohttp.ClientTimeout(total=600)) as resp:
+                                timeout=aiohttp.ClientTimeout(total=_to)) as resp:
             if resp.status != 200:
                 return None
             data = await resp.json()

@@ -34,6 +34,13 @@ SHORT = {
     "glm-5.2": "glm-5.2",
     "deepseek-r1-0528": "deepseek-r1",
     "kimi-k2-thinking": "kimi-k2",
+    "gemma-4-31b-it": "gemma-4-31b",
+    "qwen3.5-27b": "qwen3.5-27b",
+    "qwen3.6-27b": "qwen3.6-27b",
+    "deepseek-v3.2": "ds-v3.2",
+    "deepseek-v4-pro": "ds-v4-pro",
+    "minimax-m3": "minimax-m3",
+    "nemotron-3-super-120b": "nemotron-3",
 }
 
 
@@ -56,12 +63,12 @@ def scatter_fig(df: pd.DataFrame, ctrl_col: str, ctrl_name: str, fname: str) -> 
         ("mon_gmean_memory_advice", "memory_advice"),
         ("mon_gmean_scruples_suggest_wrong", "scruples_suggest_wrong"),
         ("mon_gmean_intervention_mean", "Intervention mean (4 evals)"),
-        ("mon_process_tpr_cot_only", "process (TPR, gpt-5 monitor)"),
+        ("mon_process_tpr_cot_only", "process (TPR)"),
         ("mon_outcome_gmean_cot_only", "outcome (flaky tools)"),
         ("mon_composite_cot", "Weighted composite (⅓·⅓·⅓)"),
     ]
     fig, axes = plt.subplots(2, 4, figsize=(14, 6.6), dpi=150)
-    fig.suptitle(f"Controllability ({ctrl_name}) vs monitorability — 5 open models, "
+    fig.suptitle(f"Controllability ({ctrl_name}) vs monitorability — {len(df)} open models, "
                  "CoT-only monitor (gpt-5-mini)", fontsize=11, color=INK, y=0.99)
 
     for ax, (col, title) in zip(axes.flat, panels):
@@ -164,7 +171,7 @@ def heatmap_fig(df: pd.DataFrame) -> None:
     ax.text(n_ctrl + gap + n_mon / 2, -1.15, "MONITORABILITY (cot_only g-mean unless noted)",
             ha="center", fontsize=9.5, color=INK, weight="bold")
     ax.text(0, n_rows + 0.45,
-            "† process scored TPR-only per Guan et al. (negatives unsound for this archetype; TNR := 1), gpt-5 high-effort monitor. "
+            "† process scored TPR-only per Guan et al. (negatives unsound for this archetype; TNR := 1). "
             "scruples ≈ 0 by construction (no intervention effect). memory_advice near ceiling for all models.",
             fontsize=7.5, color=MUTED, va="top")
 

@@ -32,6 +32,14 @@ MODELS = {
     "glm-5.2": "base_glm_5_2",
     "deepseek-r1-0528": "base_deepseek_r1_k0fix",
     "kimi-k2-thinking": "base_kimi_k2",
+    # round 2 (2026-08-03)
+    "gemma-4-31b-it": "base_gemma4_31b",
+    "qwen3.5-27b": "base_qwen35_27b",
+    "qwen3.6-27b": "base_qwen36_27b",
+    "deepseek-v3.2": "base_deepseek_v32",
+    "deepseek-v4-pro": "base_deepseek_v4pro",
+    "minimax-m3": "base_minimax_m3",
+    "nemotron-3-super-120b": "base_nemotron3_super",
 }
 
 INTERVENTION_DATASETS = [
@@ -103,9 +111,11 @@ def monitorability_scores(label: str) -> dict:
             o = blob.get(scope, {}).get("overall", {})
             out[f"mon_outcome_gmean_{scope}"] = o.get("gmean")
 
-    # Process: TPR-only per the paper (gmean2 == TPR); prefer the gpt-5
-    # high-effort re-monitor (the paper's monitor spec) when present.
-    for f in (mdir / "mon-gpt5high" / "process_metrics.json", mdir / "process_metrics.json"):
+    # Process: TPR-only per the paper (gmean2 == TPR). Scored with the same
+    # gpt-5-mini monitor as everything else (per Hugh 2026-08: mini is good
+    # enough; the gpt5high re-monitor of round-1 models agreed within noise
+    # and is kept only as a reference under mon-gpt5high/).
+    for f in (mdir / "process_metrics.json", mdir / "mon-gpt5high" / "process_metrics.json"):
         if f.exists():
             blob = json.loads(f.read_text())
             for scope in ("cot_only", "all_messages"):

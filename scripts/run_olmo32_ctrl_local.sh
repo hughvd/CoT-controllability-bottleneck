@@ -36,10 +36,12 @@ SUPPRESSION=(omit_word omit_multiple_words ignore_question)
 
 [ -n "${OPENROUTER_API_KEY:-}" ] || { echo "OPENROUTER_API_KEY not set (language graders)"; exit 1; }
 
-# pod connection from controllability/.pod-env
+# pod connection from controllability/.pod-env (POD_HOST/POD_PORT[/optionally _SEED])
 set -a; source controllability/.pod-env; set +a
 KEY="${POD_KEY/#\~/$HOME}"
-SSH=(ssh -i "$KEY" -p "$POD_PORT_SEED" -o StrictHostKeyChecking=accept-new "$POD_HOST_SEED")
+PHOST="${POD_HOST:-${POD_HOST_SEED:-}}"; PPORT="${POD_PORT:-${POD_PORT_SEED:-}}"
+[ -n "$PHOST" ] && [ -n "$PPORT" ] || { echo "POD_HOST/POD_PORT not in controllability/.pod-env"; exit 1; }
+SSH=(ssh -i "$KEY" -p "$PPORT" -o StrictHostKeyChecking=accept-new "$PHOST")
 
 # tunnel (skip with TUNNEL=0 if you already have one to $LPORT)
 TPID=""
@@ -54,7 +56,7 @@ curl -sf "http://localhost:${LPORT}/health" >/dev/null \
 echo "===== CTRL EVAL olmo32_${TAG} (diverse-midpoint, n_per_cell=${NPC}) $(date -Is) ====="
 ( cd controllability && python3 run_eval_diverse.py \
     --model "olmo32_${TAG}" \
-    --exp-name "olmo32_rl_${TAG}" \
+    --exp-name "olmo32_ctrl_${TAG}" \
     --families "${FAMILIES[@]}" "${ENCODINGS[@]}" \
     --languages "${LANGUAGES[@]}" \
     --styles "${STYLES[@]}" \

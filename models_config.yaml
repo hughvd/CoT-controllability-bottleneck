@@ -208,6 +208,63 @@ models:
     is_reasoning: true
     # AVAILABLE — 20B total, 3.6B active (MoE), 131K context, <think> tags
 
+  # ── Sweep round 2 additions (2026-08-03) ─────────────────────────
+  - name: "gemma-4-31b-it"
+    provider: "openrouter"
+    model_id: "google/gemma-4-31b-it"
+    family: "gemma"
+    is_distilled: false
+    is_reasoning: true
+    # AVAILABLE — dense 30.7B; thinking OFF by default: pass reasoning effort
+
+  - name: "qwen3.5-27b"
+    provider: "openrouter"
+    model_id: "qwen/qwen3.5-27b"
+    family: "qwen3.5"
+    is_distilled: false
+    is_reasoning: true
+    # AVAILABLE — dense 27B, successor to qwen3-32b
+
+  - name: "qwen3.6-27b"
+    provider: "openrouter"
+    model_id: "qwen/qwen3.6-27b"
+    family: "qwen3.6"
+    is_distilled: false
+    is_reasoning: true
+    # AVAILABLE — dense 27B (Apr 2026)
+
+  - name: "deepseek-v3.2"
+    provider: "openrouter"
+    model_id: "deepseek/deepseek-v3.2"
+    family: "deepseek"
+    is_distilled: false
+    is_reasoning: true
+    # AVAILABLE — Dec 2025 successor to the r1 line (sparse attention)
+
+  - name: "deepseek-v4-pro"
+    provider: "openrouter"
+    model_id: "deepseek/deepseek-v4-pro"
+    family: "deepseek"
+    is_distilled: false
+    is_reasoning: true
+    # AVAILABLE — 1.6T/49B-active MoE flagship
+
+  - name: "minimax-m3"
+    provider: "openrouter"
+    model_id: "minimax/minimax-m3"
+    family: "minimax"
+    is_distilled: false
+    is_reasoning: true
+    # AVAILABLE — multimodal, 1M context
+
+  - name: "nemotron-3-super-120b"
+    provider: "openrouter"
+    model_id: "nvidia/nemotron-3-super-120b-a12b"
+    family: "nemotron"
+    is_distilled: false
+    is_reasoning: true
+    # AVAILABLE — 120B/12B-active hybrid MoE (gpt-oss-120b size class)
+
 
 # Judge/detector model
 judge_model:
@@ -238,6 +295,14 @@ pricing:
   "qwen/qwq-32b":                      { input: 0.08, output: 0.24 }
   "openai/gpt-oss-120b":               { input: 0.039, output: 0.19 }
   "openai/gpt-oss-20b":                { input: 0.03, output: 0.14 }
+  # Sweep round 2 (2026-08-03, pinned-provider rates)
+  "google/gemma-4-31b-it":             { input: 0.10, output: 0.34 }
+  "qwen/qwen3.5-27b":                  { input: 0.20, output: 1.56 }
+  "qwen/qwen3.6-27b":                  { input: 0.29, output: 2.70 }
+  "deepseek/deepseek-v3.2":            { input: 0.27, output: 0.31 }
+  "deepseek/deepseek-v4-pro":          { input: 0.43, output: 1.36 }
+  "minimax/minimax-m3":                { input: 0.30, output: 1.20 }
+  "nvidia/nemotron-3-super-120b-a12b": { input: 0.08, output: 0.40 }
   # OpenAI judge / detector models
   "o3":                    { input: 2.00, output: 8.00 }
   "gpt-4o-mini":           { input: 0.15, output: 0.60 }
