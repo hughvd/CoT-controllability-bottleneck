@@ -32,6 +32,9 @@ from common import append_jsonl, load_jsonl, parse_think
 
 
 def _self_check_pos0(model, torch, ref):
+    if not ref or "prompt_token_ids" not in ref:
+        print("[self-check] no p0ref — relying on --anti-tag phantom guard instead.")
+        return
     ids = torch.tensor([ref["prompt_token_ids"]], device=model.device)
     with torch.no_grad():
         lg = model(ids).logits[0, -1].float()
@@ -93,7 +96,38 @@ def gen(model_path, tag, tp, ref):
     print(f"[clean_gen:{tag}] traces -> {tpath}")
 
 
-def stats(model_path, tag, ref):
+def _anti_phantom_check(model, torch, tag, prompts, sets, anti_tag):
+    """Direct guard against the ext_third phantom: compute fresh stats for one trace
+    that ALSO has stored stats under `anti_tag` (e.g. rlvr_final) and ABORT if the
+    freshly-computed entropy is BITWISE-identical — that means the loaded weights are
+    anti_tag's, not this checkpoint's. Self-contained (no p0ref.json needed)."""
+    anti_dir = ODATA / anti_tag / "stats"
+    if not anti_dir.exists():
+        print(f"[anti-phantom] no {anti_tag} stats to compare against — SKIPPED (weak).")
+        return
+    for t in load_jsonl(ODATA / tag / "traces.jsonl"):
+        if not t["output_token_ids"]:
+            continue
+        anti = anti_dir / f"{t['trace_id'].replace('|', '_')}.npz"
+        if not anti.exists():
+            continue
+        p = prompts[t["prompt_id"]]
+        fresh = forward_stats_k(model, torch, p["prompt_token_ids"],
+                                t["output_token_ids"], p.get("banned_token_ids") or [], sets)
+        stored = np.load(anti, allow_pickle=True)["entropy"]
+        fe = np.asarray(fresh["entropy"])
+        if len(fe) and len(stored) and np.array_equal(fe[:1], np.asarray(stored)[:1]):
+            raise SystemExit(
+                f"[anti-phantom] ABORT — fresh {tag} entropy[0] is BITWISE-identical to "
+                f"{anti_tag}'s stored value on trace {t['trace_id']}. Loaded weights are "
+                f"{anti_tag}, not {tag} (the phantom). Fix the checkpoint/cache before rerun.")
+        print(f"[anti-phantom] OK — {tag} entropy[0]={fe[0]:.6f} != {anti_tag} {float(stored[0]):.6f} "
+              f"on {t['trace_id']}. Genuine.")
+        return
+    print(f"[anti-phantom] no shared trace with {anti_tag} — SKIPPED.")
+
+
+def stats(model_path, tag, ref, anti_tag=None):
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
     if hasattr(torch.backends.cuda, "enable_cudnn_sdp"):
@@ -106,6 +140,8 @@ def stats(model_path, tag, ref):
     tok = AutoTokenizer.from_pretrained(model_path)
     prompts = {p["prompt_id"]: p for p in load_prompts(tok)}
     sets = {n: torch.tensor(v).to(model.device) for n, v in build_token_sets(tok).items()}
+    if anti_tag:
+        _anti_phantom_check(model, torch, tag, prompts, sets, anti_tag)
 
     traces = load_jsonl(ODATA / tag / "traces.jsonl")
     sdir = ODATA / tag / "stats"
@@ -133,12 +169,15 @@ def main():
     ap.add_argument("--tag", required=True)
     ap.add_argument("--tp", type=int, default=2)
     ap.add_argument("--ref", default="/tmp/p0ref.json")
+    ap.add_argument("--anti-tag", default=None,
+                    help="abort if fresh entropy[0] is bitwise-identical to this tag's "
+                         "stored stats (the phantom guard; e.g. --anti-tag rlvr_final).")
     args = ap.parse_args()
-    ref = json.load(open(args.ref))
+    ref = json.load(open(args.ref)) if Path(args.ref).exists() else {}
     if args.stage == "gen":
         gen(args.model, args.tag, args.tp, ref)
     else:
-        stats(args.model, args.tag, ref)
+        stats(args.model, args.tag, ref, anti_tag=args.anti_tag)
 
 
 if __name__ == "__main__":
