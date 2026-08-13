@@ -96,17 +96,24 @@ def gen(model_path, tag, tp, ref):
     print(f"[clean_gen:{tag}] traces -> {tpath}")
 
 
-def _anti_phantom_check(model, torch, tag, prompts, sets, anti_tag):
-    """Direct guard against the ext_third phantom: compute fresh stats for one trace
-    that ALSO has stored stats under `anti_tag` (e.g. rlvr_final) and ABORT if the
-    freshly-computed entropy is BITWISE-identical — that means the loaded weights are
-    anti_tag's, not this checkpoint's. Self-contained (no p0ref.json needed)."""
+def _anti_phantom_check(model, torch, tag, prompts, sets, anti_tag, k=16):
+    """Guard against the ext_third phantom: for up to K traces that ALSO have stored
+    stats under `anti_tag` (e.g. rlvr_final), compare freshly-computed entropy[0] to the
+    stored value. ABORT only if a MAJORITY match bitwise — a genuine adjacent checkpoint
+    differs on ~all traces (phantom matches on ALL); a single collision on a degenerate
+    (near-deterministic, e.g. no_instruction) trace must NOT trigger a false abort.
+    instruction_only traces (less degenerate) are checked first. Self-contained."""
     anti_dir = ODATA / anti_tag / "stats"
     if not anti_dir.exists():
         print(f"[anti-phantom] no {anti_tag} stats to compare against — SKIPPED (weak).")
         return
-    for t in load_jsonl(ODATA / tag / "traces.jsonl"):
-        if not t["output_token_ids"]:
+    traces = load_jsonl(ODATA / tag / "traces.jsonl")
+    traces.sort(key=lambda t: 0 if t.get("condition") == "instruction_only" else 1)
+    checked = matched = 0
+    for t in traces:
+        if not t["output_token_ids"] or checked >= k:
+            if checked >= k:
+                break
             continue
         anti = anti_dir / f"{t['trace_id'].replace('|', '_')}.npz"
         if not anti.exists():
@@ -114,17 +121,19 @@ def _anti_phantom_check(model, torch, tag, prompts, sets, anti_tag):
         p = prompts[t["prompt_id"]]
         fresh = forward_stats_k(model, torch, p["prompt_token_ids"],
                                 t["output_token_ids"], p.get("banned_token_ids") or [], sets)
-        stored = np.load(anti, allow_pickle=True)["entropy"]
-        fe = np.asarray(fresh["entropy"])
-        if len(fe) and len(stored) and np.array_equal(fe[:1], np.asarray(stored)[:1]):
-            raise SystemExit(
-                f"[anti-phantom] ABORT — fresh {tag} entropy[0] is BITWISE-identical to "
-                f"{anti_tag}'s stored value on trace {t['trace_id']}. Loaded weights are "
-                f"{anti_tag}, not {tag} (the phantom). Fix the checkpoint/cache before rerun.")
-        print(f"[anti-phantom] OK — {tag} entropy[0]={fe[0]:.6f} != {anti_tag} {float(stored[0]):.6f} "
-              f"on {t['trace_id']}. Genuine.")
-        return
-    print(f"[anti-phantom] no shared trace with {anti_tag} — SKIPPED.")
+        fe = np.asarray(fresh["entropy"]); stored = np.asarray(np.load(anti, allow_pickle=True)["entropy"])
+        if len(fe) and len(stored):
+            checked += 1
+            matched += int(np.array_equal(fe[:1], stored[:1]))
+    if checked == 0:
+        print(f"[anti-phantom] no shared trace with {anti_tag} — SKIPPED."); return
+    frac = matched / checked
+    print(f"[anti-phantom] {matched}/{checked} traces bitwise-match {anti_tag} entropy[0] (frac={frac:.2f}).")
+    if frac >= 0.5:
+        raise SystemExit(
+            f"[anti-phantom] ABORT — {frac:.0%} of {checked} traces match {anti_tag} bitwise. "
+            f"Loaded weights are {anti_tag}, not {tag} (the phantom). Fix checkpoint/cache before rerun.")
+    print(f"[anti-phantom] OK — {tag} is genuine (differs from {anti_tag} on {checked-matched}/{checked}).")
 
 
 def stats(model_path, tag, ref, anti_tag=None):

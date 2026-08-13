@@ -49,12 +49,13 @@ def main():
     _style(ax, "Controllability", "mean compliance (26-type)")
     ax.set_ylim(0, max(df["ctrl_soft_hi"]) * 1.25)
 
-    # 2) capability (answered-only accuracy-under-control) with CI band
+    # 2) capability = UNCONTROLLED gpqa accuracy (did RL nuke the model?) with CI band
     ax = axes[1]
-    ax.fill_between(x, df["cap_lo"], df["cap_hi"], color=C_CAP, alpha=0.12, zorder=1)
-    ax.plot(x, df["capability"], "-o", color=C_CAP, lw=2, ms=6, zorder=3)
-    _style(ax, "Capability", "accuracy | answered (under control)")
-    ax.set_ylim(0.3, 0.6)
+    m = df["capability"].notna().to_numpy()
+    ax.fill_between(x[m], df["cap_lo"].to_numpy()[m], df["cap_hi"].to_numpy()[m], color=C_CAP, alpha=0.12, zorder=1)
+    ax.plot(x[m], df["capability"].to_numpy()[m], "-o", color=C_CAP, lw=2, ms=6, zorder=3)
+    _style(ax, "Capability", "uncontrolled gpqa accuracy")
+    ax.set_ylim(0.4, 0.75)
 
     # 3) monitorability — intervention / process / outcome (all gmean, same scale)
     ax = axes[2]

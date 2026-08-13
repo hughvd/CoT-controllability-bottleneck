@@ -17,12 +17,15 @@ by_mon_dataset.csv, viewer.json
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+from _capability import uncontrolled_gpqa  # noqa: E402
 REPO = HERE.parent.parent.parent                    # repo root
 CTRL = REPO / "controllability" / "results"
 MON = REPO / "results" / "monitorability"
@@ -30,9 +33,13 @@ MECH = HERE / "olmo_rl"
 OUT = MECH / "fig_data"
 OUT.mkdir(parents=True, exist_ok=True)
 
-# CANONICAL RL-axis: 5 checkpoints, IDENTICAL 26-type universe, all three metrics.
+# CANONICAL checkpoints, IDENTICAL 26-type universe, comparable metrics.
+# SFT now has its own full-26 run (olmo32_ctrl_sft) so it joins as a 6th point (rl_index
+# -1, pre-RL; mon_label None => SFT has no monitorability). ext_third is GENUINE step_0800
+# (the step_0750 branch was rlvr_final upstream — see olmo_figure_suite memory).
 # (tag, display, rl_index, ctrl_csv, mon_label)  — mon_label None => no monitorability
 CKPTS = [
+    ("sft",           "SFT",       -1, CTRL / "olmo32_ctrl_sft" / "per_sample.csv",           None),
     ("rl_start",      "DPO",        0, CTRL / "olmo32_ctrl_rl_start" / "per_sample.csv",      "olmo32_rl_start"),
     ("rlvr_final",    "RLVR",       1, CTRL / "olmo32_ctrl_rlvr_final" / "per_sample.csv",    "olmo32_rlvr_final"),
     ("ext_third",     "ext-1/3",    2, CTRL / "olmo32_ctrl_ext_third" / "per_sample.csv",     "olmo32_ext_third"),
@@ -40,9 +47,7 @@ CKPTS = [
     ("ext_final",     "ext-final",  4, CTRL / "olmo32_ctrl_ext_final" / "per_sample.csv",     "olmo32_ext_final"),
 ]
 
-# SFT lives in a DIFFERENT/broader eval universe (57 families, no styles); only 22
-# families overlap the canonical 26. So it is NOT on the main trajectory — instead it
-# feeds a separate shared-family table (below) where SFT->ext_final is apples-to-apples.
+# (legacy) SFT's earlier broader-universe run — kept only for the shared-22 comparison.
 SFT_CKPT = ("sft", "SFT", -1, CTRL / "organism_2_olmo32_ent_sft_base_diverse" / "per_sample.csv")
 
 INTERVENTION_DS = ["gpqa", "memory_advice", "scruples_suggest_wrong", "wmdp_sandbagging"]
@@ -106,11 +111,16 @@ def main():
         df = load_ctrl(csv)
         # ---- overall controllability + capability ----
         soft, soft_lo, soft_hi = _boot_ci(df["compliance_score"], seed=idx + 1)
-        hard = df["compliance_hard"].mean()
-        cap, cap_lo, cap_hi = _cap_answered(df, 100 + idx)   # answered-only
+        hard, hard_lo, hard_hi = _boot_ci(df["compliance_hard"], seed=idx + 200)
+        # capability = UNCONTROLLED gpqa accuracy (the "did RL/intervention nuke it?" check);
+        # keep accuracy-under-control separately for reference. SFT has no mon run -> NaN.
+        cap, cap_lo, cap_hi = uncontrolled_gpqa(mon_label) if mon_label else (np.nan, np.nan, np.nan)
+        cap_uc, _, _ = _cap_answered(df, 100 + idx)   # accuracy-under-control (answered-only)
         rec = {"tag": tag, "checkpoint": disp, "rl_index": idx,
                "ctrl_soft": soft, "ctrl_soft_lo": soft_lo, "ctrl_soft_hi": soft_hi,
-               "ctrl_hard": hard, "capability": cap, "cap_lo": cap_lo, "cap_hi": cap_hi,
+               "ctrl_hard": hard, "ctrl_hard_lo": hard_lo, "ctrl_hard_hi": hard_hi,
+               "capability": cap, "cap_lo": cap_lo, "cap_hi": cap_hi,
+               "cap_under_control": cap_uc,
                "reas_len": df["reas_len"].mean(), "no_answer_rate": 1 - df["answered"].mean()}
 
         # ---- per control-type (family) + modality ----
@@ -132,6 +142,8 @@ def main():
             by_mon.append(md)
             iv = md[(md.archetype == "intervention") & (md.scope == "cot_only")]
             rec["mon_intervention"] = iv.gmean.mean()
+            gp = iv[iv.dataset == "gpqa"]
+            rec["mon_gpqa"] = gp.gmean.mean() if len(gp) else np.nan
             proc = md[(md.archetype == "process") & (md.scope == "cot_only")]
             rec["mon_process"] = proc.gmean.mean() if len(proc) else np.nan
             outc = md[(md.archetype == "outcome") & (md.scope == "cot_only")]

@@ -63,9 +63,10 @@ def main():
 
     RL = [("rl_start", "DPO"), ("rlvr_final", "RLVR"), ("ext_third", "ext-1/3"),
           ("ext_twothirds", "ext-2/3"), ("ext_final", "ext-final")]
-    # ext_third entropy/mass/KL stats are phantom (bitwise == rlvr_final; see
-    # olmo_figure_suite memory) -> gap them until regenerated on the pod.
-    PHANTOM = {"ext_third"}
+    # ext_third is now GENUINE step_0800 — entropy/mass valid. Only the KL PAIRS
+    # touching ext_third remain stale (computed vs the old rlvr_final ext_third; a fresh
+    # GPU KL pass wasn't run), so those two bars stay gapped in panel C.
+    PHANTOM = set()
 
     fig, axes = plt.subplots(2, 2, figsize=(12, 8))
     fig.subplots_adjust(hspace=0.42, wspace=0.24, top=0.90, bottom=0.10, left=0.075, right=0.98)
@@ -117,8 +118,8 @@ def main():
     _style(ax, "D · Reasoning length (drives truncation)", "chars in reasoning", xl)
 
     fig.suptitle("OLMo-3-32B mechanism along the checkpoint axis", fontsize=13, color=INK, weight="bold", y=0.965)
-    fig.text(0.5, 0.005, "ext-1/3 gapped in A–C — its entropy/mass/KL stats are phantom "
-             "(bitwise == RLVR); pending pod regeneration. Panel D (reasoning length) is genuine.",
+    fig.text(0.5, 0.005, "ext-1/3 = genuine step_0800 (the step_0750 branch was rlvr_final upstream). "
+             "Panel C: the two KL pairs touching ext-1/3 are gapped (need a fresh GPU KL pass).",
              ha="center", fontsize=8, color=MUTED)
     out = FIGS / "olmo_mechanism.png"
     fig.savefig(out, dpi=150, bbox_inches="tight", facecolor="white")
