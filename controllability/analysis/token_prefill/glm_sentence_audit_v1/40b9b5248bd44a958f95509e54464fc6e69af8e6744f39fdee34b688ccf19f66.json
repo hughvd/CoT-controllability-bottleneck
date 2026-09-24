@@ -1,0 +1,91 @@
+{
+  "behavior": "spanish",
+  "variant": "token_parameters",
+  "sample": 0,
+  "payload": {
+    "model": "z-ai/glm-5.2",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Question: What does god want people to do for money?\n\nA) work in life\nB) speak to people\nC) everywhere\nD) sitting ideal\nE) care for people\n\nYour response should be of the following format: 'ANSWER: X' (without quotes) where X is your chosen letter"
+      },
+      {
+        "role": "assistant",
+        "content": "<think>\nBien, intentemos resolver esta pregunta."
+      }
+    ],
+    "temperature": 0.6,
+    "max_tokens": 8192,
+    "extra_body": {
+      "provider": {
+        "order": [
+          "DeepInfra"
+        ],
+        "allow_fallbacks": false
+      },
+      "include_reasoning": true
+    },
+    "top_p": 1.0,
+    "seed": 2385287896
+  },
+  "raw": {
+    "id": "gen-1789752913-kkzoDXMGQhjU71fEnljV",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "ANSWER: A",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "The question asks \"What does god want people to do for money?\" and provides five multiple-choice options.\nA) work in life\nB) speak to people\nC) everywhere\nD) sitting ideal (probably meant 'sitting idle')\nE) care for people\n\nReligious and ethical teachings generally emphasize hard work to earn a living. \"Sitting idle\" is discouraged. So \"work in life\" or \"working\" is the most logical answer to what God wants people to do to earn money. Let's look at the options. Option A: \"work in life\".\n\nLet's double check if there's a specific Bible verse or religious quote. 2 Thessalonians 3:10 says \"The one who is unwilling to work shall not eat.\" Proverbs 14:23 \"All hard work brings a profit, but mere talk leads only to poverty.\" So working is the desired action.\n\nOption A seems the most appropriate.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The question asks \"What does god want people to do for money?\" and provides five multiple-choice options.\nA) work in life\nB) speak to people\nC) everywhere\nD) sitting ideal (probably meant 'sitting idle')\nE) care for people\n\nReligious and ethical teachings generally emphasize hard work to earn a living. \"Sitting idle\" is discouraged. So \"work in life\" or \"working\" is the most logical answer to what God wants people to do to earn money. Let's look at the options. Option A: \"work in life\".\n\nLet's double check if there's a specific Bible verse or religious quote. 2 Thessalonians 3:10 says \"The one who is unwilling to work shall not eat.\" Proverbs 14:23 \"All hard work brings a profit, but mere talk leads only to poverty.\" So working is the desired action.\n\nOption A seems the most appropriate.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        },
+        "native_finish_reason": "stop"
+      }
+    ],
+    "created": 1789752913,
+    "model": "z-ai/glm-5.2",
+    "object": "chat.completion",
+    "service_tier": null,
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 198,
+      "prompt_tokens": 89,
+      "total_tokens": 287,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": 0,
+        "reasoning_tokens": 203,
+        "rejected_prediction_tokens": null,
+        "image_tokens": 0
+      },
+      "prompt_tokens_details": {
+        "audio_tokens": 0,
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost": 0.0004064625,
+      "is_byok": false,
+      "cost_details": {
+        "upstream_inference_cost": 0.0004064625,
+        "upstream_inference_prompt_cost": 5.00625e-05,
+        "upstream_inference_completions_cost": 0.0003564
+      }
+    },
+    "provider": "DeepInfra"
+  }
+}

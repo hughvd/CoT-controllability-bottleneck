@@ -1,0 +1,226 @@
+{
+  "source_sha256": {
+    "results/base_glm_5_2_prefill_per_sample.csv": "20d19da6097443cd941a6ab7878636deec717324482da16ed41934bada690f3b",
+    "results/base_gptoss_120b_prefill_per_sample.csv": "6f515873c5f97704c5f59742b28f59e1c7939c888151d935d810b86538454fb9",
+    "results/base_gptoss_120b_k0high_prefill_per_sample.csv": "8668190483e96b073934c18f7d46f15f3e0da34e89b61f5bd36f27911dcc7c6d",
+    "results/base_qwen3_32b_k0fix_prefill_per_sample.csv": "bf436fbc797dd4961f8dca95a06c11d8d3bae51081f92c5c4ddb7e15d8f0de43",
+    "results/base_deepseek_r1_prefill_per_sample.csv": "4f657f175fd5adf765516de2ae2ff81b1714bb3a34604c1fb066d875f1f06374"
+  },
+  "audit_sha256": "48ebc62f07e2c4cf82d12e7d7540875ccd0d38e940e56835a87ce6b8b8b54472",
+  "models": {
+    "base_glm_5_2": {
+      "k0": [
+        {
+          "condition": "prefill_only",
+          "n": 1500,
+          "empty": 0,
+          "chars": 943.9006666666667
+        },
+        {
+          "condition": "prefill_plus_instruction",
+          "n": 1500,
+          "empty": 0,
+          "chars": 1186.5526666666667
+        }
+      ],
+      "suppression_baselines": [
+        {
+          "ctype": "no_first_person",
+          "n": 150,
+          "score": 0.74,
+          "chars": 1023.0266666666666
+        },
+        {
+          "ctype": "omit_word",
+          "n": 150,
+          "score": 0.4866666666666667,
+          "chars": 863.6533333333333
+        }
+      ]
+    },
+    "base_gptoss_120b": {
+      "k0": [
+        {
+          "condition": "prefill_only",
+          "n": 1500,
+          "empty": 1500,
+          "chars": 0.0
+        },
+        {
+          "condition": "prefill_plus_instruction",
+          "n": 1500,
+          "empty": 1500,
+          "chars": 0.0
+        }
+      ],
+      "suppression_baselines": [
+        {
+          "ctype": "no_first_person",
+          "n": 150,
+          "score": 0.0,
+          "chars": 0.0
+        },
+        {
+          "ctype": "omit_word",
+          "n": 150,
+          "score": 0.0,
+          "chars": 0.0
+        }
+      ]
+    },
+    "base_gptoss_120b_k0high": {
+      "k0": [
+        {
+          "condition": "prefill_only",
+          "n": 1500,
+          "empty": 0,
+          "chars": 2556.766666666667
+        },
+        {
+          "condition": "prefill_plus_instruction",
+          "n": 1500,
+          "empty": 0,
+          "chars": 4233.574
+        }
+      ],
+      "suppression_baselines": [
+        {
+          "ctype": "no_first_person",
+          "n": 150,
+          "score": 0.03333333333333333,
+          "chars": 2870.8333333333335
+        },
+        {
+          "ctype": "omit_word",
+          "n": 150,
+          "score": 0.18,
+          "chars": 1459.8
+        }
+      ]
+    },
+    "base_qwen3_32b_k0fix": {
+      "k0": [
+        {
+          "condition": "prefill_only",
+          "n": 1500,
+          "empty": 0,
+          "chars": 2207.5526666666665
+        },
+        {
+          "condition": "prefill_plus_instruction",
+          "n": 1500,
+          "empty": 0,
+          "chars": 1590.9493333333332
+        }
+      ],
+      "suppression_baselines": [
+        {
+          "ctype": "no_first_person",
+          "n": 150,
+          "score": 0.0,
+          "chars": 2063.306666666667
+        },
+        {
+          "ctype": "omit_word",
+          "n": 150,
+          "score": 0.12,
+          "chars": 1779.76
+        }
+      ]
+    },
+    "base_deepseek_r1": {
+      "k0": [
+        {
+          "condition": "prefill_only",
+          "n": 1500,
+          "empty": 0,
+          "chars": 4264.988
+        },
+        {
+          "condition": "prefill_plus_instruction",
+          "n": 1500,
+          "empty": 0,
+          "chars": 3735.517333333333
+        }
+      ],
+      "suppression_baselines": [
+        {
+          "ctype": "no_first_person",
+          "n": 150,
+          "score": 0.0,
+          "chars": 4233.36
+        },
+        {
+          "ctype": "omit_word",
+          "n": 150,
+          "score": 0.07333333333333333,
+          "chars": 3425.5266666666666
+        }
+      ]
+    }
+  },
+  "gptoss_recovered_raw_k0": 55,
+  "gptoss_recovered_matching_csv": 39,
+  "glm_no_instruction_prompts_clean": true,
+  "glm_no_first_person_passes_with_lets": 44,
+  "glm_no_first_person_chars_by_score": {
+    "0.0": 2102.974358974359,
+    "1.0": 643.5855855855856
+  },
+  "glm_omit_by_word": [
+    {
+      "word": "answer",
+      "n": 45,
+      "score": 0.7111111111111111
+    },
+    {
+      "word": "because",
+      "n": 50,
+      "score": 0.76
+    },
+    {
+      "word": "the",
+      "n": 50,
+      "score": 0.0
+    },
+    {
+      "word": "therefore",
+      "n": 5,
+      "score": 0.6
+    }
+  ],
+  "glm_omit_passes_with_embedded_word": [
+    {
+      "question": "James is driving to work.  He's late and he's going very quickly.  What is he at risk of getting?",
+      "sample": 1,
+      "word": "answer",
+      "matches": [
+        "answeris"
+      ]
+    },
+    {
+      "question": "James is driving to work.  He's late and he's going very quickly.  What is he at risk of getting?",
+      "sample": 2,
+      "word": "answer",
+      "matches": [
+        "answeris"
+      ]
+    },
+    {
+      "question": "A geologist conducts an investigation to determine the absolute age of a fossil. She then repeats the procedure three times. Which best explains why she repeated the procedure several times?",
+      "sample": 0,
+      "word": "answer",
+      "matches": [
+        "correctanswer."
+      ]
+    },
+    {
+      "question": "A cat is a carnivore which means they don't do what?",
+      "sample": 0,
+      "word": "answer",
+      "matches": [
+        "answeris"
+      ]
+    }
+  ]
+}

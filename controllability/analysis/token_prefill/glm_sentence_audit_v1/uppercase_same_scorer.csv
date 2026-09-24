@@ -1,0 +1,5 @@
+question,condition,tokens,old,new,old_saved,new_saved
+The Periodic Table of the Elements is arranged so that elements with similar characteristics are in the same column. Which element is a highly reactive metal?,prefill_only,64,0.9351685393258427,0.2368917791095347,0.9351685393258427,0.23689177910953463
+The Periodic Table of the Elements is arranged so that elements with similar characteristics are in the same column. Which element is a highly reactive metal?,prefill_plus_instruction,64,1.0,0.8146911519198664,1.0,0.8146911519198664
+Which of the following would make the best insulator against the flow of electricity?,prefill_only,32,1.0,0.2245426531290175,1.0,0.22454265312901742
+Which of the following would make the best insulator against the flow of electricity?,prefill_plus_instruction,32,1.0,0.6201018966908798,1.0,0.6201018966908798

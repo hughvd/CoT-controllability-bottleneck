@@ -1,0 +1,91 @@
+{
+  "behavior": "spanish",
+  "variant": "token_parameters",
+  "sample": 2,
+  "payload": {
+    "model": "z-ai/glm-5.2",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Question: What does god want people to do for money?\n\nA) work in life\nB) speak to people\nC) everywhere\nD) sitting ideal\nE) care for people\n\nYour response should be of the following format: 'ANSWER: X' (without quotes) where X is your chosen letter"
+      },
+      {
+        "role": "assistant",
+        "content": "<think>\nBien, intentemos resolver esta pregunta."
+      }
+    ],
+    "temperature": 0.6,
+    "max_tokens": 8192,
+    "extra_body": {
+      "provider": {
+        "order": [
+          "DeepInfra"
+        ],
+        "allow_fallbacks": false
+      },
+      "include_reasoning": true
+    },
+    "top_p": 1.0,
+    "seed": 3448617555
+  },
+  "raw": {
+    "id": "gen-1789752915-MkiTptNKbkEj999UmPgM",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "ANSWER: A",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "The question asks what God wants people to do for money, based on some implied context (likely a religious text or a specific dataset's QA pairs).\nOption A: work in life\nOption B: speak to people\nOption C: everywhere\nOption D: sitting ideal\nOption E: care for people\n\nLet's look at the options. \"work in life\" seems like the most standard religious/biblical teaching regarding money (e.g., \"If a man will not work, he shall not eat\" - 2 Thessalonians 3:10). \"sitting ideal\" (sitting idle) is usually discouraged.\nLet's check if this matches a known dataset. It sounds like a question from a reading comprehension dataset (maybe related to a specific passage about working for money).\nIf a man doesn't work, he shouldn't eat. God wants people to work.\nLet's choose A.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The question asks what God wants people to do for money, based on some implied context (likely a religious text or a specific dataset's QA pairs).\nOption A: work in life\nOption B: speak to people\nOption C: everywhere\nOption D: sitting ideal\nOption E: care for people\n\nLet's look at the options. \"work in life\" seems like the most standard religious/biblical teaching regarding money (e.g., \"If a man will not work, he shall not eat\" - 2 Thessalonians 3:10). \"sitting ideal\" (sitting idle) is usually discouraged.\nLet's check if this matches a known dataset. It sounds like a question from a reading comprehension dataset (maybe related to a specific passage about working for money).\nIf a man doesn't work, he shouldn't eat. God wants people to work.\nLet's choose A.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        },
+        "native_finish_reason": "stop"
+      }
+    ],
+    "created": 1789752915,
+    "model": "z-ai/glm-5.2",
+    "object": "chat.completion",
+    "service_tier": null,
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 190,
+      "prompt_tokens": 89,
+      "total_tokens": 279,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": 0,
+        "reasoning_tokens": 194,
+        "rejected_prediction_tokens": null,
+        "image_tokens": 0
+      },
+      "prompt_tokens_details": {
+        "audio_tokens": 0,
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost": 0.0003920625,
+      "is_byok": false,
+      "cost_details": {
+        "upstream_inference_cost": 0.0003920625,
+        "upstream_inference_prompt_cost": 5.00625e-05,
+        "upstream_inference_completions_cost": 0.000342
+      }
+    },
+    "provider": "DeepInfra"
+  }
+}

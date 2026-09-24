@@ -1,0 +1,25 @@
+{
+  "metrics": [
+    "continuation_soft",
+    "answer_correct"
+  ],
+  "condition": "instruction_only",
+  "controls": [
+    "uppercase_thinking",
+    "leetspeak",
+    "spanish",
+    "omit_word"
+  ],
+  "weighting": "equal control-type weights; equal question/sample weights within type",
+  "intervals": "95% percentile question-cluster bootstrap; common weights across arms and controls",
+  "bootstrap_draws": 5000,
+  "seed": 20260923,
+  "source_sha256": {
+    "results/fixed_opening_ban/v1/qwen32/scores.csv": "f2e35e46e7896575d64d1faaedb87b96cae499b45c133138ac3e2db6b05e4d1a",
+    "results/fixed_opening_ban/v1/glm/scores.csv": "2cbc41313806265fb0792ae7e46f4bb9635b4ef1493d1b35e0f3b37fe1bb5ee6",
+    "results/fixed_opening_ban/v1/olmo31/scores.csv": "3ecc8a96bbd14ef33a650da1e7723a647374c5031ea24f1fbd95ff83517e856c"
+  },
+  "style_reference": "controllability/analysis/icl_compare.py:make_avg_plot",
+  "accuracy_definition": "Final-answer correctness on the same controllability questions, with control instructions. All responses retained; missing/unparseable answers count as incorrect.",
+  "glm_note": "Hosted rejection sampling; no uninstructed GLM data used."
+}

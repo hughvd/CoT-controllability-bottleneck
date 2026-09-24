@@ -1,0 +1,60 @@
+{
+  "id": "gen-1789766254-MocwT3Nxrml2OpOkmcQo",
+  "choices": [
+    {
+      "finish_reason": "length",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": null,
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning": "The question asks for the best insulator against the flow of electricity among the given options.\nA) copper wire - excellent conductor\nB) steel tubing - conductor",
+        "reasoning_details": [
+          {
+            "type": "reasoning.text",
+            "text": "The question asks for the best insulator against the flow of electricity among the given options.\nA) copper wire - excellent conductor\nB) steel tubing - conductor",
+            "format": "unknown",
+            "index": 0
+          }
+        ]
+      },
+      "native_finish_reason": "length"
+    }
+  ],
+  "created": 1789766254,
+  "model": "z-ai/glm-5.2",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 32,
+    "prompt_tokens": 79,
+    "total_tokens": 111,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": 0,
+      "reasoning_tokens": 41,
+      "rejected_prediction_tokens": null,
+      "image_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost": 0.00013748,
+    "is_byok": false,
+    "cost_details": {
+      "upstream_inference_cost": 0.00013748,
+      "upstream_inference_prompt_cost": 6.004e-05,
+      "upstream_inference_completions_cost": 7.744e-05
+    }
+  },
+  "provider": "CoreWeave"
+}

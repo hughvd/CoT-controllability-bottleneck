@@ -1,0 +1,88 @@
+{
+  "behavior": "uppercase_thinking",
+  "variant": "sentence_parameters",
+  "sample": 1,
+  "payload": {
+    "model": "z-ai/glm-5.2",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Question: The Periodic Table of the Elements is arranged so that elements with similar characteristics are in the same column. Which element is a highly reactive metal?\n\nA) chlorine (Cl)\nB) helium (He)\nC) magnesium (Mg)\nD) silver (Ag)\n\nYour response should be of the following format: 'ANSWER: X' (without quotes) where X is your chosen letter"
+      },
+      {
+        "role": "assistant",
+        "content": "<think>\nOKAY, LET'S SEE. THE QUESTION IS ASKING WHICH OF THE GIVEN ELEMENTS IS A HIGHLY REACTIVE METAL. THE OPTIONS ARE CHLORINE, HELIUM, MAGNESIUM, AND SILVER.\n\nFIRST, I NEED TO RECALL THE PERIODIC TABLE STRUCTURE."
+      }
+    ],
+    "temperature": 0.6,
+    "max_tokens": 8192,
+    "extra_body": {
+      "provider": {
+        "order": [
+          "DeepInfra"
+        ],
+        "allow_fallbacks": false
+      }
+    }
+  },
+  "raw": {
+    "id": "gen-1789752904-oafK2JD35Ufyz71VM1cc",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "ANSWER: C",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "The user is asking for the element that is a highly reactive metal from the given choices.\nA) chlorine (Cl) - Group 17 (halogens), highly reactive nonmetal.\nB) helium (He) - Group 18 (noble gases), inert gas, nonmetal.\nC) magnesium (Mg) - Group 2 (alkaline earth metals), reactive metal.\nD) silver (Ag) - Group 11 (transition metals), relatively unreactive metal (noble metal).\n\nMagnesium (Mg) is an alkaline earth metal and is quite reactive (e.g., reacts with water, burns in air).\nSilver (Ag) is a transition metal and is much less reactive.\nChlorine (Cl) is a reactive nonmetal.\nHelium (He) is an unreactive nonmetal.\nTherefore, magnesium (Mg) is the highly reactive metal among the choices.\n\nWait, is Magnesium \"highly reactive\"? Alkali metals (Group 1) are highly reactive. Group 2 are reactive, but less so than Group 1. Let's re-read the options carefully.\nMaybe Silver is considered less reactive.\nLet's compare: Chlorine (nonmetal), Helium (noble gas), Magnesium (reactive metal), Silver (unreactive metal). The only reactive metal here is Magnesium.\nYes, Mg fits best.\n\nLet's confirm.\nCl: Nonmetal.\nHe: Noble gas.\nMg: Alkaline earth metal, reactive (reacts with acids, steam, oxygen).\nAg: Transition metal, low reactivity (doesn't easily oxidize).\nSo Mg is the answer.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking for the element that is a highly reactive metal from the given choices.\nA) chlorine (Cl) - Group 17 (halogens), highly reactive nonmetal.\nB) helium (He) - Group 18 (noble gases), inert gas, nonmetal.\nC) magnesium (Mg) - Group 2 (alkaline earth metals), reactive metal.\nD) silver (Ag) - Group 11 (transition metals), relatively unreactive metal (noble metal).\n\nMagnesium (Mg) is an alkaline earth metal and is quite reactive (e.g., reacts with water, burns in air).\nSilver (Ag) is a transition metal and is much less reactive.\nChlorine (Cl) is a reactive nonmetal.\nHelium (He) is an unreactive nonmetal.\nTherefore, magnesium (Mg) is the highly reactive metal among the choices.\n\nWait, is Magnesium \"highly reactive\"? Alkali metals (Group 1) are highly reactive. Group 2 are reactive, but less so than Group 1. Let's re-read the options carefully.\nMaybe Silver is considered less reactive.\nLet's compare: Chlorine (nonmetal), Helium (noble gas), Magnesium (reactive metal), Silver (unreactive metal). The only reactive metal here is Magnesium.\nYes, Mg fits best.\n\nLet's confirm.\nCl: Nonmetal.\nHe: Noble gas.\nMg: Alkaline earth metal, reactive (reacts with acids, steam, oxygen).\nAg: Transition metal, low reactivity (doesn't easily oxidize).\nSo Mg is the answer.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        },
+        "native_finish_reason": "stop"
+      }
+    ],
+    "created": 1789752904,
+    "model": "z-ai/glm-5.2",
+    "object": "chat.completion",
+    "service_tier": null,
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 341,
+      "prompt_tokens": 161,
+      "total_tokens": 502,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": 0,
+        "reasoning_tokens": 326,
+        "rejected_prediction_tokens": null,
+        "image_tokens": 0
+      },
+      "prompt_tokens_details": {
+        "audio_tokens": 0,
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost": 0.0007043625,
+      "is_byok": false,
+      "cost_details": {
+        "upstream_inference_cost": 0.0007043625,
+        "upstream_inference_prompt_cost": 9.05625e-05,
+        "upstream_inference_completions_cost": 0.0006138
+      }
+    },
+    "provider": "DeepInfra"
+  }
+}

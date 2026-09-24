@@ -1,0 +1,24 @@
+{
+  "sources": {
+    "qwen32": {
+      "manifest": "5de065d7befec0004eb0364c9d7deb7ed4d7ed51a1c78ac6521ab742cdb2c275",
+      "scores": "db04ac0d312115bfa467bb232fb84df5634202606964d36056a6bb98191abedd"
+    },
+    "glm": {
+      "manifest": "7f8d0c587b43a8dc1e4262be3a731d0dd6902c047a6352f3a826f3582930b553",
+      "scores": "ee219f1fdd0c90112ba07ca2b683c29f3fbed942323e97be11b638681af4484d"
+    },
+    "olmo31": {
+      "manifest": "510199eb7a8bdc6d7c90060e5566216fa207cf0bb9c053b29a17d5c68618ffcd",
+      "scores": "aa57a0709f99f6e658b3d2ffe59502b8271c50f48c23b7a2be87b603f4260bdf"
+    }
+  },
+  "bootstrap_seed": 20260924,
+  "bootstrap_draws": 5000,
+  "controls": [
+    "uppercase_thinking",
+    "leetspeak",
+    "spanish",
+    "omit_word"
+  ]
+}

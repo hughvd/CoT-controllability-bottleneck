@@ -1,0 +1,13 @@
+effort,condition,k,n,empty_rate,truncated_rate,mean_output_tokens,mean_reasoning_chars
+high,prefill_only,0,100,0.0,0.05,933.63,3645.77
+high,prefill_only,1,100,0.0,0.05,916.19,3398.47
+high,prefill_only,5,100,0.0,0.03,610.66,2117.16
+high,prefill_plus_instruction,0,100,0.0,0.07,1196.99,4493.24
+high,prefill_plus_instruction,1,100,0.0,0.04,1019.57,3839.29
+high,prefill_plus_instruction,5,100,0.0,0.03,884.44,3193.07
+medium,prefill_only,0,20,0.0,0.0,249.35,873.7
+medium,prefill_only,1,20,0.0,0.0,247.75,815.2
+medium,prefill_only,5,20,0.0,0.0,158.35,455.65
+medium,prefill_plus_instruction,0,20,0.0,0.0,265.85,928.1
+medium,prefill_plus_instruction,1,20,0.0,0.0,231.55,778.95
+medium,prefill_plus_instruction,5,20,0.0,0.0,165.95,479.9

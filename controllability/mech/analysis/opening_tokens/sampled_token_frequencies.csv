@@ -1,0 +1,511 @@
+model,condition,behavior,position,empirical_rank,token_id,token,count,frequency
+qwen32,no_instruction,uppercase_thinking,0,1,32313,'Okay',150,1.0
+qwen32,no_instruction,uppercase_thinking,1,1,11,"','",150,1.0
+qwen32,no_instruction,uppercase_thinking,2,1,1077,' let',133,0.8866666666666667
+qwen32,no_instruction,uppercase_thinking,2,2,773,' so',17,0.11333333333333333
+qwen32,no_instruction,uppercase_thinking,3,1,594,"""'s""",131,0.8733333333333333
+qwen32,no_instruction,uppercase_thinking,3,2,279,' the',10,0.06666666666666667
+qwen32,no_instruction,uppercase_thinking,3,3,358,' I',6,0.04
+qwen32,no_instruction,uppercase_thinking,3,4,752,' me',2,0.013333333333333334
+qwen32,no_instruction,uppercase_thinking,3,5,18841,' Franklin',1,0.006666666666666667
+qwen32,no_instruction,leetspeak,0,1,32313,'Okay',150,1.0
+qwen32,no_instruction,leetspeak,1,1,11,"','",150,1.0
+qwen32,no_instruction,leetspeak,2,1,1077,' let',131,0.8733333333333333
+qwen32,no_instruction,leetspeak,2,2,773,' so',19,0.12666666666666668
+qwen32,no_instruction,leetspeak,3,1,594,"""'s""",129,0.86
+qwen32,no_instruction,leetspeak,3,2,279,' the',14,0.09333333333333334
+qwen32,no_instruction,leetspeak,3,3,358,' I',5,0.03333333333333333
+qwen32,no_instruction,leetspeak,3,4,752,' me',2,0.013333333333333334
+qwen32,no_instruction,spanish,0,1,32313,'Okay',150,1.0
+qwen32,no_instruction,spanish,1,1,11,"','",150,1.0
+qwen32,no_instruction,spanish,2,1,1077,' let',138,0.92
+qwen32,no_instruction,spanish,2,2,773,' so',12,0.08
+qwen32,no_instruction,spanish,3,1,594,"""'s""",137,0.9133333333333333
+qwen32,no_instruction,spanish,3,2,279,' the',12,0.08
+qwen32,no_instruction,spanish,3,3,752,' me',1,0.006666666666666667
+qwen32,no_instruction,omit_word,0,1,32313,'Okay',150,1.0
+qwen32,no_instruction,omit_word,1,1,11,"','",150,1.0
+qwen32,no_instruction,omit_word,2,1,1077,' let',133,0.8866666666666667
+qwen32,no_instruction,omit_word,2,2,773,' so',17,0.11333333333333333
+qwen32,no_instruction,omit_word,3,1,594,"""'s""",130,0.8666666666666667
+qwen32,no_instruction,omit_word,3,2,279,' the',11,0.07333333333333333
+qwen32,no_instruction,omit_word,3,3,358,' I',6,0.04
+qwen32,no_instruction,omit_word,3,4,752,' me',3,0.02
+qwen32,no_instruction,pooled,0,1,32313,'Okay',600,1.0
+qwen32,no_instruction,pooled,1,1,11,"','",600,1.0
+qwen32,no_instruction,pooled,2,1,1077,' let',535,0.8916666666666667
+qwen32,no_instruction,pooled,2,2,773,' so',65,0.10833333333333334
+qwen32,no_instruction,pooled,3,1,594,"""'s""",527,0.8783333333333333
+qwen32,no_instruction,pooled,3,2,279,' the',47,0.07833333333333334
+qwen32,no_instruction,pooled,3,3,358,' I',17,0.028333333333333332
+qwen32,no_instruction,pooled,3,4,752,' me',8,0.013333333333333334
+qwen32,no_instruction,pooled,3,5,18841,' Franklin',1,0.0016666666666666668
+qwen32,instruction_only,uppercase_thinking,0,1,32313,'Okay',150,1.0
+qwen32,instruction_only,uppercase_thinking,1,1,11,"','",150,1.0
+qwen32,instruction_only,uppercase_thinking,2,1,1077,' let',143,0.9533333333333334
+qwen32,instruction_only,uppercase_thinking,2,2,773,' so',7,0.04666666666666667
+qwen32,instruction_only,uppercase_thinking,3,1,594,"""'s""",141,0.94
+qwen32,instruction_only,uppercase_thinking,3,2,358,' I',4,0.02666666666666667
+qwen32,instruction_only,uppercase_thinking,3,3,279,' the',3,0.02
+qwen32,instruction_only,uppercase_thinking,3,4,752,' me',2,0.013333333333333334
+qwen32,instruction_only,leetspeak,0,1,32313,'Okay',150,1.0
+qwen32,instruction_only,leetspeak,1,1,11,"','",150,1.0
+qwen32,instruction_only,leetspeak,2,1,1077,' let',141,0.94
+qwen32,instruction_only,leetspeak,2,2,773,' so',8,0.05333333333333334
+qwen32,instruction_only,leetspeak,2,3,326,' l',1,0.006666666666666667
+qwen32,instruction_only,leetspeak,3,1,594,"""'s""",126,0.84
+qwen32,instruction_only,leetspeak,3,2,752,' me',15,0.1
+qwen32,instruction_only,leetspeak,3,3,279,' the',8,0.05333333333333334
+qwen32,instruction_only,leetspeak,3,4,18,'3',1,0.006666666666666667
+qwen32,instruction_only,spanish,0,1,32313,'Okay',150,1.0
+qwen32,instruction_only,spanish,1,1,11,"','",150,1.0
+qwen32,instruction_only,spanish,2,1,1077,' let',141,0.94
+qwen32,instruction_only,spanish,2,2,773,' so',8,0.05333333333333334
+qwen32,instruction_only,spanish,2,3,358,' I',1,0.006666666666666667
+qwen32,instruction_only,spanish,3,1,594,"""'s""",141,0.94
+qwen32,instruction_only,spanish,3,2,279,' the',7,0.04666666666666667
+qwen32,instruction_only,spanish,3,3,358,' I',1,0.006666666666666667
+qwen32,instruction_only,spanish,3,4,1184,' need',1,0.006666666666666667
+qwen32,instruction_only,omit_word,0,1,32313,'Okay',149,0.9933333333333333
+qwen32,instruction_only,omit_word,0,2,71486,'Alright',1,0.006666666666666667
+qwen32,instruction_only,omit_word,1,1,11,"','",150,1.0
+qwen32,instruction_only,omit_word,2,1,1077,' let',139,0.9266666666666666
+qwen32,instruction_only,omit_word,2,2,773,' so',11,0.07333333333333333
+qwen32,instruction_only,omit_word,3,1,594,"""'s""",137,0.9133333333333333
+qwen32,instruction_only,omit_word,3,2,279,' the',8,0.05333333333333334
+qwen32,instruction_only,omit_word,3,3,358,' I',3,0.02
+qwen32,instruction_only,omit_word,3,4,752,' me',2,0.013333333333333334
+qwen32,instruction_only,pooled,0,1,32313,'Okay',599,0.9983333333333333
+qwen32,instruction_only,pooled,0,2,71486,'Alright',1,0.0016666666666666668
+qwen32,instruction_only,pooled,1,1,11,"','",600,1.0
+qwen32,instruction_only,pooled,2,1,1077,' let',564,0.94
+qwen32,instruction_only,pooled,2,2,773,' so',34,0.056666666666666664
+qwen32,instruction_only,pooled,2,3,358,' I',1,0.0016666666666666668
+qwen32,instruction_only,pooled,2,4,326,' l',1,0.0016666666666666668
+qwen32,instruction_only,pooled,3,1,594,"""'s""",545,0.9083333333333333
+qwen32,instruction_only,pooled,3,2,279,' the',26,0.043333333333333335
+qwen32,instruction_only,pooled,3,3,752,' me',19,0.03166666666666667
+qwen32,instruction_only,pooled,3,4,358,' I',8,0.013333333333333334
+qwen32,instruction_only,pooled,3,5,1184,' need',1,0.0016666666666666668
+qwen32,instruction_only,pooled,3,6,18,'3',1,0.0016666666666666668
+olmo31,no_instruction,uppercase_thinking,0,1,33413,'Okay',150,1.0
+olmo31,no_instruction,uppercase_thinking,1,1,11,"','",150,1.0
+olmo31,no_instruction,uppercase_thinking,2,1,779,' so',128,0.8533333333333334
+olmo31,no_instruction,uppercase_thinking,2,2,1095,' let',22,0.14666666666666667
+olmo31,no_instruction,uppercase_thinking,3,1,358,' I',82,0.5466666666666666
+olmo31,no_instruction,uppercase_thinking,3,2,279,' the',46,0.30666666666666664
+olmo31,no_instruction,uppercase_thinking,3,3,596,"""'s""",21,0.14
+olmo31,no_instruction,uppercase_thinking,3,4,757,' me',1,0.006666666666666667
+olmo31,no_instruction,leetspeak,0,1,33413,'Okay',150,1.0
+olmo31,no_instruction,leetspeak,1,1,11,"','",150,1.0
+olmo31,no_instruction,leetspeak,2,1,779,' so',123,0.82
+olmo31,no_instruction,leetspeak,2,2,1095,' let',26,0.17333333333333334
+olmo31,no_instruction,leetspeak,2,3,358,' I',1,0.006666666666666667
+olmo31,no_instruction,leetspeak,3,1,358,' I',82,0.5466666666666666
+olmo31,no_instruction,leetspeak,3,2,279,' the',41,0.2733333333333333
+olmo31,no_instruction,leetspeak,3,3,596,"""'s""",25,0.16666666666666666
+olmo31,no_instruction,leetspeak,3,4,1205,' need',1,0.006666666666666667
+olmo31,no_instruction,leetspeak,3,5,757,' me',1,0.006666666666666667
+olmo31,no_instruction,spanish,0,1,33413,'Okay',150,1.0
+olmo31,no_instruction,spanish,1,1,11,"','",150,1.0
+olmo31,no_instruction,spanish,2,1,779,' so',127,0.8466666666666667
+olmo31,no_instruction,spanish,2,2,1095,' let',22,0.14666666666666667
+olmo31,no_instruction,spanish,2,3,358,' I',1,0.006666666666666667
+olmo31,no_instruction,spanish,3,1,358,' I',85,0.5666666666666667
+olmo31,no_instruction,spanish,3,2,279,' the',42,0.28
+olmo31,no_instruction,spanish,3,3,596,"""'s""",22,0.14666666666666667
+olmo31,no_instruction,spanish,3,4,1205,' need',1,0.006666666666666667
+olmo31,no_instruction,omit_word,0,1,33413,'Okay',150,1.0
+olmo31,no_instruction,omit_word,1,1,11,"','",150,1.0
+olmo31,no_instruction,omit_word,2,1,779,' so',118,0.7866666666666666
+olmo31,no_instruction,omit_word,2,2,1095,' let',29,0.19333333333333333
+olmo31,no_instruction,omit_word,2,3,358,' I',3,0.02
+olmo31,no_instruction,omit_word,3,1,358,' I',78,0.52
+olmo31,no_instruction,omit_word,3,2,279,' the',40,0.26666666666666666
+olmo31,no_instruction,omit_word,3,3,596,"""'s""",29,0.19333333333333333
+olmo31,no_instruction,omit_word,3,4,1205,' need',3,0.02
+olmo31,no_instruction,pooled,0,1,33413,'Okay',600,1.0
+olmo31,no_instruction,pooled,1,1,11,"','",600,1.0
+olmo31,no_instruction,pooled,2,1,779,' so',496,0.8266666666666667
+olmo31,no_instruction,pooled,2,2,1095,' let',99,0.165
+olmo31,no_instruction,pooled,2,3,358,' I',5,0.008333333333333333
+olmo31,no_instruction,pooled,3,1,358,' I',327,0.545
+olmo31,no_instruction,pooled,3,2,279,' the',169,0.2816666666666667
+olmo31,no_instruction,pooled,3,3,596,"""'s""",97,0.16166666666666665
+olmo31,no_instruction,pooled,3,4,1205,' need',5,0.008333333333333333
+olmo31,no_instruction,pooled,3,5,757,' me',2,0.0033333333333333335
+olmo31,instruction_only,uppercase_thinking,0,1,33413,'Okay',150,1.0
+olmo31,instruction_only,uppercase_thinking,1,1,11,"','",150,1.0
+olmo31,instruction_only,uppercase_thinking,2,1,779,' so',87,0.58
+olmo31,instruction_only,uppercase_thinking,2,2,1095,' let',40,0.26666666666666666
+olmo31,instruction_only,uppercase_thinking,2,3,358,' I',16,0.10666666666666667
+olmo31,instruction_only,uppercase_thinking,2,4,279,' the',4,0.02666666666666667
+olmo31,instruction_only,uppercase_thinking,2,5,5745,' SO',3,0.02
+olmo31,instruction_only,uppercase_thinking,3,1,358,' I',47,0.31333333333333335
+olmo31,instruction_only,uppercase_thinking,3,2,279,' the',40,0.26666666666666666
+olmo31,instruction_only,uppercase_thinking,3,3,596,"""'s""",39,0.26
+olmo31,instruction_only,uppercase_thinking,3,4,1205,' need',11,0.07333333333333333
+olmo31,instruction_only,uppercase_thinking,3,5,49233,' NEED',5,0.03333333333333333
+olmo31,instruction_only,uppercase_thinking,3,6,1217,' user',4,0.02666666666666667
+olmo31,instruction_only,uppercase_thinking,3,7,3247,' THE',3,0.02
+olmo31,instruction_only,uppercase_thinking,3,8,757,' me',1,0.006666666666666667
+olmo31,instruction_only,leetspeak,0,1,33413,'Okay',150,1.0
+olmo31,instruction_only,leetspeak,1,1,11,"','",150,1.0
+olmo31,instruction_only,leetspeak,2,1,779,' so',109,0.7266666666666667
+olmo31,instruction_only,leetspeak,2,2,1095,' let',33,0.22
+olmo31,instruction_only,leetspeak,2,3,358,' I',8,0.05333333333333334
+olmo31,instruction_only,leetspeak,3,1,358,' I',65,0.43333333333333335
+olmo31,instruction_only,leetspeak,3,2,279,' the',44,0.29333333333333333
+olmo31,instruction_only,leetspeak,3,3,596,"""'s""",33,0.22
+olmo31,instruction_only,leetspeak,3,4,1205,' need',8,0.05333333333333334
+olmo31,instruction_only,spanish,0,1,33413,'Okay',150,1.0
+olmo31,instruction_only,spanish,1,1,11,"','",150,1.0
+olmo31,instruction_only,spanish,2,1,779,' so',76,0.5066666666666667
+olmo31,instruction_only,spanish,2,2,358,' I',40,0.26666666666666666
+olmo31,instruction_only,spanish,2,3,1095,' let',23,0.15333333333333332
+olmo31,instruction_only,spanish,2,4,279,' the',11,0.07333333333333333
+olmo31,instruction_only,spanish,3,1,358,' I',53,0.35333333333333333
+olmo31,instruction_only,spanish,3,2,1205,' need',40,0.26666666666666666
+olmo31,instruction_only,spanish,3,3,279,' the',23,0.15333333333333332
+olmo31,instruction_only,spanish,3,4,596,"""'s""",23,0.15333333333333332
+olmo31,instruction_only,spanish,3,5,1217,' user',10,0.06666666666666667
+olmo31,instruction_only,spanish,3,6,3575,' problem',1,0.006666666666666667
+olmo31,instruction_only,omit_word,0,1,33413,'Okay',150,1.0
+olmo31,instruction_only,omit_word,1,1,11,"','",150,1.0
+olmo31,instruction_only,omit_word,2,1,779,' so',111,0.74
+olmo31,instruction_only,omit_word,2,2,1095,' let',27,0.18
+olmo31,instruction_only,omit_word,2,3,358,' I',11,0.07333333333333333
+olmo31,instruction_only,omit_word,2,4,279,' the',1,0.006666666666666667
+olmo31,instruction_only,omit_word,3,1,358,' I',64,0.4266666666666667
+olmo31,instruction_only,omit_word,3,2,279,' the',47,0.31333333333333335
+olmo31,instruction_only,omit_word,3,3,596,"""'s""",27,0.18
+olmo31,instruction_only,omit_word,3,4,1205,' need',11,0.07333333333333333
+olmo31,instruction_only,omit_word,3,5,1217,' user',1,0.006666666666666667
+olmo31,instruction_only,pooled,0,1,33413,'Okay',600,1.0
+olmo31,instruction_only,pooled,1,1,11,"','",600,1.0
+olmo31,instruction_only,pooled,2,1,779,' so',383,0.6383333333333333
+olmo31,instruction_only,pooled,2,2,1095,' let',123,0.205
+olmo31,instruction_only,pooled,2,3,358,' I',75,0.125
+olmo31,instruction_only,pooled,2,4,279,' the',16,0.02666666666666667
+olmo31,instruction_only,pooled,2,5,5745,' SO',3,0.005
+olmo31,instruction_only,pooled,3,1,358,' I',229,0.38166666666666665
+olmo31,instruction_only,pooled,3,2,279,' the',154,0.25666666666666665
+olmo31,instruction_only,pooled,3,3,596,"""'s""",122,0.20333333333333334
+olmo31,instruction_only,pooled,3,4,1205,' need',70,0.11666666666666667
+olmo31,instruction_only,pooled,3,5,1217,' user',15,0.025
+olmo31,instruction_only,pooled,3,6,49233,' NEED',5,0.008333333333333333
+olmo31,instruction_only,pooled,3,7,3247,' THE',3,0.005
+olmo31,instruction_only,pooled,3,8,3575,' problem',1,0.0016666666666666668
+glm,no_instruction,uppercase_thinking,0,1,785,'The',141,0.94
+glm,no_instruction,uppercase_thinking,0,2,1654,'We',2,0.013333333333333334
+glm,no_instruction,uppercase_thinking,0,3,641,'In',1,0.006666666666666667
+glm,no_instruction,uppercase_thinking,0,4,2120,'Pl',1,0.006666666666666667
+glm,no_instruction,uppercase_thinking,0,5,34,'C',1,0.006666666666666667
+glm,no_instruction,uppercase_thinking,0,6,1143,'Ch',1,0.006666666666666667
+glm,no_instruction,uppercase_thinking,0,7,10248,'Use',1,0.006666666666666667
+glm,no_instruction,uppercase_thinking,0,8,98668,'10',1,0.006666666666666667
+glm,no_instruction,uppercase_thinking,1,1,3405,' question',114,0.76
+glm,no_instruction,uppercase_thinking,1,2,1196,' user',18,0.12
+glm,no_instruction,uppercase_thinking,1,3,36216,' farmer',4,0.02666666666666667
+glm,no_instruction,uppercase_thinking,1,4,3491,' problem',3,0.02
+glm,no_instruction,uppercase_thinking,1,5,1184,' need',2,0.013333333333333334
+glm,no_instruction,uppercase_thinking,1,6,409,' de',2,0.013333333333333334
+glm,no_instruction,uppercase_thinking,1,7,6652,' December',1,0.006666666666666667
+glm,no_instruction,uppercase_thinking,1,8,11646,' sentence',1,0.006666666666666667
+glm,no_instruction,uppercase_thinking,2,1,17045,' asks',112,0.7466666666666667
+glm,no_instruction,uppercase_thinking,2,2,6801,' wants',18,0.12
+glm,no_instruction,uppercase_thinking,2,3,374,' is',9,0.06
+glm,no_instruction,uppercase_thinking,2,4,11,"','",2,0.013333333333333334
+glm,no_instruction,uppercase_thinking,2,5,5906,' Bro',2,0.013333333333333334
+glm,no_instruction,uppercase_thinking,2,6,5302,' states',1,0.006666666666666667
+glm,no_instruction,uppercase_thinking,2,7,16952,' tape',1,0.006666666666666667
+glm,no_instruction,uppercase_thinking,2,8,482,'ine',1,0.006666666666666667
+glm,no_instruction,uppercase_thinking,3,1,1128,' what',36,0.24
+glm,no_instruction,uppercase_thinking,3,2,369,' for',29,0.19333333333333333
+glm,no_instruction,uppercase_thinking,3,3,311,' to',15,0.1
+glm,no_instruction,uppercase_thinking,3,4,892,' which',13,0.08666666666666667
+glm,no_instruction,uppercase_thinking,3,5,1246,' how',10,0.06666666666666667
+glm,no_instruction,uppercase_thinking,3,6,1380,' where',9,0.06
+glm,no_instruction,uppercase_thinking,3,7,25,':',8,0.05333333333333334
+glm,no_instruction,uppercase_thinking,3,8,10156,' asking',5,0.03333333333333333
+glm,no_instruction,leetspeak,0,1,785,'The',138,0.92
+glm,no_instruction,leetspeak,0,2,1654,'We',6,0.04
+glm,no_instruction,leetspeak,0,3,44,'M',3,0.02
+glm,no_instruction,leetspeak,0,4,10056,'Let',1,0.006666666666666667
+glm,no_instruction,leetspeak,0,5,50625,'Stan',1,0.006666666666666667
+glm,no_instruction,leetspeak,0,6,14572,'Question',1,0.006666666666666667
+glm,no_instruction,leetspeak,1,1,3405,' question',114,0.76
+glm,no_instruction,leetspeak,1,2,1196,' user',13,0.08666666666666667
+glm,no_instruction,leetspeak,1,3,1184,' need',6,0.04
+glm,no_instruction,leetspeak,1,4,3491,' problem',4,0.02666666666666667
+glm,no_instruction,leetspeak,1,5,17114,' phrase',3,0.02
+glm,no_instruction,leetspeak,1,6,787,'RE',3,0.02
+glm,no_instruction,leetspeak,1,7,11074,' teacher',2,0.013333333333333334
+glm,no_instruction,leetspeak,1,8,11646,' sentence',2,0.013333333333333334
+glm,no_instruction,leetspeak,2,1,17045,' asks',113,0.7533333333333333
+glm,no_instruction,leetspeak,2,2,6801,' wants',10,0.06666666666666667
+glm,no_instruction,leetspeak,2,3,374,' is',7,0.04666666666666667
+glm,no_instruction,leetspeak,2,4,311,' to',5,0.03333333333333333
+glm,no_instruction,leetspeak,2,5,330,"' ""'",3,0.02
+glm,no_instruction,leetspeak,2,6,16539,' describes',2,0.013333333333333334
+glm,no_instruction,leetspeak,2,7,13343,' stands',2,0.013333333333333334
+glm,no_instruction,leetspeak,2,8,2684,' got',1,0.006666666666666667
+glm,no_instruction,leetspeak,3,1,369,' for',29,0.19333333333333333
+glm,no_instruction,leetspeak,3,2,1128,' what',26,0.17333333333333334
+glm,no_instruction,leetspeak,3,3,1380,' where',23,0.15333333333333332
+glm,no_instruction,leetspeak,3,4,911,' about',13,0.08666666666666667
+glm,no_instruction,leetspeak,3,5,892,' which',13,0.08666666666666667
+glm,no_instruction,leetspeak,3,6,311,' to',12,0.08
+glm,no_instruction,leetspeak,3,7,25,':',7,0.04666666666666667
+glm,no_instruction,leetspeak,3,8,330,"' ""'",5,0.03333333333333333
+glm,no_instruction,spanish,0,1,785,'The',146,0.9733333333333334
+glm,no_instruction,spanish,0,2,32,'A',3,0.02
+glm,no_instruction,spanish,0,3,3945,'Ref',1,0.006666666666666667
+glm,no_instruction,spanish,1,1,3405,' question',120,0.8
+glm,no_instruction,spanish,1,2,1196,' user',12,0.08
+glm,no_instruction,spanish,1,3,44914,' lith',3,0.02
+glm,no_instruction,spanish,1,4,33618,' athlete',3,0.02
+glm,no_instruction,spanish,1,5,7772,' largest',2,0.013333333333333334
+glm,no_instruction,spanish,1,6,5795,' goal',2,0.013333333333333334
+glm,no_instruction,spanish,1,7,2613,' small',2,0.013333333333333334
+glm,no_instruction,spanish,1,8,10560,' welcome',1,0.006666666666666667
+glm,no_instruction,spanish,2,1,17045,' asks',119,0.7933333333333333
+glm,no_instruction,spanish,2,2,6801,' wants',8,0.05333333333333334
+glm,no_instruction,spanish,2,3,374,' is',5,0.03333333333333333
+glm,no_instruction,spanish,2,4,64646,'osphere',3,0.02
+glm,no_instruction,spanish,2,5,16539,' describes',3,0.02
+glm,no_instruction,spanish,2,6,2487,' body',2,0.013333333333333334
+glm,no_instruction,spanish,2,7,572,' was',2,0.013333333333333334
+glm,no_instruction,spanish,2,8,315,' of',2,0.013333333333333334
+glm,no_instruction,spanish,3,1,1128,' what',50,0.3333333333333333
+glm,no_instruction,spanish,3,2,1380,' where',22,0.14666666666666667
+glm,no_instruction,spanish,3,3,369,' for',22,0.14666666666666667
+glm,no_instruction,spanish,3,4,311,' to',8,0.05333333333333334
+glm,no_instruction,spanish,3,5,3170,' why',8,0.05333333333333334
+glm,no_instruction,spanish,3,6,10156,' asking',4,0.02666666666666667
+glm,no_instruction,spanish,3,7,374,' is',4,0.02666666666666667
+glm,no_instruction,spanish,3,8,892,' which',4,0.02666666666666667
+glm,no_instruction,omit_word,0,1,785,'The',142,0.9466666666666667
+glm,no_instruction,omit_word,0,2,2082,'An',2,0.013333333333333334
+glm,no_instruction,omit_word,0,3,21618,'Tables',1,0.006666666666666667
+glm,no_instruction,omit_word,0,4,33815,'Jump',1,0.006666666666666667
+glm,no_instruction,omit_word,0,5,48215,'Hum',1,0.006666666666666667
+glm,no_instruction,omit_word,0,6,1986,'This',1,0.006666666666666667
+glm,no_instruction,omit_word,0,7,32,'A',1,0.006666666666666667
+glm,no_instruction,omit_word,0,8,95853,'Spi',1,0.006666666666666667
+glm,no_instruction,omit_word,1,1,3405,' question',118,0.7866666666666666
+glm,no_instruction,omit_word,1,2,1196,' user',14,0.09333333333333334
+glm,no_instruction,omit_word,1,3,15036,' scenario',4,0.02666666666666667
+glm,no_instruction,omit_word,1,4,3491,' problem',3,0.02
+glm,no_instruction,omit_word,1,5,11646,' sentence',2,0.013333333333333334
+glm,no_instruction,omit_word,1,6,9848,' ice',2,0.013333333333333334
+glm,no_instruction,omit_word,1,7,525,' are',1,0.006666666666666667
+glm,no_instruction,omit_word,1,8,287,'ing',1,0.006666666666666667
+glm,no_instruction,omit_word,2,1,17045,' asks',117,0.78
+glm,no_instruction,omit_word,2,2,374,' is',10,0.06666666666666667
+glm,no_instruction,omit_word,2,3,6801,' wants',9,0.06
+glm,no_instruction,omit_word,2,4,16539,' describes',3,0.02
+glm,no_instruction,omit_word,2,5,5302,' states',2,0.013333333333333334
+glm,no_instruction,omit_word,2,6,2011,'box',2,0.013333333333333334
+glm,no_instruction,omit_word,2,7,1730,' found',1,0.006666666666666667
+glm,no_instruction,omit_word,2,8,502,' j',1,0.006666666666666667
+glm,no_instruction,omit_word,3,1,1380,' where',37,0.24666666666666667
+glm,no_instruction,omit_word,3,2,369,' for',25,0.16666666666666666
+glm,no_instruction,omit_word,3,3,1128,' what',22,0.14666666666666667
+glm,no_instruction,omit_word,3,4,3170,' why',13,0.08666666666666667
+glm,no_instruction,omit_word,3,5,311,' to',11,0.07333333333333333
+glm,no_instruction,omit_word,3,6,25,':',7,0.04666666666666667
+glm,no_instruction,omit_word,3,7,10156,' asking',6,0.04
+glm,no_instruction,omit_word,3,8,892,' which',6,0.04
+glm,no_instruction,pooled,0,1,785,'The',567,0.945
+glm,no_instruction,pooled,0,2,1654,'We',8,0.013333333333333334
+glm,no_instruction,pooled,0,3,32,'A',4,0.006666666666666667
+glm,no_instruction,pooled,0,4,44,'M',3,0.005
+glm,no_instruction,pooled,0,5,2082,'An',2,0.0033333333333333335
+glm,no_instruction,pooled,0,6,641,'In',1,0.0016666666666666668
+glm,no_instruction,pooled,0,7,21618,'Tables',1,0.0016666666666666668
+glm,no_instruction,pooled,0,8,33815,'Jump',1,0.0016666666666666668
+glm,no_instruction,pooled,1,1,3405,' question',466,0.7766666666666666
+glm,no_instruction,pooled,1,2,1196,' user',57,0.095
+glm,no_instruction,pooled,1,3,3491,' problem',10,0.016666666666666666
+glm,no_instruction,pooled,1,4,1184,' need',8,0.013333333333333334
+glm,no_instruction,pooled,1,5,15036,' scenario',5,0.008333333333333333
+glm,no_instruction,pooled,1,6,11646,' sentence',5,0.008333333333333333
+glm,no_instruction,pooled,1,7,36216,' farmer',4,0.006666666666666667
+glm,no_instruction,pooled,1,8,44914,' lith',3,0.005
+glm,no_instruction,pooled,2,1,17045,' asks',461,0.7683333333333333
+glm,no_instruction,pooled,2,2,6801,' wants',45,0.075
+glm,no_instruction,pooled,2,3,374,' is',31,0.051666666666666666
+glm,no_instruction,pooled,2,4,16539,' describes',8,0.013333333333333334
+glm,no_instruction,pooled,2,5,311,' to',6,0.01
+glm,no_instruction,pooled,2,6,5302,' states',4,0.006666666666666667
+glm,no_instruction,pooled,2,7,64646,'osphere',3,0.005
+glm,no_instruction,pooled,2,8,330,"' ""'",3,0.005
+glm,no_instruction,pooled,3,1,1128,' what',134,0.22333333333333333
+glm,no_instruction,pooled,3,2,369,' for',105,0.175
+glm,no_instruction,pooled,3,3,1380,' where',91,0.15166666666666667
+glm,no_instruction,pooled,3,4,311,' to',46,0.07666666666666666
+glm,no_instruction,pooled,3,5,892,' which',36,0.06
+glm,no_instruction,pooled,3,6,25,':',24,0.04
+glm,no_instruction,pooled,3,7,911,' about',24,0.04
+glm,no_instruction,pooled,3,8,3170,' why',24,0.04
+glm,instruction_only,uppercase_thinking,0,1,785,'The',55,0.36666666666666664
+glm,instruction_only,uppercase_thinking,0,2,17209,'THE',45,0.3
+glm,instruction_only,uppercase_thinking,0,3,11686,'ANS',14,0.09333333333333334
+glm,instruction_only,uppercase_thinking,0,4,32,'A',6,0.04
+glm,instruction_only,uppercase_thinking,0,5,3617,'TH',6,0.04
+glm,instruction_only,uppercase_thinking,0,6,50,'S',4,0.02666666666666667
+glm,instruction_only,uppercase_thinking,0,7,2034,'US',3,0.02
+glm,instruction_only,uppercase_thinking,0,8,1093,'AN',3,0.02
+glm,instruction_only,uppercase_thinking,1,1,89180,' QUESTION',33,0.22
+glm,instruction_only,uppercase_thinking,1,2,1196,' user',29,0.19333333333333333
+glm,instruction_only,uppercase_thinking,1,3,3405,' question',18,0.12
+glm,instruction_only,uppercase_thinking,1,4,39139,'WER',14,0.09333333333333334
+glm,instruction_only,uppercase_thinking,1,5,11631,'INK',6,0.04
+glm,instruction_only,uppercase_thinking,1,6,1718,'ING',4,0.02666666666666667
+glm,instruction_only,uppercase_thinking,1,7,37273,' PRIMARY',4,0.02666666666666667
+glm,instruction_only,uppercase_thinking,1,8,12598,' GO',3,0.02
+glm,instruction_only,uppercase_thinking,2,1,5752,' AS',31,0.20666666666666667
+glm,instruction_only,uppercase_thinking,2,2,6801,' wants',30,0.2
+glm,instruction_only,uppercase_thinking,2,3,17045,' asks',18,0.12
+glm,instruction_only,uppercase_thinking,2,4,25,':',14,0.09333333333333334
+glm,instruction_only,uppercase_thinking,2,5,1718,'ING',6,0.04
+glm,instruction_only,uppercase_thinking,2,6,7515,' PURPOSE',4,0.02666666666666667
+glm,instruction_only,uppercase_thinking,2,7,3424,' IS',4,0.02666666666666667
+glm,instruction_only,uppercase_thinking,2,8,3168,' THE',3,0.02
+glm,instruction_only,uppercase_thinking,3,1,40227,'KS',31,0.20666666666666667
+glm,instruction_only,uppercase_thinking,3,2,752,' me',19,0.12666666666666668
+glm,instruction_only,uppercase_thinking,3,3,311,' to',10,0.06666666666666667
+glm,instruction_only,uppercase_thinking,3,4,1128,' what',5,0.03333333333333333
+glm,instruction_only,uppercase_thinking,3,5,422,' D',5,0.03333333333333333
+glm,instruction_only,uppercase_thinking,3,6,3008,' OF',5,0.03333333333333333
+glm,instruction_only,uppercase_thinking,3,7,356,' C',4,0.02666666666666667
+glm,instruction_only,uppercase_thinking,3,8,279,' the',3,0.02
+glm,instruction_only,leetspeak,0,1,785,'The',88,0.5866666666666667
+glm,instruction_only,leetspeak,0,2,1001,'Th',30,0.2
+glm,instruction_only,leetspeak,0,3,19,'4',8,0.05333333333333334
+glm,instruction_only,leetspeak,0,4,16,'1',5,0.03333333333333333
+glm,instruction_only,leetspeak,0,5,10056,'Let',4,0.02666666666666667
+glm,instruction_only,leetspeak,0,6,1654,'We',3,0.02
+glm,instruction_only,leetspeak,0,7,42,'K',2,0.013333333333333334
+glm,instruction_only,leetspeak,0,8,15834,' Question',2,0.013333333333333334
+glm,instruction_only,leetspeak,1,1,3405,' question',51,0.34
+glm,instruction_only,leetspeak,1,2,18,'3',31,0.20666666666666667
+glm,instruction_only,leetspeak,1,3,1196,' user',27,0.18
+glm,instruction_only,leetspeak,1,4,77,'n',5,0.03333333333333333
+glm,instruction_only,leetspeak,1,5,1184,' need',4,0.02666666666666667
+glm,instruction_only,leetspeak,1,6,12402,' trees',4,0.02666666666666667
+glm,instruction_only,leetspeak,1,7,13,'.',3,0.02
+glm,instruction_only,leetspeak,1,8,272,' c',3,0.02
+glm,instruction_only,leetspeak,2,1,17045,' asks',51,0.34
+glm,instruction_only,leetspeak,2,2,6801,' wants',27,0.18
+glm,instruction_only,leetspeak,2,3,922,' qu',23,0.15333333333333332
+glm,instruction_only,leetspeak,2,4,220,' ',5,0.03333333333333333
+glm,instruction_only,leetspeak,2,5,374,' is',4,0.02666666666666667
+glm,instruction_only,leetspeak,2,6,14113,' formed',4,0.02666666666666667
+glm,instruction_only,leetspeak,2,7,81,'r',3,0.02
+glm,instruction_only,leetspeak,2,8,19,'4',3,0.02
+glm,instruction_only,leetspeak,3,1,752,' me',26,0.17333333333333334
+glm,instruction_only,leetspeak,3,2,100235,'35',22,0.14666666666666667
+glm,instruction_only,leetspeak,3,3,1128,' what',15,0.1
+glm,instruction_only,leetspeak,3,4,1380,' where',11,0.07333333333333333
+glm,instruction_only,leetspeak,3,5,892,' which',8,0.05333333333333334
+glm,instruction_only,leetspeak,3,6,911,' about',8,0.05333333333333334
+glm,instruction_only,leetspeak,3,7,18,'3',7,0.04666666666666667
+glm,instruction_only,leetspeak,3,8,369,' for',7,0.04666666666666667
+glm,instruction_only,spanish,0,1,785,'The',56,0.37333333333333335
+glm,instruction_only,spanish,0,2,8746,'La',43,0.2866666666666667
+glm,instruction_only,spanish,0,3,6582,'El',33,0.22
+glm,instruction_only,spanish,0,4,16,'1',6,0.04
+glm,instruction_only,spanish,0,5,61551,'Anal',2,0.013333333333333334
+glm,instruction_only,spanish,0,6,693,'Re',2,0.013333333333333334
+glm,instruction_only,spanish,0,7,44,'M',2,0.013333333333333334
+glm,instruction_only,spanish,0,8,30088,'Para',2,0.013333333333333334
+glm,instruction_only,spanish,1,1,3405,' question',50,0.3333333333333333
+glm,instruction_only,spanish,1,2,78702,' pregunta',42,0.28
+glm,instruction_only,spanish,1,3,16368,' usuario',22,0.14666666666666667
+glm,instruction_only,spanish,1,4,13,'.',6,0.04
+glm,instruction_only,spanish,1,5,1196,' user',6,0.04
+glm,instruction_only,spanish,1,6,518,' at',3,0.02
+glm,instruction_only,spanish,1,7,42649,'izo',2,0.013333333333333334
+glm,instruction_only,spanish,1,8,6862,'pet',2,0.013333333333333334
+glm,instruction_only,spanish,2,1,17045,' asks',47,0.31333333333333335
+glm,instruction_only,spanish,2,2,78702,' pregunta',41,0.2733333333333333
+glm,instruction_only,spanish,2,3,1531,' es',7,0.04666666666666667
+glm,instruction_only,spanish,2,4,72504,' quiere',6,0.04
+glm,instruction_only,spanish,2,5,6801,' wants',4,0.02666666666666667
+glm,instruction_only,spanish,2,6,374,' is',4,0.02666666666666667
+glm,instruction_only,spanish,2,7,19415,' Anal',3,0.02
+glm,instruction_only,spanish,2,8,220,' ',3,0.02
+glm,instruction_only,spanish,3,1,42046,' qué',16,0.10666666666666667
+glm,instruction_only,spanish,3,2,1128,' what',13,0.08666666666666667
+glm,instruction_only,spanish,3,3,1380,' where',12,0.08
+glm,instruction_only,spanish,3,4,25,':',10,0.06666666666666667
+glm,instruction_only,spanish,3,5,144331,' dónde',9,0.06
+glm,instruction_only,spanish,3,6,369,' for',8,0.05333333333333334
+glm,instruction_only,spanish,3,7,1709,' que',6,0.04
+glm,instruction_only,spanish,3,8,892,' which',5,0.03333333333333333
+glm,instruction_only,omit_word,0,1,785,'The',105,0.7
+glm,instruction_only,omit_word,0,2,32,'A',13,0.08666666666666667
+glm,instruction_only,omit_word,0,3,40,'I',7,0.04666666666666667
+glm,instruction_only,omit_word,0,4,1654,'We',3,0.02
+glm,instruction_only,omit_word,0,5,27987,'James',3,0.02
+glm,instruction_only,omit_word,0,6,11686,'ANS',2,0.013333333333333334
+glm,instruction_only,omit_word,0,7,1,"'""'",2,0.013333333333333334
+glm,instruction_only,omit_word,0,8,44,'M',2,0.013333333333333334
+glm,instruction_only,omit_word,1,1,3405,' question',61,0.4066666666666667
+glm,instruction_only,omit_word,1,2,1196,' user',38,0.25333333333333335
+glm,instruction_only,omit_word,1,3,1184,' need',9,0.06
+glm,instruction_only,omit_word,1,4,54099,' picnic',3,0.02
+glm,instruction_only,omit_word,1,5,11952,' bird',3,0.02
+glm,instruction_only,omit_word,1,6,8,')',3,0.02
+glm,instruction_only,omit_word,1,7,8058,' Sun',3,0.02
+glm,instruction_only,omit_word,1,8,572,' was',3,0.02
+glm,instruction_only,omit_word,2,1,17045,' asks',60,0.4
+glm,instruction_only,omit_word,2,2,6801,' wants',27,0.18
+glm,instruction_only,omit_word,2,3,374,' is',14,0.09333333333333334
+glm,instruction_only,omit_word,2,4,311,' to',9,0.06
+glm,instruction_only,omit_word,2,5,14015,' basket',3,0.02
+glm,instruction_only,omit_word,2,6,4752,' building',2,0.013333333333333334
+glm,instruction_only,omit_word,2,7,6277,' military',2,0.013333333333333334
+glm,instruction_only,omit_word,2,8,25,':',2,0.013333333333333334
+glm,instruction_only,omit_word,3,1,1380,' where',17,0.11333333333333333
+glm,instruction_only,omit_word,3,2,311,' to',16,0.10666666666666667
+glm,instruction_only,omit_word,3,3,1128,' what',12,0.08
+glm,instruction_only,omit_word,3,4,752,' me',11,0.07333333333333333
+glm,instruction_only,omit_word,3,5,10156,' asking',10,0.06666666666666667
+glm,instruction_only,omit_word,3,6,3170,' why',10,0.06666666666666667
+glm,instruction_only,omit_word,3,7,264,' a',8,0.05333333333333334
+glm,instruction_only,omit_word,3,8,369,' for',6,0.04
+glm,instruction_only,pooled,0,1,785,'The',304,0.5066666666666667
+glm,instruction_only,pooled,0,2,17209,'THE',45,0.075
+glm,instruction_only,pooled,0,3,8746,'La',43,0.07166666666666667
+glm,instruction_only,pooled,0,4,6582,'El',33,0.055
+glm,instruction_only,pooled,0,5,1001,'Th',30,0.05
+glm,instruction_only,pooled,0,6,32,'A',19,0.03166666666666667
+glm,instruction_only,pooled,0,7,11686,'ANS',17,0.028333333333333332
+glm,instruction_only,pooled,0,8,16,'1',11,0.018333333333333333
+glm,instruction_only,pooled,1,1,3405,' question',180,0.3
+glm,instruction_only,pooled,1,2,1196,' user',100,0.16666666666666666
+glm,instruction_only,pooled,1,3,78702,' pregunta',42,0.07
+glm,instruction_only,pooled,1,4,89180,' QUESTION',33,0.055
+glm,instruction_only,pooled,1,5,18,'3',31,0.051666666666666666
+glm,instruction_only,pooled,1,6,16368,' usuario',22,0.03666666666666667
+glm,instruction_only,pooled,1,7,39139,'WER',17,0.028333333333333332
+glm,instruction_only,pooled,1,8,1184,' need',14,0.023333333333333334
+glm,instruction_only,pooled,2,1,17045,' asks',176,0.29333333333333333
+glm,instruction_only,pooled,2,2,6801,' wants',88,0.14666666666666667
+glm,instruction_only,pooled,2,3,78702,' pregunta',41,0.06833333333333333
+glm,instruction_only,pooled,2,4,5752,' AS',31,0.051666666666666666
+glm,instruction_only,pooled,2,5,922,' qu',23,0.03833333333333333
+glm,instruction_only,pooled,2,6,374,' is',22,0.03666666666666667
+glm,instruction_only,pooled,2,7,25,':',18,0.03
+glm,instruction_only,pooled,2,8,311,' to',12,0.02
+glm,instruction_only,pooled,3,1,752,' me',57,0.095
+glm,instruction_only,pooled,3,2,1128,' what',45,0.075
+glm,instruction_only,pooled,3,3,1380,' where',41,0.06833333333333333
+glm,instruction_only,pooled,3,4,311,' to',31,0.051666666666666666
+glm,instruction_only,pooled,3,5,40227,'KS',31,0.051666666666666666
+glm,instruction_only,pooled,3,6,369,' for',23,0.03833333333333333
+glm,instruction_only,pooled,3,7,100235,'35',22,0.03666666666666667
+glm,instruction_only,pooled,3,8,892,' which',18,0.03

@@ -12,6 +12,7 @@ without it (only the gpt-oss run needs it, on the pod).
 from __future__ import annotations
 
 import json
+import re
 import urllib.request
 from dataclasses import dataclass, field
 from typing import Optional
@@ -51,9 +52,9 @@ def build_prefill_tokens(question: str, options: list[str], instruction: str,
                          force_think: bool = False) -> list[int]:
     """Harmony token IDs; with a seed the prompt ends inside an unclosed analysis msg.
 
-    reasoning_effort ("low"|"medium"|"high") sets gpt-oss's CoT length. Default "high"
-    so the analysis channel is length-comparable to qwen/R1 (the medium default gives
-    ~3x shorter CoT and an empty analysis channel at K=0).
+    reasoning_effort ("low"|"medium"|"high") controls the requested reasoning effort.
+    It does not guarantee a particular CoT length. Historical K=0 empty-analysis
+    records were affected by a channel-parsing bug, not evidence of absent reasoning.
 
     force_think: with an empty seed, still end the prompt inside an unclosed EMPTY
     analysis message so gpt-oss is MADE to reason (capability floor at K=0) instead
@@ -66,10 +67,12 @@ def build_prefill_tokens(question: str, options: list[str], instruction: str,
                "high": ReasoningEffort.HIGH}
     sysc = SystemContent.new().with_reasoning_effort(_EFFORT[reasoning_effort])
     sys_msg = Message.from_role_and_content(Role.SYSTEM, sysc)
-    dev = DeveloperContent.new().with_instructions(instruction or "none")
-    dev_msg = Message.from_role_and_content(Role.DEVELOPER, dev)
     usr_msg = Message.from_role_and_content(Role.USER, build_user_text(question, options))
-    msgs = [sys_msg, dev_msg, usr_msg]
+    msgs = [sys_msg]
+    if instruction and instruction.strip().lower() != "none":
+        dev = DeveloperContent.new().with_instructions(instruction)
+        msgs.append(Message.from_role_and_content(Role.DEVELOPER, dev))
+    msgs.append(usr_msg)
     if not seed and not force_think:
         convo = Conversation.from_messages(msgs)
         return list(enc.render_conversation_for_completion(convo, Role.ASSISTANT))
@@ -84,13 +87,20 @@ def build_prefill_tokens(question: str, options: list[str], instruction: str,
 
 def split_channels(text: str) -> tuple[str, str]:
     """(analysis_continuation, final_answer) from raw completion text w/ special tokens."""
-    analysis, final = text, ""
-    if "<|channel|>final<|message|>" in text:
-        analysis, _, final = text.partition("<|channel|>final<|message|>")
-    for mark in ("<|end|>", "<|return|>", "<|start|>", "<|channel|>", "<|call|>", "<|message|>"):
-        analysis = analysis.split(mark)[0]
-        final = final.split(mark)[0]
-    return analysis.strip(), final.strip()
+    # K=0 emits a channel header; K>0 resumes inside the seeded analysis body.
+    # Strip headers by parsing them before trimming boundary tokens.
+    header = re.compile(r"(?:<\|start\|>assistant)?<\|channel\|>(analysis|final)<\|message\|>")
+    parts = {"analysis": [], "final": []}
+    channel, offset = "analysis", 0
+    for match in header.finditer(text):
+        body = re.split(r"<\|(?:end|return|start|channel|call|message)\|>", text[offset:match.start()], maxsplit=1)[0].strip()
+        if body:
+            parts[channel].append(body)
+        channel, offset = match.group(1), match.end()
+    body = re.split(r"<\|(?:end|return|start|channel|call|message)\|>", text[offset:], maxsplit=1)[0].strip()
+    if body:
+        parts[channel].append(body)
+    return "\n\n".join(parts['analysis']), "\n\n".join(parts['final'])
 
 
 def complete_harmony(url: str, model: str, question: str, options: list[str],
@@ -124,6 +134,9 @@ def complete_harmony(url: str, model: str, question: str, options: list[str],
     raw = {
         "provider": f"vllm/{model}",
         "prefill_tokens": len(tokens),
+        "prompt_token_ids": tokens,
+        "reasoning_effort": reasoning_effort,
+        "control_instruction": instruction if instruction and instruction.strip().lower() != "none" else None,
         "choices": [{"message": {"content": final}, "finish_reason": resp.finish_reason}],
         "harmony_raw": text,
         "usage": resp.usage,

@@ -1,0 +1,10 @@
+{
+  "first_content_entropy_max_spread_across_identical_histories": {
+    "qwen32": 0.015884362161159515,
+    "olmo31": 0.009084127843379974
+  },
+  "entropy_minimum_response_count": 600,
+  "matched_cells_per_model": 120,
+  "linked_samples_per_model_condition": 600,
+  "full_vocabulary_entropy_ge_min_entropy": true
+}

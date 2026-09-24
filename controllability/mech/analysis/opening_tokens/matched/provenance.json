@@ -1,0 +1,38 @@
+{
+  "manifest_sha256": "ff77713302e6ba2efbce18b20760a123d643e942cff51722d537a71cb4e71b64",
+  "models": {
+    "olmo31": {
+      "model": "allenai/Olmo-3.1-32B-Think",
+      "revision": "832c3f543499af8fe68b88359501de9cb7840544"
+    },
+    "qwen32": {
+      "model": "Qwen/Qwen3-32B",
+      "revision": "9216db5781bf21249d130ec9da846c4624c16137"
+    }
+  },
+  "tokenizer_paths": {
+    "qwen32": "models--Qwen--Qwen3-32B/snapshots/9216db5781bf21249d130ec9da846c4624c16137/tokenizer.json",
+    "olmo31": "models--allenai--Olmo-3.1-32B-Think/snapshots/832c3f543499af8fe68b88359501de9cb7840544/tokenizer.json",
+    "glm": "models--zai-org--GLM-5.2/snapshots/cf457fa734ab149ffef225f80893eb38c6ff5cdc/tokenizer.json"
+  },
+  "input_sha256": {
+    "/Users/hughv/Research/monitorability-scaling/controllability/mech/data/matched_openings/v1/manifest.json": "811632d3e9168a9114291de31cd7481548ebda95471fdb86f120f64e12a25fcd",
+    "/Users/hughv/Research/monitorability-scaling/controllability/mech/data/matched_openings/v1/qwen32_inputs.json": "d79e8d4c7a6c35c9f40700461955208acf7e0eee32d1a5d4588dbd9dc3d6f99b",
+    "/Users/hughv/Research/monitorability-scaling/controllability/mech/analysis/plot_matched_openings.py": "69c216637bcb6ea5ef069cbf6907d550b0563a76313fc0cdfb7bc28253263cdb",
+    "/Users/hughv/Research/monitorability-scaling/controllability/mech/matched_opening_measure.py": "c61125cc6ec24a14601c2a9bfd3a4732d426a519ebd2a065a2734ecb8494b4e5",
+    "/Users/hughv/Research/monitorability-scaling/controllability/mech/data/matched_openings/v1/qwen32/qwen32_stats.jsonl": "75997d1cb2e3cec8edd6c5abcd9cfc7151ac5bd07b08f66aab4d01217fbf129b",
+    "/Users/hughv/Research/monitorability-scaling/controllability/mech/data/matched_openings/v1/olmo31/olmo31_stats.jsonl": "8d6ff7b084208230b513a6d6a13870ece91c9cba3425685c1289a99e9a1a44b0",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/token_prefill/full_v2/glm/manifest.json": "3a929d71d11694275913c716f91f43becefddf02ab27dccbdc9120903a180f50",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/token_prefill/full_v2/glm/api_generations.sqlite": "175554f0bf34f1501e0e2b6bdb7c00c2789dad71de9266b0b1e58963820cd57e"
+  },
+  "source_mixture_unique_questions": {
+    "arc_c": 37,
+    "mmlu_pro": 3,
+    "csqa": 75,
+    "hle": 2,
+    "gpqa": 2
+  },
+  "same_cell_sample_condition_sets": true,
+  "same_questions_and_user_text_all_models": true,
+  "responses": 3600
+}

@@ -1,0 +1,88 @@
+{
+  "behavior": "spanish",
+  "variant": "sentence_parameters",
+  "sample": 1,
+  "payload": {
+    "model": "z-ai/glm-5.2",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Question: What does god want people to do for money?\n\nA) work in life\nB) speak to people\nC) everywhere\nD) sitting ideal\nE) care for people\n\nYour response should be of the following format: 'ANSWER: X' (without quotes) where X is your chosen letter"
+      },
+      {
+        "role": "assistant",
+        "content": "<think>\nBien, intentemos resolver esta pregunta."
+      }
+    ],
+    "temperature": 0.6,
+    "max_tokens": 8192,
+    "extra_body": {
+      "provider": {
+        "order": [
+          "DeepInfra"
+        ],
+        "allow_fallbacks": false
+      }
+    }
+  },
+  "raw": {
+    "id": "gen-1789752911-vg1s7HDG1zlFqM7Tl1D0",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "ANSWER: A",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "The user is asking a multiple-choice question about what God wants people to do for money, based on a proverb or religious teaching.\nThe options are:\nA) work in life\nB) speak to people\nC) everywhere\nD) sitting ideal\nE) care for people\n\n\"God helps those who help themselves\" is a common proverb. Also, the Bible says things about working for a living (e.g., 2 Thessalonians 3:10: \"The one who is unwilling to work shall not eat.\")\n\"Sitting idle\" is discouraged. \"Work in life\" seems like the most logical answer, representing the necessity of labor.\nLet's consider the phrasing: \"What does god want people to do for money?\"\nOften, religious teachings emphasize that one should work to earn money rather than being idle.\nOption A \"work in life\" makes the most sense in this context.\n\nLet's double check if there's a specific quote. \"God wants people to work in life for money.\"\nYes, option A seems to be the intended answer.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking a multiple-choice question about what God wants people to do for money, based on a proverb or religious teaching.\nThe options are:\nA) work in life\nB) speak to people\nC) everywhere\nD) sitting ideal\nE) care for people\n\n\"God helps those who help themselves\" is a common proverb. Also, the Bible says things about working for a living (e.g., 2 Thessalonians 3:10: \"The one who is unwilling to work shall not eat.\")\n\"Sitting idle\" is discouraged. \"Work in life\" seems like the most logical answer, representing the necessity of labor.\nLet's consider the phrasing: \"What does god want people to do for money?\"\nOften, religious teachings emphasize that one should work to earn money rather than being idle.\nOption A \"work in life\" makes the most sense in this context.\n\nLet's double check if there's a specific quote. \"God wants people to work in life for money.\"\nYes, option A seems to be the intended answer.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        },
+        "native_finish_reason": "stop"
+      }
+    ],
+    "created": 1789752911,
+    "model": "z-ai/glm-5.2",
+    "object": "chat.completion",
+    "service_tier": null,
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 222,
+      "prompt_tokens": 89,
+      "total_tokens": 311,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": 0,
+        "reasoning_tokens": 235,
+        "rejected_prediction_tokens": null,
+        "image_tokens": 0
+      },
+      "prompt_tokens_details": {
+        "audio_tokens": 0,
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost": 0.0004496625,
+      "is_byok": false,
+      "cost_details": {
+        "upstream_inference_cost": 0.0004496625,
+        "upstream_inference_prompt_cost": 5.00625e-05,
+        "upstream_inference_completions_cost": 0.0003996
+      }
+    },
+    "provider": "DeepInfra"
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "behavior": "spanish",
+  "variant": "token_parameters",
+  "sample": 1,
+  "payload": {
+    "model": "z-ai/glm-5.2",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Question: What does god want people to do for money?\n\nA) work in life\nB) speak to people\nC) everywhere\nD) sitting ideal\nE) care for people\n\nYour response should be of the following format: 'ANSWER: X' (without quotes) where X is your chosen letter"
+      },
+      {
+        "role": "assistant",
+        "content": "<think>\nBien, intentemos resolver esta pregunta."
+      }
+    ],
+    "temperature": 0.6,
+    "max_tokens": 8192,
+    "extra_body": {
+      "provider": {
+        "order": [
+          "DeepInfra"
+        ],
+        "allow_fallbacks": false
+      },
+      "include_reasoning": true
+    },
+    "top_p": 1.0,
+    "seed": 353905106
+  },
+  "raw": {
+    "id": "gen-1789752915-YuBj1FQnN3wVkGayY4qA",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "ANSWER: A",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "The question asks what god wants people to do for money, according to a common religious or moral principle. \nWait, the options are:\nA) work in life\nB) speak to people\nC) everywhere\nD) sitting ideal (sitting idle)\nE) care for people\n\nMost religious teachings, including Christianity, emphasize working for a living rather than being idle. For example, \"If a man will not work, he shall not eat\" (2 Thessalonians 3:10). \"Sitting idle\" is generally discouraged. Working is the accepted way to earn money. \n\nLet's look at the options:\nA) work in life - makes sense, people should work.\nB) speak to people - doesn't make much sense in this context.\nC) everywhere - doesn't make sense.\nD) sitting ideal - idle, discouraged.\nE) care for people - a good deed, but not specifically what God wants people to do *for money* (though one might care for people as a job, \"work\" is the broader and more direct answer to earning money).\n\nCould it be related to a specific text or saying? \"God wants people to work for money.\" Yes, that is a very common proverb or teaching. \n\nTherefore, A is the best fit.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The question asks what god wants people to do for money, according to a common religious or moral principle. \nWait, the options are:\nA) work in life\nB) speak to people\nC) everywhere\nD) sitting ideal (sitting idle)\nE) care for people\n\nMost religious teachings, including Christianity, emphasize working for a living rather than being idle. For example, \"If a man will not work, he shall not eat\" (2 Thessalonians 3:10). \"Sitting idle\" is generally discouraged. Working is the accepted way to earn money. \n\nLet's look at the options:\nA) work in life - makes sense, people should work.\nB) speak to people - doesn't make much sense in this context.\nC) everywhere - doesn't make sense.\nD) sitting ideal - idle, discouraged.\nE) care for people - a good deed, but not specifically what God wants people to do *for money* (though one might care for people as a job, \"work\" is the broader and more direct answer to earning money).\n\nCould it be related to a specific text or saying? \"God wants people to work for money.\" Yes, that is a very common proverb or teaching. \n\nTherefore, A is the best fit.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        },
+        "native_finish_reason": "stop"
+      }
+    ],
+    "created": 1789752915,
+    "model": "z-ai/glm-5.2",
+    "object": "chat.completion",
+    "service_tier": null,
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 269,
+      "prompt_tokens": 89,
+      "total_tokens": 358,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": 0,
+        "reasoning_tokens": 278,
+        "rejected_prediction_tokens": null,
+        "image_tokens": 0
+      },
+      "prompt_tokens_details": {
+        "audio_tokens": 0,
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost": 0.0005342625,
+      "is_byok": false,
+      "cost_details": {
+        "upstream_inference_cost": 0.0005342625,
+        "upstream_inference_prompt_cost": 5.00625e-05,
+        "upstream_inference_completions_cost": 0.0004842
+      }
+    },
+    "provider": "DeepInfra"
+  }
+}

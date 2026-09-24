@@ -1,5 +1,12 @@
 # Prefill / CoT-Seeding Experiment — Summary
 
+> **September 9 audit:** the GPT-OSS K=0 empty-reasoning claim below is invalid:
+> saved raw analysis was discarded by the Harmony parser. The explanations of
+> high suppression baselines also require qualification. See
+> [the source audit](prefill_audit.md) for verified counts and fixes, and the
+> [completed high-effort rerun](gptoss_high_clean_results.md) for the current GPT-OSS
+> results now used in both figures. Treat this older narrative as historical.
+
 **Question:** If we seed the first *K* sentences of a *controlled* chain-of-thought into a
 model's reasoning block, will the **base model continue in that style**, or is it
 fundamentally incapable of the controlled generation that SFT installs?

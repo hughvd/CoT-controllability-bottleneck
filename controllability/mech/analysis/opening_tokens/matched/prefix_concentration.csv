@@ -1,0 +1,566 @@
+model,condition,method,prefix_length,share,matches,total,eligible,reference_token_ids,reference_text,selection_ties
+qwen32,no_instruction,no_instruction_reference,1,1.0,600,600,600,[32313],Okay,1
+qwen32,no_instruction,within_condition_mode,1,1.0,600,600,600,[32313],Okay,1
+qwen32,instruction_only,no_instruction_reference,1,0.9983333333333333,599,600,600,[32313],Okay,1
+qwen32,instruction_only,within_condition_mode,1,0.9983333333333333,599,600,600,[32313],Okay,1
+qwen32,no_instruction,no_instruction_reference,2,1.0,600,600,600,"[32313, 11]","Okay,",1
+qwen32,no_instruction,within_condition_mode,2,1.0,600,600,600,"[32313, 11]","Okay,",1
+qwen32,instruction_only,no_instruction_reference,2,0.9983333333333333,599,600,600,"[32313, 11]","Okay,",1
+qwen32,instruction_only,within_condition_mode,2,0.9983333333333333,599,600,600,"[32313, 11]","Okay,",1
+qwen32,no_instruction,no_instruction_reference,3,0.8916666666666667,535,600,600,"[32313, 11, 1077]","Okay, let",1
+qwen32,no_instruction,within_condition_mode,3,0.8916666666666667,535,600,600,"[32313, 11, 1077]","Okay, let",1
+qwen32,instruction_only,no_instruction_reference,3,0.9383333333333334,563,600,600,"[32313, 11, 1077]","Okay, let",1
+qwen32,instruction_only,within_condition_mode,3,0.9383333333333334,563,600,600,"[32313, 11, 1077]","Okay, let",1
+qwen32,no_instruction,no_instruction_reference,4,0.8783333333333333,527,600,600,"[32313, 11, 1077, 594]","Okay, let's",1
+qwen32,no_instruction,within_condition_mode,4,0.8783333333333333,527,600,600,"[32313, 11, 1077, 594]","Okay, let's",1
+qwen32,instruction_only,no_instruction_reference,4,0.9066666666666666,544,600,600,"[32313, 11, 1077, 594]","Okay, let's",1
+qwen32,instruction_only,within_condition_mode,4,0.9066666666666666,544,600,600,"[32313, 11, 1077, 594]","Okay, let's",1
+qwen32,no_instruction,no_instruction_reference,5,0.7316666666666667,439,600,600,"[32313, 11, 1077, 594, 1490]","Okay, let's see",1
+qwen32,no_instruction,within_condition_mode,5,0.7316666666666667,439,600,600,"[32313, 11, 1077, 594, 1490]","Okay, let's see",1
+qwen32,instruction_only,no_instruction_reference,5,0.7116666666666667,427,600,600,"[32313, 11, 1077, 594, 1490]","Okay, let's see",1
+qwen32,instruction_only,within_condition_mode,5,0.7116666666666667,427,600,600,"[32313, 11, 1077, 594, 1490]","Okay, let's see",1
+qwen32,no_instruction,no_instruction_reference,6,0.7316666666666667,439,600,600,"[32313, 11, 1077, 594, 1490, 13]","Okay, let's see.",1
+qwen32,no_instruction,within_condition_mode,6,0.7316666666666667,439,600,600,"[32313, 11, 1077, 594, 1490, 13]","Okay, let's see.",1
+qwen32,instruction_only,no_instruction_reference,6,0.7116666666666667,427,600,600,"[32313, 11, 1077, 594, 1490, 13]","Okay, let's see.",1
+qwen32,instruction_only,within_condition_mode,6,0.7116666666666667,427,600,600,"[32313, 11, 1077, 594, 1490, 13]","Okay, let's see.",1
+qwen32,no_instruction,no_instruction_reference,7,0.6966666666666667,418,600,600,"[32313, 11, 1077, 594, 1490, 13, 576]","Okay, let's see. The",1
+qwen32,no_instruction,within_condition_mode,7,0.6966666666666667,418,600,600,"[32313, 11, 1077, 594, 1490, 13, 576]","Okay, let's see. The",1
+qwen32,instruction_only,no_instruction_reference,7,0.6716666666666666,403,600,600,"[32313, 11, 1077, 594, 1490, 13, 576]","Okay, let's see. The",1
+qwen32,instruction_only,within_condition_mode,7,0.6716666666666666,403,600,600,"[32313, 11, 1077, 594, 1490, 13, 576]","Okay, let's see. The",1
+qwen32,no_instruction,no_instruction_reference,8,0.685,411,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405]","Okay, let's see. The question",1
+qwen32,no_instruction,within_condition_mode,8,0.685,411,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405]","Okay, let's see. The question",1
+qwen32,instruction_only,no_instruction_reference,8,0.665,399,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405]","Okay, let's see. The question",1
+qwen32,instruction_only,within_condition_mode,8,0.665,399,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405]","Okay, let's see. The question",1
+qwen32,no_instruction,no_instruction_reference,9,0.685,411,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374]","Okay, let's see. The question is",1
+qwen32,no_instruction,within_condition_mode,9,0.685,411,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374]","Okay, let's see. The question is",1
+qwen32,instruction_only,no_instruction_reference,9,0.665,399,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374]","Okay, let's see. The question is",1
+qwen32,instruction_only,within_condition_mode,9,0.665,399,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374]","Okay, let's see. The question is",1
+qwen32,no_instruction,no_instruction_reference,10,0.41833333333333333,251,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161]","Okay, let's see. The question is asking",1
+qwen32,no_instruction,within_condition_mode,10,0.41833333333333333,251,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161]","Okay, let's see. The question is asking",1
+qwen32,instruction_only,no_instruction_reference,10,0.38,228,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161]","Okay, let's see. The question is asking",1
+qwen32,instruction_only,within_condition_mode,10,0.38,228,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161]","Okay, let's see. The question is asking",1
+qwen32,no_instruction,no_instruction_reference,11,0.14833333333333334,89,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380]","Okay, let's see. The question is asking where",1
+qwen32,no_instruction,within_condition_mode,11,0.14833333333333334,89,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380]","Okay, let's see. The question is asking where",1
+qwen32,instruction_only,no_instruction_reference,11,0.16666666666666666,100,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380]","Okay, let's see. The question is asking where",1
+qwen32,instruction_only,within_condition_mode,11,0.16666666666666666,100,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380]","Okay, let's see. The question is asking where",1
+qwen32,no_instruction,no_instruction_reference,12,0.06833333333333333,41,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498]","Okay, let's see. The question is asking where you",1
+qwen32,no_instruction,within_condition_mode,12,0.06833333333333333,41,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498]","Okay, let's see. The question is asking where you",1
+qwen32,instruction_only,no_instruction_reference,12,0.051666666666666666,31,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498]","Okay, let's see. The question is asking where you",1
+qwen32,instruction_only,within_condition_mode,12,0.051666666666666666,31,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498]","Okay, let's see. The question is asking where you",1
+qwen32,no_instruction,no_instruction_reference,13,0.051666666666666666,31,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 1035]","Okay, let's see. The question is asking where you would",1
+qwen32,no_instruction,within_condition_mode,13,0.051666666666666666,31,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 1035]","Okay, let's see. The question is asking where you would",1
+qwen32,instruction_only,no_instruction_reference,13,0.03333333333333333,20,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 1035]","Okay, let's see. The question is asking where you would",1
+qwen32,instruction_only,within_condition_mode,13,0.03333333333333333,20,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 1035]","Okay, let's see. The question is asking where you would",1
+qwen32,no_instruction,no_instruction_reference,14,0.025,15,600,600,"[32313, 11, 1077, 594, 1430, 311, 7071, 700, 419, 3405, 13, 576, 3405, 374]","Okay, let's try to figure out this question. The question is",1
+qwen32,no_instruction,within_condition_mode,14,0.025,15,600,600,"[32313, 11, 1077, 594, 1430, 311, 7071, 700, 419, 3405, 13, 576, 3405, 374]","Okay, let's try to figure out this question. The question is",1
+qwen32,instruction_only,no_instruction_reference,14,0.008333333333333333,5,600,600,"[32313, 11, 1077, 594, 1430, 311, 7071, 700, 419, 3405, 13, 576, 3405, 374]","Okay, let's try to figure out this question. The question is",1
+qwen32,instruction_only,within_condition_mode,14,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 1035, 1477]","Okay, let's see. The question is asking where you would find",1
+qwen32,no_instruction,no_instruction_reference,15,0.018333333333333333,11,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 1035, 1477, 264]","Okay, let's see. The question is asking where you would find a",1
+qwen32,no_instruction,within_condition_mode,15,0.018333333333333333,11,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 1035, 1477, 264]","Okay, let's see. The question is asking where you would find a",1
+qwen32,instruction_only,no_instruction_reference,15,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 1035, 1477, 264]","Okay, let's see. The question is asking where you would find a",1
+qwen32,instruction_only,within_condition_mode,15,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 1035, 1477, 264]","Okay, let's see. The question is asking where you would find a",1
+qwen32,no_instruction,no_instruction_reference,16,0.016666666666666666,10,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264]","Okay, let's see. The question is asking where you can look up a",1
+qwen32,no_instruction,within_condition_mode,16,0.016666666666666666,10,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264]","Okay, let's see. The question is asking where you can look up a",1
+qwen32,instruction_only,no_instruction_reference,16,0.005,3,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264]","Okay, let's see. The question is asking where you can look up a",1
+qwen32,instruction_only,within_condition_mode,16,0.008333333333333333,5,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 911, 264, 97982, 3432, 264, 31266, 6832]","Okay, let's see. The question is about a skateboard having a steep learning",10
+qwen32,no_instruction,no_instruction_reference,17,0.016666666666666666,10,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372]","Okay, let's see. The question is asking where you can look up a number",1
+qwen32,no_instruction,within_condition_mode,17,0.016666666666666666,10,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372]","Okay, let's see. The question is asking where you can look up a number",1
+qwen32,instruction_only,no_instruction_reference,17,0.005,3,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372]","Okay, let's see. The question is asking where you can look up a number",1
+qwen32,instruction_only,within_condition_mode,17,0.008333333333333333,5,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 911, 264, 97982, 3432, 264, 31266, 6832, 15655]","Okay, let's see. The question is about a skateboard having a steep learning curve",10
+qwen32,no_instruction,no_instruction_reference,18,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311]","Okay, let's see. The question is asking where you can look up a number to",1
+qwen32,no_instruction,within_condition_mode,18,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311]","Okay, let's see. The question is asking where you can look up a number to",1
+qwen32,instruction_only,no_instruction_reference,18,0.0033333333333333335,2,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311]","Okay, let's see. The question is asking where you can look up a number to",1
+qwen32,instruction_only,within_condition_mode,18,0.008333333333333333,5,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 911, 264, 97982, 3432, 264, 31266, 6832, 15655, 11]","Okay, let's see. The question is about a skateboard having a steep learning curve,",10
+qwen32,no_instruction,no_instruction_reference,19,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264]","Okay, let's see. The question is asking where you can look up a number to a",1
+qwen32,no_instruction,within_condition_mode,19,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264]","Okay, let's see. The question is asking where you can look up a number to a",1
+qwen32,instruction_only,no_instruction_reference,19,0.0033333333333333335,2,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264]","Okay, let's see. The question is asking where you can look up a number to a",1
+qwen32,instruction_only,within_condition_mode,19,0.008333333333333333,5,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 911, 264, 97982, 3432, 264, 31266, 6832, 15655, 11, 714]","Okay, let's see. The question is about a skateboard having a steep learning curve, but",10
+qwen32,no_instruction,no_instruction_reference,20,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562]","Okay, let's see. The question is asking where you can look up a number to a business",1
+qwen32,no_instruction,within_condition_mode,20,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562]","Okay, let's see. The question is asking where you can look up a number to a business",1
+qwen32,instruction_only,no_instruction_reference,20,0.0033333333333333335,2,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562]","Okay, let's see. The question is asking where you can look up a number to a business",1
+qwen32,instruction_only,within_condition_mode,20,0.008333333333333333,5,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 911, 264, 97982, 3432, 264, 31266, 6832, 15655, 11, 714, 3055]","Okay, let's see. The question is about a skateboard having a steep learning curve, but once",10
+qwen32,no_instruction,no_instruction_reference,21,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979]","Okay, let's see. The question is asking where you can look up a number to a business when",1
+qwen32,no_instruction,within_condition_mode,21,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979]","Okay, let's see. The question is asking where you can look up a number to a business when",1
+qwen32,instruction_only,no_instruction_reference,21,0.0033333333333333335,2,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979]","Okay, let's see. The question is asking where you can look up a number to a business when",1
+qwen32,instruction_only,within_condition_mode,21,0.008333333333333333,5,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 892, 5163, 14549, 374, 1483, 311, 3553, 5567, 3542, 13, 576]","Okay, let's see. The question is asking which office furniture is used to store paper files. The",8
+qwen32,no_instruction,no_instruction_reference,22,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498]","Okay, let's see. The question is asking where you can look up a number to a business when you",1
+qwen32,no_instruction,within_condition_mode,22,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498]","Okay, let's see. The question is asking where you can look up a number to a business when you",1
+qwen32,instruction_only,no_instruction_reference,22,0.0033333333333333335,2,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498]","Okay, let's see. The question is asking where you can look up a number to a business when you",1
+qwen32,instruction_only,within_condition_mode,22,0.008333333333333333,5,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 892, 5163, 14549, 374, 1483, 311, 3553, 5567, 3542, 13, 576, 2606]","Okay, let's see. The question is asking which office furniture is used to store paper files. The options",8
+qwen32,no_instruction,no_instruction_reference,23,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513]","Okay, let's see. The question is asking where you can look up a number to a business when you don",1
+qwen32,no_instruction,within_condition_mode,23,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513]","Okay, let's see. The question is asking where you can look up a number to a business when you don",1
+qwen32,instruction_only,no_instruction_reference,23,0.0033333333333333335,2,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513]","Okay, let's see. The question is asking where you can look up a number to a business when you don",1
+qwen32,instruction_only,within_condition_mode,23,0.008333333333333333,5,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 892, 5163, 14549, 374, 1483, 311, 3553, 5567, 3542, 13, 576, 2606, 525]","Okay, let's see. The question is asking which office furniture is used to store paper files. The options are",7
+qwen32,no_instruction,no_instruction_reference,24,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944]","Okay, let's see. The question is asking where you can look up a number to a business when you don't",1
+qwen32,no_instruction,within_condition_mode,24,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944]","Okay, let's see. The question is asking where you can look up a number to a business when you don't",1
+qwen32,instruction_only,no_instruction_reference,24,0.0033333333333333335,2,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944]","Okay, let's see. The question is asking where you can look up a number to a business when you don't",1
+qwen32,instruction_only,within_condition_mode,24,0.008333333333333333,5,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 892, 5163, 14549, 374, 1483, 311, 3553, 5567, 3542, 13, 576, 2606, 525, 26482]","Okay, let's see. The question is asking which office furniture is used to store paper files. The options are drawer",6
+qwen32,no_instruction,no_instruction_reference,25,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have",1
+qwen32,no_instruction,within_condition_mode,25,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have",1
+qwen32,instruction_only,no_instruction_reference,25,0.0033333333333333335,2,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have",1
+qwen32,instruction_only,within_condition_mode,25,0.008333333333333333,5,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 892, 5163, 14549, 374, 1483, 311, 3553, 5567, 3542, 13, 576, 2606, 525, 26482, 11]","Okay, let's see. The question is asking which office furniture is used to store paper files. The options are drawer,",5
+qwen32,no_instruction,no_instruction_reference,26,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity",1
+qwen32,no_instruction,within_condition_mode,26,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity",1
+qwen32,instruction_only,no_instruction_reference,26,0.0033333333333333335,2,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity",1
+qwen32,instruction_only,within_condition_mode,26,0.008333333333333333,5,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 892, 5163, 14549, 374, 1483, 311, 3553, 5567, 3542, 13, 576, 2606, 525, 26482, 11, 25480]","Okay, let's see. The question is asking which office furniture is used to store paper files. The options are drawer, filing",5
+qwen32,no_instruction,no_instruction_reference,27,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728, 13]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity.",1
+qwen32,no_instruction,within_condition_mode,27,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728, 13]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity.",1
+qwen32,instruction_only,no_instruction_reference,27,0.0033333333333333335,2,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728, 13]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity.",1
+qwen32,instruction_only,within_condition_mode,27,0.008333333333333333,5,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 892, 5163, 14549, 374, 1483, 311, 3553, 5567, 3542, 13, 576, 2606, 525, 26482, 11, 25480, 21921]","Okay, let's see. The question is asking which office furniture is used to store paper files. The options are drawer, filing cabinet",5
+qwen32,no_instruction,no_instruction_reference,28,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728, 13, 576]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity. The",1
+qwen32,no_instruction,within_condition_mode,28,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728, 13, 576]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity. The",1
+qwen32,instruction_only,no_instruction_reference,28,0.0033333333333333335,2,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728, 13, 576]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity. The",1
+qwen32,instruction_only,within_condition_mode,28,0.008333333333333333,5,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 892, 5163, 14549, 374, 1483, 311, 3553, 5567, 3542, 13, 576, 2606, 525, 26482, 11, 25480, 21921, 11]","Okay, let's see. The question is asking which office furniture is used to store paper files. The options are drawer, filing cabinet,",5
+qwen32,no_instruction,no_instruction_reference,29,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728, 13, 576, 2606]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity. The options",1
+qwen32,no_instruction,within_condition_mode,29,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728, 13, 576, 2606]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity. The options",1
+qwen32,instruction_only,no_instruction_reference,29,0.0033333333333333335,2,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728, 13, 576, 2606]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity. The options",1
+qwen32,instruction_only,within_condition_mode,29,0.008333333333333333,5,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 892, 5163, 14549, 374, 1483, 311, 3553, 5567, 3542, 13, 576, 2606, 525, 26482, 11, 25480, 21921, 11, 18495]","Okay, let's see. The question is asking which office furniture is used to store paper files. The options are drawer, filing cabinet, computers",5
+qwen32,no_instruction,no_instruction_reference,30,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728, 13, 576, 2606, 525]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity. The options are",1
+qwen32,no_instruction,within_condition_mode,30,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728, 13, 576, 2606, 525]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity. The options are",1
+qwen32,instruction_only,no_instruction_reference,30,0.0033333333333333335,2,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728, 13, 576, 2606, 525]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity. The options are",1
+qwen32,instruction_only,within_condition_mode,30,0.008333333333333333,5,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 892, 5163, 14549, 374, 1483, 311, 3553, 5567, 3542, 13, 576, 2606, 525, 26482, 11, 25480, 21921, 11, 18495, 11]","Okay, let's see. The question is asking which office furniture is used to store paper files. The options are drawer, filing cabinet, computers,",4
+qwen32,no_instruction,no_instruction_reference,31,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728, 13, 576, 2606, 525, 362]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity. The options are A",1
+qwen32,no_instruction,within_condition_mode,31,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728, 13, 576, 2606, 525, 362]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity. The options are A",1
+qwen32,instruction_only,no_instruction_reference,31,0.0033333333333333335,2,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728, 13, 576, 2606, 525, 362]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity. The options are A",1
+qwen32,instruction_only,within_condition_mode,31,0.008333333333333333,5,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 892, 5163, 14549, 374, 1483, 311, 3553, 5567, 3542, 13, 576, 2606, 525, 26482, 11, 25480, 21921, 11, 18495, 11, 18010]","Okay, let's see. The question is asking which office furniture is used to store paper files. The options are drawer, filing cabinet, computers, desk",4
+qwen32,no_instruction,no_instruction_reference,32,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728, 13, 576, 2606, 525, 362, 8]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity. The options are A)",1
+qwen32,no_instruction,within_condition_mode,32,0.013333333333333334,8,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728, 13, 576, 2606, 525, 362, 8]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity. The options are A)",1
+qwen32,instruction_only,no_instruction_reference,32,0.0033333333333333335,2,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 1380, 498, 646, 1401, 705, 264, 1372, 311, 264, 2562, 979, 498, 1513, 944, 614, 17728, 13, 576, 2606, 525, 362, 8]","Okay, let's see. The question is asking where you can look up a number to a business when you don't have electricity. The options are A)",1
+qwen32,instruction_only,within_condition_mode,32,0.008333333333333333,5,600,600,"[32313, 11, 1077, 594, 1490, 13, 576, 3405, 374, 10161, 892, 5163, 14549, 374, 1483, 311, 3553, 5567, 3542, 13, 576, 2606, 525, 26482, 11, 25480, 21921, 11, 18495, 11, 18010, 11]","Okay, let's see. The question is asking which office furniture is used to store paper files. The options are drawer, filing cabinet, computers, desk,",4
+olmo31,no_instruction,no_instruction_reference,1,1.0,600,600,600,[33413],Okay,1
+olmo31,no_instruction,within_condition_mode,1,1.0,600,600,600,[33413],Okay,1
+olmo31,instruction_only,no_instruction_reference,1,0.9966666666666667,598,600,600,[33413],Okay,1
+olmo31,instruction_only,within_condition_mode,1,0.9966666666666667,598,600,600,[33413],Okay,1
+olmo31,no_instruction,no_instruction_reference,2,1.0,600,600,600,"[33413, 11]","Okay,",1
+olmo31,no_instruction,within_condition_mode,2,1.0,600,600,600,"[33413, 11]","Okay,",1
+olmo31,instruction_only,no_instruction_reference,2,0.9966666666666667,598,600,600,"[33413, 11]","Okay,",1
+olmo31,instruction_only,within_condition_mode,2,0.9966666666666667,598,600,600,"[33413, 11]","Okay,",1
+olmo31,no_instruction,no_instruction_reference,3,0.6666666666666666,400,600,600,"[33413, 11, 779]","Okay, so",1
+olmo31,no_instruction,within_condition_mode,3,0.6666666666666666,400,600,600,"[33413, 11, 779]","Okay, so",1
+olmo31,instruction_only,no_instruction_reference,3,0.45666666666666667,274,600,600,"[33413, 11, 779]","Okay, so",1
+olmo31,instruction_only,within_condition_mode,3,0.45666666666666667,274,600,600,"[33413, 11, 779]","Okay, so",1
+olmo31,no_instruction,no_instruction_reference,4,0.5833333333333334,350,600,600,"[33413, 11, 779, 279]","Okay, so the",1
+olmo31,no_instruction,within_condition_mode,4,0.5833333333333334,350,600,600,"[33413, 11, 779, 279]","Okay, so the",1
+olmo31,instruction_only,no_instruction_reference,4,0.4,240,600,600,"[33413, 11, 779, 279]","Okay, so the",1
+olmo31,instruction_only,within_condition_mode,4,0.4,240,600,600,"[33413, 11, 779, 279]","Okay, so the",1
+olmo31,no_instruction,no_instruction_reference,5,0.5783333333333334,347,600,600,"[33413, 11, 779, 279, 3488]","Okay, so the question",1
+olmo31,no_instruction,within_condition_mode,5,0.5783333333333334,347,600,600,"[33413, 11, 779, 279, 3488]","Okay, so the question",1
+olmo31,instruction_only,no_instruction_reference,5,0.12166666666666667,73,600,600,"[33413, 11, 779, 279, 3488]","Okay, so the question",1
+olmo31,instruction_only,within_condition_mode,5,0.3466666666666667,208,600,600,"[33413, 11, 279, 1217, 374]","Okay, the user is",1
+olmo31,no_instruction,no_instruction_reference,6,0.5783333333333334,347,600,600,"[33413, 11, 779, 279, 3488, 374]","Okay, so the question is",1
+olmo31,no_instruction,within_condition_mode,6,0.5783333333333334,347,600,600,"[33413, 11, 779, 279, 3488, 374]","Okay, so the question is",1
+olmo31,instruction_only,no_instruction_reference,6,0.12166666666666667,73,600,600,"[33413, 11, 779, 279, 3488, 374]","Okay, so the question is",1
+olmo31,instruction_only,within_condition_mode,6,0.3466666666666667,208,600,600,"[33413, 11, 279, 1217, 374, 10371]","Okay, the user is asking",1
+olmo31,no_instruction,no_instruction_reference,7,0.48833333333333334,293,600,600,"[33413, 11, 779, 279, 3488, 374, 10371]","Okay, so the question is asking",1
+olmo31,no_instruction,within_condition_mode,7,0.48833333333333334,293,600,600,"[33413, 11, 779, 279, 3488, 374, 10371]","Okay, so the question is asking",1
+olmo31,instruction_only,no_instruction_reference,7,0.08166666666666667,49,600,600,"[33413, 11, 779, 279, 3488, 374, 10371]","Okay, so the question is asking",1
+olmo31,instruction_only,within_condition_mode,7,0.24166666666666667,145,600,600,"[33413, 11, 779, 279, 1217, 374, 10371]","Okay, so the user is asking",1
+olmo31,no_instruction,no_instruction_reference,8,0.16,96,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405]","Okay, so the question is asking where",1
+olmo31,no_instruction,within_condition_mode,8,0.16,96,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405]","Okay, so the question is asking where",1
+olmo31,instruction_only,no_instruction_reference,8,0.015,9,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405]","Okay, so the question is asking where",1
+olmo31,instruction_only,within_condition_mode,8,0.085,51,600,600,"[33413, 11, 1095, 596, 22118, 420, 3488, 13]","Okay, let's tackle this question.",1
+olmo31,no_instruction,no_instruction_reference,9,0.09,54,600,600,"[33413, 11, 1095, 596, 1518, 13, 578, 3488, 374]","Okay, let's see. The question is",1
+olmo31,no_instruction,within_condition_mode,9,0.09,54,600,600,"[33413, 11, 1095, 596, 1518, 13, 578, 3488, 374]","Okay, let's see. The question is",1
+olmo31,instruction_only,no_instruction_reference,9,0.02666666666666667,16,600,600,"[33413, 11, 1095, 596, 1518, 13, 578, 3488, 374]","Okay, let's see. The question is",1
+olmo31,instruction_only,within_condition_mode,9,0.07666666666666666,46,600,600,"[33413, 11, 1095, 596, 22118, 420, 3488, 13, 578]","Okay, let's tackle this question. The",1
+olmo31,no_instruction,no_instruction_reference,10,0.065,39,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 1053]","Okay, so the question is asking where you would",2
+olmo31,no_instruction,within_condition_mode,10,0.065,39,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 1053]","Okay, so the question is asking where you would",2
+olmo31,instruction_only,no_instruction_reference,10,0.0033333333333333335,2,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 1053]","Okay, so the question is asking where you would",2
+olmo31,instruction_only,within_condition_mode,10,0.07,42,600,600,"[33413, 11, 1095, 596, 22118, 420, 3488, 13, 578, 1217]","Okay, let's tackle this question. The user",1
+olmo31,no_instruction,no_instruction_reference,11,0.02666666666666667,16,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 1053, 1505]","Okay, so the question is asking where you would find",2
+olmo31,no_instruction,within_condition_mode,11,0.02666666666666667,16,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 1053, 1505]","Okay, so the question is asking where you would find",2
+olmo31,instruction_only,no_instruction_reference,11,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 1053, 1505]","Okay, so the question is asking where you would find",2
+olmo31,instruction_only,within_condition_mode,11,0.06166666666666667,37,600,600,"[33413, 11, 1095, 596, 22118, 420, 3488, 13, 578, 1217, 374]","Okay, let's tackle this question. The user is",1
+olmo31,no_instruction,no_instruction_reference,12,0.02666666666666667,16,600,600,"[33413, 11, 1095, 596, 1518, 279, 3488, 1618, 13, 578, 1217, 374]","Okay, let's see the question here. The user is",1
+olmo31,no_instruction,within_condition_mode,12,0.02666666666666667,16,600,600,"[33413, 11, 1095, 596, 1518, 279, 3488, 1618, 13, 578, 1217, 374]","Okay, let's see the question here. The user is",1
+olmo31,instruction_only,no_instruction_reference,12,0.0016666666666666668,1,600,600,"[33413, 11, 1095, 596, 1518, 279, 3488, 1618, 13, 578, 1217, 374]","Okay, let's see the question here. The user is",1
+olmo31,instruction_only,within_condition_mode,12,0.06166666666666667,37,600,600,"[33413, 11, 1095, 596, 22118, 420, 3488, 13, 578, 1217, 374, 10371]","Okay, let's tackle this question. The user is asking",1
+olmo31,no_instruction,no_instruction_reference,13,0.02666666666666667,16,600,600,"[33413, 11, 1095, 596, 1518, 279, 3488, 1618, 13, 578, 1217, 374, 10371]","Okay, let's see the question here. The user is asking",1
+olmo31,no_instruction,within_condition_mode,13,0.02666666666666667,16,600,600,"[33413, 11, 1095, 596, 1518, 279, 3488, 1618, 13, 578, 1217, 374, 10371]","Okay, let's see the question here. The user is asking",1
+olmo31,instruction_only,no_instruction_reference,13,0.0016666666666666668,1,600,600,"[33413, 11, 1095, 596, 1518, 279, 3488, 1618, 13, 578, 1217, 374, 10371]","Okay, let's see the question here. The user is asking",1
+olmo31,instruction_only,within_condition_mode,13,0.02,12,600,600,"[33413, 11, 1095, 596, 22118, 420, 3488, 13, 578, 1217, 374, 10371, 902]","Okay, let's tackle this question. The user is asking which",1
+olmo31,no_instruction,no_instruction_reference,14,0.016666666666666666,10,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626]","Okay, so the question is asking where you can look up a business",1
+olmo31,no_instruction,within_condition_mode,14,0.016666666666666666,10,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626]","Okay, so the question is asking where you can look up a business",1
+olmo31,instruction_only,no_instruction_reference,14,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626]","Okay, so the question is asking where you can look up a business",1
+olmo31,instruction_only,within_condition_mode,14,0.011666666666666667,7,600,600,"[33413, 11, 779, 279, 1217, 374, 10371, 264, 3488, 1618, 13, 6914, 757, 1373]","Okay, so the user is asking a question here. Let me read",1
+olmo31,no_instruction,no_instruction_reference,15,0.016666666666666666,10,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396]","Okay, so the question is asking where you can look up a business number",1
+olmo31,no_instruction,within_condition_mode,15,0.016666666666666666,10,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396]","Okay, so the question is asking where you can look up a business number",1
+olmo31,instruction_only,no_instruction_reference,15,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396]","Okay, so the question is asking where you can look up a business number",1
+olmo31,instruction_only,within_condition_mode,15,0.011666666666666667,7,600,600,"[33413, 11, 779, 279, 1217, 374, 10371, 264, 3488, 1618, 13, 6914, 757, 1373, 433]","Okay, so the user is asking a question here. Let me read it",1
+olmo31,no_instruction,no_instruction_reference,16,0.016666666666666666,10,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994]","Okay, so the question is asking where you can look up a business number when",1
+olmo31,no_instruction,within_condition_mode,16,0.016666666666666666,10,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994]","Okay, so the question is asking where you can look up a business number when",1
+olmo31,instruction_only,no_instruction_reference,16,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994]","Okay, so the question is asking where you can look up a business number when",1
+olmo31,instruction_only,within_condition_mode,16,0.01,6,600,600,"[33413, 11, 779, 279, 1217, 374, 10371, 264, 3488, 1618, 13, 6914, 757, 1373, 433, 15884]","Okay, so the user is asking a question here. Let me read it carefully",1
+olmo31,no_instruction,no_instruction_reference,17,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070]","Okay, so the question is asking where you can look up a business number when there",1
+olmo31,no_instruction,within_condition_mode,17,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070]","Okay, so the question is asking where you can look up a business number when there",1
+olmo31,instruction_only,no_instruction_reference,17,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070]","Okay, so the question is asking where you can look up a business number when there",1
+olmo31,instruction_only,within_condition_mode,17,0.01,6,600,600,"[33413, 11, 779, 279, 1217, 374, 10371, 264, 3488, 1618, 13, 6914, 757, 1373, 433, 15884, 13]","Okay, so the user is asking a question here. Let me read it carefully.",1
+olmo31,no_instruction,no_instruction_reference,18,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596]","Okay, so the question is asking where you can look up a business number when there's",1
+olmo31,no_instruction,within_condition_mode,18,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596]","Okay, so the question is asking where you can look up a business number when there's",1
+olmo31,instruction_only,no_instruction_reference,18,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596]","Okay, so the question is asking where you can look up a business number when there's",1
+olmo31,instruction_only,within_condition_mode,18,0.01,6,600,600,"[33413, 11, 779, 279, 1217, 374, 10371, 264, 3488, 1618, 13, 6914, 757, 1373, 433, 15884, 13, 578]","Okay, so the user is asking a question here. Let me read it carefully. The",1
+olmo31,no_instruction,no_instruction_reference,19,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912]","Okay, so the question is asking where you can look up a business number when there's no",1
+olmo31,no_instruction,within_condition_mode,19,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912]","Okay, so the question is asking where you can look up a business number when there's no",1
+olmo31,instruction_only,no_instruction_reference,19,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912]","Okay, so the question is asking where you can look up a business number when there's no",1
+olmo31,instruction_only,within_condition_mode,19,0.01,6,600,600,"[33413, 11, 779, 279, 1217, 374, 10371, 264, 3488, 1618, 13, 6914, 757, 1373, 433, 15884, 13, 578, 3488]","Okay, so the user is asking a question here. Let me read it carefully. The question",1
+olmo31,no_instruction,no_instruction_reference,20,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200]","Okay, so the question is asking where you can look up a business number when there's no electricity",1
+olmo31,no_instruction,within_condition_mode,20,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200]","Okay, so the question is asking where you can look up a business number when there's no electricity",1
+olmo31,instruction_only,no_instruction_reference,20,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200]","Okay, so the question is asking where you can look up a business number when there's no electricity",1
+olmo31,instruction_only,within_condition_mode,20,0.01,6,600,600,"[33413, 11, 779, 279, 1217, 374, 10371, 264, 3488, 1618, 13, 6914, 757, 1373, 433, 15884, 13, 578, 3488, 374]","Okay, so the user is asking a question here. Let me read it carefully. The question is",1
+olmo31,no_instruction,no_instruction_reference,21,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13]","Okay, so the question is asking where you can look up a business number when there's no electricity.",1
+olmo31,no_instruction,within_condition_mode,21,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13]","Okay, so the question is asking where you can look up a business number when there's no electricity.",1
+olmo31,instruction_only,no_instruction_reference,21,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13]","Okay, so the question is asking where you can look up a business number when there's no electricity.",1
+olmo31,instruction_only,within_condition_mode,21,0.01,6,600,600,"[33413, 11, 779, 279, 1217, 374, 10371, 264, 3488, 1618, 13, 6914, 757, 1373, 433, 15884, 13, 578, 3488, 374, 25]","Okay, so the user is asking a question here. Let me read it carefully. The question is:",1
+olmo31,no_instruction,no_instruction_reference,22,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578]","Okay, so the question is asking where you can look up a business number when there's no electricity. The",1
+olmo31,no_instruction,within_condition_mode,22,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578]","Okay, so the question is asking where you can look up a business number when there's no electricity. The",1
+olmo31,instruction_only,no_instruction_reference,22,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578]","Okay, so the question is asking where you can look up a business number when there's no electricity. The",1
+olmo31,instruction_only,within_condition_mode,22,0.01,6,600,600,"[33413, 11, 779, 279, 1217, 374, 10371, 264, 3488, 1618, 13, 6914, 757, 1373, 433, 15884, 13, 578, 3488, 374, 25, 330]","Okay, so the user is asking a question here. Let me read it carefully. The question is: """,1
+olmo31,no_instruction,no_instruction_reference,23,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options",1
+olmo31,no_instruction,within_condition_mode,23,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options",1
+olmo31,instruction_only,no_instruction_reference,23,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options",1
+olmo31,instruction_only,within_condition_mode,23,0.008333333333333333,5,600,600,"[33413, 11, 279, 1217, 374, 10371, 264, 3488, 304, 6498, 11, 719, 279, 11470, 2019, 856, 4553, 3463, 1920, 2011, 387, 304, 15506]","Okay, the user is asking a question in English, but the instructions say my entire thought process must be in Spanish",3
+olmo31,no_instruction,no_instruction_reference,24,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671, 527]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options are",1
+olmo31,no_instruction,within_condition_mode,24,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671, 527]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options are",1
+olmo31,instruction_only,no_instruction_reference,24,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671, 527]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options are",1
+olmo31,instruction_only,within_condition_mode,24,0.008333333333333333,5,600,600,"[33413, 11, 279, 1217, 374, 10371, 264, 3488, 304, 6498, 11, 719, 279, 11470, 2019, 856, 4553, 3463, 1920, 2011, 387, 304, 15506, 13]","Okay, the user is asking a question in English, but the instructions say my entire thought process must be in Spanish.",3
+olmo31,no_instruction,no_instruction_reference,25,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671, 527, 362]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options are A",1
+olmo31,no_instruction,within_condition_mode,25,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671, 527, 362]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options are A",1
+olmo31,instruction_only,no_instruction_reference,25,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671, 527, 362]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options are A",1
+olmo31,instruction_only,within_condition_mode,25,0.008333333333333333,5,600,600,"[33413, 11, 279, 1217, 374, 10371, 902, 5274, 14891, 10756, 5684, 3626, 13, 578, 2671, 527, 362, 8, 27580, 11, 426, 8, 26559, 22685, 11]","Okay, the user is asking which office furniture stores paper files. The options are A) drawer, B) filing cabinet,",2
+olmo31,no_instruction,no_instruction_reference,26,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671, 527, 362, 311]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options are A to",1
+olmo31,no_instruction,within_condition_mode,26,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671, 527, 362, 311]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options are A to",1
+olmo31,instruction_only,no_instruction_reference,26,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671, 527, 362, 311]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options are A to",1
+olmo31,instruction_only,within_condition_mode,26,0.008333333333333333,5,600,600,"[33413, 11, 279, 1217, 374, 10371, 902, 5274, 14891, 10756, 5684, 3626, 13, 578, 2671, 527, 362, 8, 27580, 11, 426, 8, 26559, 22685, 11, 356]","Okay, the user is asking which office furniture stores paper files. The options are A) drawer, B) filing cabinet, C",2
+olmo31,no_instruction,no_instruction_reference,27,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671, 527, 362, 311, 469]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options are A to E",1
+olmo31,no_instruction,within_condition_mode,27,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671, 527, 362, 311, 469]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options are A to E",1
+olmo31,instruction_only,no_instruction_reference,27,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671, 527, 362, 311, 469]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options are A to E",1
+olmo31,instruction_only,within_condition_mode,27,0.008333333333333333,5,600,600,"[33413, 11, 279, 1217, 374, 10371, 902, 5274, 14891, 10756, 5684, 3626, 13, 578, 2671, 527, 362, 8, 27580, 11, 426, 8, 26559, 22685, 11, 356, 8]","Okay, the user is asking which office furniture stores paper files. The options are A) drawer, B) filing cabinet, C)",2
+olmo31,no_instruction,no_instruction_reference,28,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671, 527, 362, 311, 469, 13]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options are A to E.",1
+olmo31,no_instruction,within_condition_mode,28,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671, 527, 362, 311, 469, 13]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options are A to E.",1
+olmo31,instruction_only,no_instruction_reference,28,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671, 527, 362, 311, 469, 13]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options are A to E.",1
+olmo31,instruction_only,within_condition_mode,28,0.008333333333333333,5,600,600,"[33413, 11, 279, 1217, 374, 10371, 902, 5274, 14891, 10756, 5684, 3626, 13, 578, 2671, 527, 362, 8, 27580, 11, 426, 8, 26559, 22685, 11, 356, 8, 19002]","Okay, the user is asking which office furniture stores paper files. The options are A) drawer, B) filing cabinet, C) computers",1
+olmo31,no_instruction,no_instruction_reference,29,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671, 527, 362, 311, 469, 13, 6914]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options are A to E. Let",1
+olmo31,no_instruction,within_condition_mode,29,0.013333333333333334,8,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671, 527, 362, 311, 469, 13, 6914]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options are A to E. Let",1
+olmo31,instruction_only,no_instruction_reference,29,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 1405, 499, 649, 1427, 709, 264, 2626, 1396, 994, 1070, 596, 912, 18200, 13, 578, 2671, 527, 362, 311, 469, 13, 6914]","Okay, so the question is asking where you can look up a business number when there's no electricity. The options are A to E. Let",1
+olmo31,instruction_only,within_condition_mode,29,0.008333333333333333,5,600,600,"[33413, 11, 279, 1217, 374, 10371, 902, 5274, 14891, 10756, 5684, 3626, 13, 578, 2671, 527, 362, 8, 27580, 11, 426, 8, 26559, 22685, 11, 356, 8, 19002, 11]","Okay, the user is asking which office furniture stores paper files. The options are A) drawer, B) filing cabinet, C) computers,",1
+olmo31,no_instruction,no_instruction_reference,30,0.008333333333333333,5,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 902, 5274, 14891, 10756, 5684, 3626, 13, 578, 2671, 527, 362, 8, 27580, 11, 426, 8, 26559, 22685, 11, 356, 8, 19002, 11]","Okay, so the question is asking which office furniture stores paper files. The options are A) drawer, B) filing cabinet, C) computers,",1
+olmo31,no_instruction,within_condition_mode,30,0.008333333333333333,5,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 902, 5274, 14891, 10756, 5684, 3626, 13, 578, 2671, 527, 362, 8, 27580, 11, 426, 8, 26559, 22685, 11, 356, 8, 19002, 11]","Okay, so the question is asking which office furniture stores paper files. The options are A) drawer, B) filing cabinet, C) computers,",1
+olmo31,instruction_only,no_instruction_reference,30,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 902, 5274, 14891, 10756, 5684, 3626, 13, 578, 2671, 527, 362, 8, 27580, 11, 426, 8, 26559, 22685, 11, 356, 8, 19002, 11]","Okay, so the question is asking which office furniture stores paper files. The options are A) drawer, B) filing cabinet, C) computers,",1
+olmo31,instruction_only,within_condition_mode,30,0.008333333333333333,5,600,600,"[33413, 11, 279, 1217, 374, 10371, 902, 5274, 14891, 10756, 5684, 3626, 13, 578, 2671, 527, 362, 8, 27580, 11, 426, 8, 26559, 22685, 11, 356, 8, 19002, 11, 423]","Okay, the user is asking which office furniture stores paper files. The options are A) drawer, B) filing cabinet, C) computers, D",1
+olmo31,no_instruction,no_instruction_reference,31,0.008333333333333333,5,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 902, 5274, 14891, 10756, 5684, 3626, 13, 578, 2671, 527, 362, 8, 27580, 11, 426, 8, 26559, 22685, 11, 356, 8, 19002, 11, 423]","Okay, so the question is asking which office furniture stores paper files. The options are A) drawer, B) filing cabinet, C) computers, D",1
+olmo31,no_instruction,within_condition_mode,31,0.008333333333333333,5,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 902, 5274, 14891, 10756, 5684, 3626, 13, 578, 2671, 527, 362, 8, 27580, 11, 426, 8, 26559, 22685, 11, 356, 8, 19002, 11, 423]","Okay, so the question is asking which office furniture stores paper files. The options are A) drawer, B) filing cabinet, C) computers, D",1
+olmo31,instruction_only,no_instruction_reference,31,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 902, 5274, 14891, 10756, 5684, 3626, 13, 578, 2671, 527, 362, 8, 27580, 11, 426, 8, 26559, 22685, 11, 356, 8, 19002, 11, 423]","Okay, so the question is asking which office furniture stores paper files. The options are A) drawer, B) filing cabinet, C) computers, D",1
+olmo31,instruction_only,within_condition_mode,31,0.008333333333333333,5,600,600,"[33413, 11, 279, 1217, 374, 10371, 902, 5274, 14891, 10756, 5684, 3626, 13, 578, 2671, 527, 362, 8, 27580, 11, 426, 8, 26559, 22685, 11, 356, 8, 19002, 11, 423, 8]","Okay, the user is asking which office furniture stores paper files. The options are A) drawer, B) filing cabinet, C) computers, D)",1
+olmo31,no_instruction,no_instruction_reference,32,0.008333333333333333,5,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 902, 5274, 14891, 10756, 5684, 3626, 13, 578, 2671, 527, 362, 8, 27580, 11, 426, 8, 26559, 22685, 11, 356, 8, 19002, 11, 423, 8]","Okay, so the question is asking which office furniture stores paper files. The options are A) drawer, B) filing cabinet, C) computers, D)",1
+olmo31,no_instruction,within_condition_mode,32,0.008333333333333333,5,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 902, 5274, 14891, 10756, 5684, 3626, 13, 578, 2671, 527, 362, 8, 27580, 11, 426, 8, 26559, 22685, 11, 356, 8, 19002, 11, 423, 8]","Okay, so the question is asking which office furniture stores paper files. The options are A) drawer, B) filing cabinet, C) computers, D)",1
+olmo31,instruction_only,no_instruction_reference,32,0.0,0,600,600,"[33413, 11, 779, 279, 3488, 374, 10371, 902, 5274, 14891, 10756, 5684, 3626, 13, 578, 2671, 527, 362, 8, 27580, 11, 426, 8, 26559, 22685, 11, 356, 8, 19002, 11, 423, 8]","Okay, so the question is asking which office furniture stores paper files. The options are A) drawer, B) filing cabinet, C) computers, D)",1
+olmo31,instruction_only,within_condition_mode,32,0.008333333333333333,5,600,600,"[33413, 11, 279, 1217, 374, 10371, 902, 5274, 14891, 10756, 5684, 3626, 13, 578, 2671, 527, 362, 8, 27580, 11, 426, 8, 26559, 22685, 11, 356, 8, 19002, 11, 423, 8, 18496]","Okay, the user is asking which office furniture stores paper files. The options are A) drawer, B) filing cabinet, C) computers, D) desk",1
+glm,no_instruction,no_instruction_reference,1,0.945,567,600,600,[785],The,1
+glm,no_instruction,within_condition_mode,1,0.945,567,600,600,[785],The,1
+glm,instruction_only,no_instruction_reference,1,0.5066666666666667,304,600,600,[785],The,1
+glm,instruction_only,within_condition_mode,1,0.5066666666666667,304,600,600,[785],The,1
+glm,no_instruction,no_instruction_reference,2,0.7766666666666666,466,600,600,"[785, 3405]",The question,1
+glm,no_instruction,within_condition_mode,2,0.7766666666666666,466,600,600,"[785, 3405]",The question,1
+glm,instruction_only,no_instruction_reference,2,0.3,180,600,600,"[785, 3405]",The question,1
+glm,instruction_only,within_condition_mode,2,0.3,180,600,600,"[785, 3405]",The question,1
+glm,no_instruction,no_instruction_reference,3,0.7516666666666667,451,600,600,"[785, 3405, 17045]",The question asks,1
+glm,no_instruction,within_condition_mode,3,0.7516666666666667,451,600,600,"[785, 3405, 17045]",The question asks,1
+glm,instruction_only,no_instruction_reference,3,0.28833333333333333,173,600,600,"[785, 3405, 17045]",The question asks,1
+glm,instruction_only,within_condition_mode,3,0.28833333333333333,173,600,600,"[785, 3405, 17045]",The question asks,1
+glm,no_instruction,no_instruction_reference,4,0.22333333333333333,134,600,600,"[785, 3405, 17045, 1128]",The question asks what,1
+glm,no_instruction,within_condition_mode,4,0.22333333333333333,134,600,600,"[785, 3405, 17045, 1128]",The question asks what,1
+glm,instruction_only,no_instruction_reference,4,0.075,45,600,600,"[785, 3405, 17045, 1128]",The question asks what,1
+glm,instruction_only,within_condition_mode,4,0.095,57,600,600,"[785, 1196, 6801, 752]",The user wants me,1
+glm,no_instruction,no_instruction_reference,5,0.11,66,600,600,"[785, 3405, 17045, 369, 279]",The question asks for the,1
+glm,no_instruction,within_condition_mode,5,0.11,66,600,600,"[785, 3405, 17045, 369, 279]",The question asks for the,1
+glm,instruction_only,no_instruction_reference,5,0.025,15,600,582,"[785, 3405, 17045, 369, 279]",The question asks for the,1
+glm,instruction_only,within_condition_mode,5,0.095,57,600,582,"[785, 1196, 6801, 752, 311]",The user wants me to,1
+glm,no_instruction,no_instruction_reference,6,0.02666666666666667,16,600,600,"[785, 3405, 17045, 1380, 825, 1035]",The question asks where one would,1
+glm,no_instruction,within_condition_mode,6,0.02666666666666667,16,600,600,"[785, 3405, 17045, 1380, 825, 1035]",The question asks where one would,1
+glm,instruction_only,no_instruction_reference,6,0.008333333333333333,5,600,581,"[785, 3405, 17045, 1380, 825, 1035]",The question asks where one would,1
+glm,instruction_only,within_condition_mode,6,0.06,36,600,581,"[785, 1196, 6801, 752, 311, 4226]",The user wants me to answer,1
+glm,no_instruction,no_instruction_reference,7,0.016666666666666666,10,600,600,"[785, 3405, 17045, 369, 279, 3728, 1380]",The question asks for the location where,1
+glm,no_instruction,within_condition_mode,7,0.016666666666666666,10,600,600,"[785, 3405, 17045, 369, 279, 3728, 1380]",The question asks for the location where,1
+glm,instruction_only,no_instruction_reference,7,0.0,0,600,581,"[785, 3405, 17045, 369, 279, 3728, 1380]",The question asks for the location where,1
+glm,instruction_only,within_condition_mode,7,0.03833333333333333,23,600,581,"[785, 1196, 6801, 752, 311, 4226, 264]",The user wants me to answer a,1
+glm,no_instruction,no_instruction_reference,8,0.01,6,600,600,"[785, 3405, 17045, 1380, 311, 1401, 705, 264]",The question asks where to look up a,1
+glm,no_instruction,within_condition_mode,8,0.01,6,600,600,"[785, 3405, 17045, 1380, 311, 1401, 705, 264]",The question asks where to look up a,1
+glm,instruction_only,no_instruction_reference,8,0.0016666666666666668,1,600,581,"[785, 3405, 17045, 1380, 311, 1401, 705, 264]",The question asks where to look up a,1
+glm,instruction_only,within_condition_mode,8,0.03833333333333333,23,600,581,"[785, 1196, 6801, 752, 311, 4226, 264, 5248]",The user wants me to answer a multiple,1
+glm,no_instruction,no_instruction_reference,9,0.01,6,600,600,"[785, 3405, 17045, 1380, 311, 1401, 705, 264, 2562]",The question asks where to look up a business,1
+glm,no_instruction,within_condition_mode,9,0.01,6,600,600,"[785, 3405, 17045, 1380, 311, 1401, 705, 264, 2562]",The question asks where to look up a business,1
+glm,instruction_only,no_instruction_reference,9,0.0016666666666666668,1,600,580,"[785, 3405, 17045, 1380, 311, 1401, 705, 264, 2562]",The question asks where to look up a business,1
+glm,instruction_only,within_condition_mode,9,0.03333333333333333,20,600,580,"[1001, 18, 922, 100235, 22, 98668, 77, 220, 100461]",Th3 qu35710n 45,1
+glm,no_instruction,no_instruction_reference,10,0.008333333333333333,5,600,600,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421]",The question asks for a way to relieve hunger if,18
+glm,no_instruction,within_condition_mode,10,0.008333333333333333,5,600,600,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421]",The question asks for a way to relieve hunger if,18
+glm,instruction_only,no_instruction_reference,10,0.0033333333333333335,2,600,580,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421]",The question asks for a way to relieve hunger if,18
+glm,instruction_only,within_condition_mode,10,0.03333333333333333,20,600,580,"[1001, 18, 922, 100235, 22, 98668, 77, 220, 100461, 74]",Th3 qu35710n 45k,1
+glm,no_instruction,no_instruction_reference,11,0.008333333333333333,5,600,600,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421, 498]",The question asks for a way to relieve hunger if you,14
+glm,no_instruction,within_condition_mode,11,0.008333333333333333,5,600,600,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421, 498]",The question asks for a way to relieve hunger if you,14
+glm,instruction_only,no_instruction_reference,11,0.0033333333333333335,2,600,580,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421, 498]",The question asks for a way to relieve hunger if you,14
+glm,instruction_only,within_condition_mode,11,0.03333333333333333,20,600,580,"[1001, 18, 922, 100235, 22, 98668, 77, 220, 100461, 74, 20]",Th3 qu35710n 45k5,1
+glm,no_instruction,no_instruction_reference,12,0.008333333333333333,5,600,599,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421, 498, 3887]",The question asks for a way to relieve hunger if you live,9
+glm,no_instruction,within_condition_mode,12,0.008333333333333333,5,600,599,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421, 498, 3887]",The question asks for a way to relieve hunger if you live,9
+glm,instruction_only,no_instruction_reference,12,0.0033333333333333335,2,600,578,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421, 498, 3887]",The question asks for a way to relieve hunger if you live,9
+glm,instruction_only,within_condition_mode,12,0.023333333333333334,14,600,578,"[1001, 18, 922, 100235, 22, 98668, 77, 220, 100461, 74, 20, 420]",Th3 qu35710n 45k5 wh,1
+glm,no_instruction,no_instruction_reference,13,0.008333333333333333,5,600,599,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421, 498, 3887, 3143]",The question asks for a way to relieve hunger if you live near,9
+glm,no_instruction,within_condition_mode,13,0.008333333333333333,5,600,599,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421, 498, 3887, 3143]",The question asks for a way to relieve hunger if you live near,9
+glm,instruction_only,no_instruction_reference,13,0.0033333333333333335,2,600,577,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421, 498, 3887, 3143]",The question asks for a way to relieve hunger if you live near,9
+glm,instruction_only,within_condition_mode,13,0.01,6,600,577,"[1001, 18, 922, 100235, 22, 98668, 77, 220, 100461, 74, 20, 420, 101655]",Th3 qu35710n 45k5 wh47,1
+glm,no_instruction,no_instruction_reference,14,0.008333333333333333,5,600,599,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421, 498, 3887, 3143, 279]",The question asks for a way to relieve hunger if you live near the,7
+glm,no_instruction,within_condition_mode,14,0.008333333333333333,5,600,599,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421, 498, 3887, 3143, 279]",The question asks for a way to relieve hunger if you live near the,7
+glm,instruction_only,no_instruction_reference,14,0.0033333333333333335,2,600,577,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421, 498, 3887, 3143, 279]",The question asks for a way to relieve hunger if you live near the,7
+glm,instruction_only,within_condition_mode,14,0.006666666666666667,4,600,577,"[1001, 18, 922, 100235, 22, 98668, 77, 220, 100461, 74, 20, 420, 16, 331]",Th3 qu35710n 45k5 wh1ch,4
+glm,no_instruction,no_instruction_reference,15,0.008333333333333333,5,600,599,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421, 498, 3887, 3143, 279, 13639]",The question asks for a way to relieve hunger if you live near the coast,6
+glm,no_instruction,within_condition_mode,15,0.008333333333333333,5,600,599,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421, 498, 3887, 3143, 279, 13639]",The question asks for a way to relieve hunger if you live near the coast,6
+glm,instruction_only,no_instruction_reference,15,0.0033333333333333335,2,600,577,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421, 498, 3887, 3143, 279, 13639]",The question asks for a way to relieve hunger if you live near the coast,6
+glm,instruction_only,within_condition_mode,15,0.006666666666666667,4,600,577,"[1001, 18, 922, 100235, 22, 98668, 77, 220, 100461, 74, 20, 420, 18, 81, 18]",Th3 qu35710n 45k5 wh3r3,3
+glm,no_instruction,no_instruction_reference,16,0.008333333333333333,5,600,599,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421, 498, 3887, 3143, 279, 13639, 624]","The question asks for a way to relieve hunger if you live near the coast.
+",5
+glm,no_instruction,within_condition_mode,16,0.008333333333333333,5,600,599,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421, 498, 3887, 3143, 279, 13639, 624]","The question asks for a way to relieve hunger if you live near the coast.
+",5
+glm,instruction_only,no_instruction_reference,16,0.0033333333333333335,2,600,577,"[785, 3405, 17045, 369, 264, 1616, 311, 47444, 33644, 421, 498, 3887, 3143, 279, 13639, 624]","The question asks for a way to relieve hunger if you live near the coast.
+",5
+glm,instruction_only,within_condition_mode,16,0.006666666666666667,4,600,577,"[17209, 37273, 7515, 3008, 362, 16151, 4592, 57174, 3424, 5146, 15464, 36, 39905, 3567, 44255, 5146]",THE PRIMARY PURPOSE OF A NEWSPAPER IS TO PROVIDE NEWS AND INFORMATION TO,2
+glm,no_instruction,no_instruction_reference,17,0.008333333333333333,5,600,599,"[785, 3405, 17045, 369, 279, 1850, 6629, 311, 8252, 279, 2456, 315, 12934, 4802, 389, 9234, 594]",The question asks for the best measure to determine the effect of solar energy on Earth's,2
+glm,no_instruction,within_condition_mode,17,0.008333333333333333,5,600,599,"[785, 3405, 17045, 369, 279, 1850, 6629, 311, 8252, 279, 2456, 315, 12934, 4802, 389, 9234, 594]",The question asks for the best measure to determine the effect of solar energy on Earth's,2
+glm,instruction_only,no_instruction_reference,17,0.0,0,600,576,"[785, 3405, 17045, 369, 279, 1850, 6629, 311, 8252, 279, 2456, 315, 12934, 4802, 389, 9234, 594]",The question asks for the best measure to determine the effect of solar energy on Earth's,2
+glm,instruction_only,within_condition_mode,17,0.006666666666666667,4,600,576,"[17209, 89180, 5752, 40227, 4613, 3168, 45512, 16278, 71616, 5146, 422, 20202, 44, 3981, 3168, 61618, 3008]",THE QUESTION ASKS FOR THE BEST MEASURE TO DETERMINE THE EFFECT OF,1
+glm,no_instruction,no_instruction_reference,18,0.008333333333333333,5,600,599,"[785, 3405, 17045, 369, 279, 1850, 6629, 311, 8252, 279, 2456, 315, 12934, 4802, 389, 9234, 594, 16550]",The question asks for the best measure to determine the effect of solar energy on Earth's atmosphere,1
+glm,no_instruction,within_condition_mode,18,0.008333333333333333,5,600,599,"[785, 3405, 17045, 369, 279, 1850, 6629, 311, 8252, 279, 2456, 315, 12934, 4802, 389, 9234, 594, 16550]",The question asks for the best measure to determine the effect of solar energy on Earth's atmosphere,1
+glm,instruction_only,no_instruction_reference,18,0.0,0,600,575,"[785, 3405, 17045, 369, 279, 1850, 6629, 311, 8252, 279, 2456, 315, 12934, 4802, 389, 9234, 594, 16550]",The question asks for the best measure to determine the effect of solar energy on Earth's atmosphere,1
+glm,instruction_only,within_condition_mode,18,0.006666666666666667,4,600,575,"[17209, 89180, 5752, 40227, 4613, 3168, 45512, 16278, 71616, 5146, 422, 20202, 44, 3981, 3168, 61618, 3008, 35744]",THE QUESTION ASKS FOR THE BEST MEASURE TO DETERMINE THE EFFECT OF SOL,1
+glm,no_instruction,no_instruction_reference,19,0.008333333333333333,5,600,598,"[785, 3405, 17045, 369, 279, 1850, 6629, 311, 8252, 279, 2456, 315, 12934, 4802, 389, 9234, 594, 16550, 624]","The question asks for the best measure to determine the effect of solar energy on Earth's atmosphere.
+",1
+glm,no_instruction,within_condition_mode,19,0.008333333333333333,5,600,598,"[785, 3405, 17045, 369, 279, 1850, 6629, 311, 8252, 279, 2456, 315, 12934, 4802, 389, 9234, 594, 16550, 624]","The question asks for the best measure to determine the effect of solar energy on Earth's atmosphere.
+",1
+glm,instruction_only,no_instruction_reference,19,0.0,0,600,574,"[785, 3405, 17045, 369, 279, 1850, 6629, 311, 8252, 279, 2456, 315, 12934, 4802, 389, 9234, 594, 16550, 624]","The question asks for the best measure to determine the effect of solar energy on Earth's atmosphere.
+",1
+glm,instruction_only,within_condition_mode,19,0.006666666666666667,4,600,574,"[17209, 89180, 5752, 40227, 4613, 3168, 45512, 16278, 71616, 5146, 422, 20202, 44, 3981, 3168, 61618, 3008, 35744, 934]",THE QUESTION ASKS FOR THE BEST MEASURE TO DETERMINE THE EFFECT OF SOLAR,1
+glm,no_instruction,no_instruction_reference,20,0.006666666666666667,4,600,597,"[785, 3405, 17045, 369, 279, 4565, 429, 35335, 38348, 304, 19714, 299, 4577, 956, 438, 7244, 38348, 624, 19402, 928]","The question asks for the feature that identifies reproduction in Spirogyra as sexual reproduction.
+Sexual",3
+glm,no_instruction,within_condition_mode,20,0.006666666666666667,4,600,597,"[785, 3405, 17045, 369, 279, 4565, 429, 35335, 38348, 304, 19714, 299, 4577, 956, 438, 7244, 38348, 624, 19402, 928]","The question asks for the feature that identifies reproduction in Spirogyra as sexual reproduction.
+Sexual",3
+glm,instruction_only,no_instruction_reference,20,0.0,0,600,573,"[785, 3405, 17045, 369, 279, 4565, 429, 35335, 38348, 304, 19714, 299, 4577, 956, 438, 7244, 38348, 624, 19402, 928]","The question asks for the feature that identifies reproduction in Spirogyra as sexual reproduction.
+Sexual",3
+glm,instruction_only,within_condition_mode,20,0.006666666666666667,4,600,573,"[17209, 89180, 5752, 40227, 4613, 3168, 45512, 16278, 71616, 5146, 422, 20202, 44, 3981, 3168, 61618, 3008, 35744, 934, 82587]",THE QUESTION ASKS FOR THE BEST MEASURE TO DETERMINE THE EFFECT OF SOLAR ENERGY,1
+glm,no_instruction,no_instruction_reference,21,0.006666666666666667,4,600,597,"[785, 3405, 17045, 369, 279, 4565, 429, 35335, 38348, 304, 19714, 299, 4577, 956, 438, 7244, 38348, 624, 19402, 928, 38348]","The question asks for the feature that identifies reproduction in Spirogyra as sexual reproduction.
+Sexual reproduction",3
+glm,no_instruction,within_condition_mode,21,0.006666666666666667,4,600,597,"[785, 3405, 17045, 369, 279, 4565, 429, 35335, 38348, 304, 19714, 299, 4577, 956, 438, 7244, 38348, 624, 19402, 928, 38348]","The question asks for the feature that identifies reproduction in Spirogyra as sexual reproduction.
+Sexual reproduction",3
+glm,instruction_only,no_instruction_reference,21,0.0,0,600,571,"[785, 3405, 17045, 369, 279, 4565, 429, 35335, 38348, 304, 19714, 299, 4577, 956, 438, 7244, 38348, 624, 19402, 928, 38348]","The question asks for the feature that identifies reproduction in Spirogyra as sexual reproduction.
+Sexual reproduction",3
+glm,instruction_only,within_condition_mode,21,0.006666666666666667,4,600,571,"[17209, 89180, 5752, 40227, 4613, 3168, 45512, 16278, 71616, 5146, 422, 20202, 44, 3981, 3168, 61618, 3008, 35744, 934, 82587, 6197]",THE QUESTION ASKS FOR THE BEST MEASURE TO DETERMINE THE EFFECT OF SOLAR ENERGY ON,1
+glm,no_instruction,no_instruction_reference,22,0.006666666666666667,4,600,597,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C",1
+glm,no_instruction,within_condition_mode,22,0.006666666666666667,4,600,597,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C",1
+glm,instruction_only,no_instruction_reference,22,0.0016666666666666668,1,600,570,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C",1
+glm,instruction_only,within_condition_mode,22,0.006666666666666667,4,600,570,"[17209, 89180, 5752, 40227, 4613, 3168, 45512, 16278, 71616, 5146, 422, 20202, 44, 3981, 3168, 61618, 3008, 35744, 934, 82587, 6197, 468]",THE QUESTION ASKS FOR THE BEST MEASURE TO DETERMINE THE EFFECT OF SOLAR ENERGY ON E,1
+glm,no_instruction,no_instruction_reference,23,0.006666666666666667,4,600,597,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C)",1
+glm,no_instruction,within_condition_mode,23,0.006666666666666667,4,600,597,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C)",1
+glm,instruction_only,no_instruction_reference,23,0.0016666666666666668,1,600,568,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C)",1
+glm,instruction_only,within_condition_mode,23,0.006666666666666667,4,600,568,"[17209, 89180, 5752, 40227, 4613, 3168, 45512, 16278, 71616, 5146, 422, 20202, 44, 3981, 3168, 61618, 3008, 35744, 934, 82587, 6197, 468, 75746]",THE QUESTION ASKS FOR THE BEST MEASURE TO DETERMINE THE EFFECT OF SOLAR ENERGY ON EARTH,1
+glm,no_instruction,no_instruction_reference,24,0.006666666666666667,4,600,596,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers",1
+glm,no_instruction,within_condition_mode,24,0.006666666666666667,4,600,596,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers",1
+glm,instruction_only,no_instruction_reference,24,0.0016666666666666668,1,600,566,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers",1
+glm,instruction_only,within_condition_mode,24,0.006666666666666667,4,600,566,"[17209, 89180, 5752, 40227, 4613, 3168, 45512, 16278, 71616, 5146, 422, 20202, 44, 3981, 3168, 61618, 3008, 35744, 934, 82587, 6197, 468, 75746, 13264]",THE QUESTION ASKS FOR THE BEST MEASURE TO DETERMINE THE EFFECT OF SOLAR ENERGY ON EARTH'S,1
+glm,no_instruction,no_instruction_reference,25,0.006666666666666667,4,600,596,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+",1
+glm,no_instruction,within_condition_mode,25,0.006666666666666667,4,600,596,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+",1
+glm,instruction_only,no_instruction_reference,25,0.0016666666666666668,1,600,566,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+",1
+glm,instruction_only,within_condition_mode,25,0.006666666666666667,4,600,566,"[17209, 89180, 5752, 40227, 4613, 3168, 45512, 16278, 71616, 5146, 422, 20202, 44, 3981, 3168, 61618, 3008, 35744, 934, 82587, 6197, 468, 75746, 13264, 45757]",THE QUESTION ASKS FOR THE BEST MEASURE TO DETERMINE THE EFFECT OF SOLAR ENERGY ON EARTH'S ATM,1
+glm,no_instruction,no_instruction_reference,26,0.006666666666666667,4,600,596,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D",1
+glm,no_instruction,within_condition_mode,26,0.006666666666666667,4,600,596,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D",1
+glm,instruction_only,no_instruction_reference,26,0.0016666666666666668,1,600,566,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D",1
+glm,instruction_only,within_condition_mode,26,0.006666666666666667,4,600,566,"[17209, 89180, 5752, 40227, 4613, 3168, 45512, 16278, 71616, 5146, 422, 20202, 44, 3981, 3168, 61618, 3008, 35744, 934, 82587, 6197, 468, 75746, 13264, 45757, 77193]",THE QUESTION ASKS FOR THE BEST MEASURE TO DETERMINE THE EFFECT OF SOLAR ENERGY ON EARTH'S ATMOSP,1
+glm,no_instruction,no_instruction_reference,27,0.006666666666666667,4,600,595,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35, 8]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D)",1
+glm,no_instruction,within_condition_mode,27,0.006666666666666667,4,600,595,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35, 8]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D)",1
+glm,instruction_only,no_instruction_reference,27,0.0016666666666666668,1,600,564,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35, 8]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D)",1
+glm,instruction_only,within_condition_mode,27,0.006666666666666667,4,600,564,"[17209, 89180, 5752, 40227, 4613, 3168, 45512, 16278, 71616, 5146, 422, 20202, 44, 3981, 3168, 61618, 3008, 35744, 934, 82587, 6197, 468, 75746, 13264, 45757, 77193, 4575]",THE QUESTION ASKS FOR THE BEST MEASURE TO DETERMINE THE EFFECT OF SOLAR ENERGY ON EARTH'S ATMOSPHERE,1
+glm,no_instruction,no_instruction_reference,28,0.006666666666666667,4,600,595,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35, 8, 17982]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D) desk",1
+glm,no_instruction,within_condition_mode,28,0.006666666666666667,4,600,595,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35, 8, 17982]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D) desk",1
+glm,instruction_only,no_instruction_reference,28,0.0016666666666666668,1,600,563,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35, 8, 17982]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D) desk",1
+glm,instruction_only,within_condition_mode,28,0.006666666666666667,4,600,563,"[17209, 89180, 5752, 40227, 4613, 3168, 45512, 16278, 71616, 5146, 422, 20202, 44, 3981, 3168, 61618, 3008, 35744, 934, 82587, 6197, 468, 75746, 13264, 45757, 77193, 4575, 624]","THE QUESTION ASKS FOR THE BEST MEASURE TO DETERMINE THE EFFECT OF SOLAR ENERGY ON EARTH'S ATMOSPHERE.
+",1
+glm,no_instruction,no_instruction_reference,29,0.006666666666666667,4,600,592,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35, 8, 17982, 198]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D) desk
+",1
+glm,no_instruction,within_condition_mode,29,0.006666666666666667,4,600,592,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35, 8, 17982, 198]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D) desk
+",1
+glm,instruction_only,no_instruction_reference,29,0.0016666666666666668,1,600,561,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35, 8, 17982, 198]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D) desk
+",1
+glm,instruction_only,within_condition_mode,29,0.005,3,600,561,"[1001, 18, 922, 100235, 22, 98668, 77, 220, 100461, 74, 20, 420, 101655, 220, 102486, 19, 15631, 18, 88, 305, 19, 67, 220, 22, 81, 15, 110359, 18, 220]",Th3 qu35710n 45k5 wh47 574nl3y h4d 7r0ubl3 ,1
+glm,no_instruction,no_instruction_reference,30,0.006666666666666667,4,600,591,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35, 8, 17982, 198, 36]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D) desk
+E",1
+glm,no_instruction,within_condition_mode,30,0.006666666666666667,4,600,591,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35, 8, 17982, 198, 36]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D) desk
+E",1
+glm,instruction_only,no_instruction_reference,30,0.0016666666666666668,1,600,561,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35, 8, 17982, 198, 36]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D) desk
+E",1
+glm,instruction_only,within_condition_mode,30,0.005,3,600,561,"[1001, 18, 922, 100235, 22, 98668, 77, 220, 100461, 74, 20, 420, 101655, 220, 102486, 19, 15631, 18, 88, 305, 19, 67, 220, 22, 81, 15, 110359, 18, 220, 103388]",Th3 qu35710n 45k5 wh47 574nl3y h4d 7r0ubl3 73,1
+glm,no_instruction,no_instruction_reference,31,0.006666666666666667,4,600,591,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35, 8, 17982, 198, 36, 8]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D) desk
+E)",1
+glm,no_instruction,within_condition_mode,31,0.006666666666666667,4,600,591,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35, 8, 17982, 198, 36, 8]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D) desk
+E)",1
+glm,instruction_only,no_instruction_reference,31,0.0016666666666666668,1,600,560,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35, 8, 17982, 198, 36, 8]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D) desk
+E)",1
+glm,instruction_only,within_condition_mode,31,0.005,3,600,560,"[1001, 18, 922, 100235, 22, 98668, 77, 220, 100461, 74, 20, 420, 101655, 220, 102486, 19, 15631, 18, 88, 305, 19, 67, 220, 22, 81, 15, 110359, 18, 220, 103388, 654]",Th3 qu35710n 45k5 wh47 574nl3y h4d 7r0ubl3 73ll,1
+glm,no_instruction,no_instruction_reference,32,0.006666666666666667,4,600,589,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35, 8, 17982, 198, 36, 8, 25402]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D) desk
+E) filing",1
+glm,no_instruction,within_condition_mode,32,0.006666666666666667,4,600,589,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35, 8, 17982, 198, 36, 8, 25402]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D) desk
+E) filing",1
+glm,instruction_only,no_instruction_reference,32,0.0016666666666666668,1,600,560,"[785, 3405, 17045, 1128, 5163, 14539, 10528, 5567, 3542, 624, 3798, 510, 32, 8, 26397, 198, 33, 8, 25402, 21867, 198, 34, 8, 18464, 198, 35, 8, 17982, 198, 36, 8, 25402]","The question asks what office furniture stores paper files.
+Options:
+A) drawer
+B) filing cabinet
+C) computers
+D) desk
+E) filing",1
+glm,instruction_only,within_condition_mode,32,0.005,3,600,560,"[1001, 18, 922, 100235, 22, 98668, 77, 220, 100461, 74, 20, 420, 101655, 220, 102486, 19, 15631, 18, 88, 305, 19, 67, 220, 22, 81, 15, 110359, 18, 220, 103388, 654, 16]",Th3 qu35710n 45k5 wh47 574nl3y h4d 7r0ubl3 73ll1,1

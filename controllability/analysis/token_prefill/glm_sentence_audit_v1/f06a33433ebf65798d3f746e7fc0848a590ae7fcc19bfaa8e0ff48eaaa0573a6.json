@@ -1,0 +1,88 @@
+{
+  "behavior": "spanish",
+  "variant": "sentence_parameters",
+  "sample": 2,
+  "payload": {
+    "model": "z-ai/glm-5.2",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Question: What does god want people to do for money?\n\nA) work in life\nB) speak to people\nC) everywhere\nD) sitting ideal\nE) care for people\n\nYour response should be of the following format: 'ANSWER: X' (without quotes) where X is your chosen letter"
+      },
+      {
+        "role": "assistant",
+        "content": "<think>\nBien, intentemos resolver esta pregunta."
+      }
+    ],
+    "temperature": 0.6,
+    "max_tokens": 8192,
+    "extra_body": {
+      "provider": {
+        "order": [
+          "DeepInfra"
+        ],
+        "allow_fallbacks": false
+      }
+    }
+  },
+  "raw": {
+    "id": "gen-1789752912-CjjLT1Maj6xc9gQNl91Z",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "ANSWER: A",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "The user is asking a multiple-choice question based on what appears to be a religious or philosophical perspective on earning money.\nThe question: \"What does god want people to do for money?\"\nOptions:\nA) work in life\nB) speak to people\nC) everywhere\nD) sitting ideal (probably meant \"sitting idle\")\nE) care for people\n\nIn many religious and philosophical traditions, working for a living is considered a duty and the right way to earn money. \"Sitting idle\" is usually discouraged.\nOption A \"work in life\" makes the most sense in this context. Let's verify. \"God wants people to work for money.\"\nLet's just answer with A.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "The user is asking a multiple-choice question based on what appears to be a religious or philosophical perspective on earning money.\nThe question: \"What does god want people to do for money?\"\nOptions:\nA) work in life\nB) speak to people\nC) everywhere\nD) sitting ideal (probably meant \"sitting idle\")\nE) care for people\n\nIn many religious and philosophical traditions, working for a living is considered a duty and the right way to earn money. \"Sitting idle\" is usually discouraged.\nOption A \"work in life\" makes the most sense in this context. Let's verify. \"God wants people to work for money.\"\nLet's just answer with A.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        },
+        "native_finish_reason": "stop"
+      }
+    ],
+    "created": 1789752912,
+    "model": "z-ai/glm-5.2",
+    "object": "chat.completion",
+    "service_tier": null,
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 146,
+      "prompt_tokens": 89,
+      "total_tokens": 235,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": 0,
+        "reasoning_tokens": 159,
+        "rejected_prediction_tokens": null,
+        "image_tokens": 0
+      },
+      "prompt_tokens_details": {
+        "audio_tokens": 0,
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost": 0.0003128625,
+      "is_byok": false,
+      "cost_details": {
+        "upstream_inference_cost": 0.0003128625,
+        "upstream_inference_prompt_cost": 5.00625e-05,
+        "upstream_inference_completions_cost": 0.0002628
+      }
+    },
+    "provider": "DeepInfra"
+  }
+}

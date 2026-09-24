@@ -1,0 +1,35 @@
+{
+  "traces": 9000,
+  "task_mismatch_excluded": 100,
+  "duplicate_trace_ids": 0,
+  "missing_entropy": 0,
+  "length_mismatch": 0,
+  "invalid_entropy": 0,
+  "empty_content": 0,
+  "short_content_excluded": 0,
+  "missing_grade": 0,
+  "grader_empty_excluded": 0,
+  "included": 8900,
+  "tokenizer": "/Users/hughv/.cache/huggingface/hub/models--Qwen--Qwen3-32B/snapshots/9216db5781bf21249d130ec9da846c4624c16137/tokenizer.json",
+  "max_sampled_top5_probability_discrepancy": 0.00038307584483154855,
+  "same_prompt_first_content_entropy_max_range": 0.0367431640625,
+  "independent_KL_pass_matches": 1440,
+  "independent_KL_pass_max_entropy_difference": 0.1962890625,
+  "independent_KL_pass_token_abs_difference_quantiles": {
+    "median": 0.0,
+    "p90": 0.0,
+    "p99": 0.0400390625,
+    "max": 0.1962890625
+  },
+  "independent_KL_pass_first_content_abs_difference_quantiles": {
+    "median": 0.0,
+    "p90": 0.0,
+    "p99": 0.00249481201171875,
+    "max": 0.01318359375
+  },
+  "source_hashes": {
+    "prompts.jsonl": "fbc9a636c7c1b9d366ed6091c095ec6c60ed2351cfad53fcb146a462e9135671",
+    "traces.jsonl": "1ff140548bb04add43284909b6a0c31d0cb95daf2e4a3fb53fd6e582955d0422",
+    "grades.csv": "1231726f2c6dd6502aa07ce3fcc9200d7a1308c319fac6c3dddc2c6ce5dbb9c6"
+  }
+}

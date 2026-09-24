@@ -56,6 +56,7 @@ MODELS = [
     ("qwen3-14b",   "qwen/qwen3-14b"),
     ("qwen3-32b",   "qwen/qwen3-32b"),
     ("glm-5.2",     "z-ai/glm-5.2"),
+    ("deepseek-r1", "deepseek/deepseek-r1-0528"),
 ]
 
 # Full control-type set (matches the prefill sweep): transforms/encodings/languages/
@@ -143,6 +144,8 @@ def build_icl_messages(target: Cell, donor: Cell, variant: str, length_spec) -> 
     The real (target) question is asked in the STANDARD format; the model's native <think> is
     what gets graded. The example's reasoning is sliced to `length_spec`; the final ANSWER is
     ALWAYS appended (the slice only ever trims the reasoning)."""
+    if target.ctype != donor.ctype or target.question == donor.question:
+        raise ValueError("ICL donor must be a different question of the same control type")
     instr = donor.instruction
     real_q = assemble_prompt(target.question, target.options, instr)
 
@@ -185,8 +188,22 @@ def pick_donor(target: Cell, pool: list[Cell], rng: random.Random) -> Optional[C
 def grade_cell_for(target: Cell, donor: Cell) -> Cell:
     """Grade the target's continuation against the DONOR's control spec (same ctype;
     donor supplies marker/omit_words so omit_word grades the demonstrated word)."""
+    if target.ctype != donor.ctype:
+        raise ValueError("Cannot grade an ICL donor of a different control type")
     return replace(target, ctype=donor.ctype, modality=donor.modality,
                    marker=donor.marker, omit_words=donor.omit_words)
+
+
+def select_donors(cells: list[Cell], seed: int) -> dict:
+    """Question text can recur across behaviors; preserve both parts of cell identity."""
+    pools = {}
+    for cell in cells:
+        pools.setdefault(cell.ctype, []).append(cell)
+    rng = random.Random(seed + 1)
+    donors = {(c.ctype, c.question): pick_donor(c, pools[c.ctype], rng) for c in cells}
+    if len(donors) != len(cells):
+        raise ValueError("Duplicate question within a control type")
+    return donors
 
 
 # --------------------------------------------------------------------------- #
@@ -203,20 +220,39 @@ async def run_one_icl(target: Cell, donor: Cell, variant: str, length_spec, len_
     if key in cache:
         return
     messages = build_icl_messages(target, donor, variant, length_spec)
+    tpath = TRANSCRIPTS / cfg.run_name / f"{key}.json"
     try:
         async with sem:
-            resp, raw = await complete_pinned(cfg, messages)
+            if cfg.save_raw and tpath.exists():
+                saved = json.loads(tpath.read_text())
+                if saved["messages"] != messages:
+                    raise ValueError("Saved generation has a different prompt")
+                raw = saved["raw_response"]
+                from openai.types.chat import ChatCompletion
+                resp = pe._parse_response(ChatCompletion.model_validate(raw))
+            else:
+                resp, raw = await complete_pinned(cfg, messages)
+                if cfg.save_raw:
+                    tpath.parent.mkdir(parents=True, exist_ok=True)
+                    tmp = tpath.with_suffix(".tmp")
+                    tmp.write_text(json.dumps({"messages": messages, "raw_response": raw}, ensure_ascii=False))
+                    tmp.replace(tpath)
     except Exception as e:
         await cache.set(key, {"error": f"{type(e).__name__}: {e}", "ctype": target.ctype})
         return
-    if cfg.save_raw and sample < 1:
-        tdir = TRANSCRIPTS / cfg.run_name
-        tdir.mkdir(parents=True, exist_ok=True)
-        (tdir / f"{key}.json").write_text(
-            json.dumps({"messages": messages, "raw_response": raw}, ensure_ascii=False, indent=2))
     continuation = resp.thinking or ""
     empty_thinking = not continuation.strip()
-    score, compliance = await grade_continuation(grade_cell_for(target, donor), continuation)
+    # Do not turn judge failures into measured zero compliance.
+    async with sem:
+        if continuation.strip() and donor.modality in ("style", "language"):
+            grader = pe.grade_style_async if donor.modality == "style" else pe.grade_language_async
+            score = await grader(donor.ctype, continuation)
+            if score < 0:
+                await cache.set(key, {"error": "Judge failed; raw generation retained", "ctype": target.ctype})
+                return
+            compliance = int(score >= pe.COMPLIANCE_THRESHOLD)
+        else:
+            score, compliance = await grade_continuation(grade_cell_for(target, donor), continuation)
     pred = extract_answer(resp.answer or "")
     await cache.set(key, {
         "model": cfg.model_short,
@@ -227,6 +263,8 @@ async def run_one_icl(target: Cell, donor: Cell, variant: str, length_spec, len_
         "sample": sample,
         "target_question": target.question,
         "donor_question_hash": _qhash(donor.question),
+        "donor_ctype": donor.ctype,
+        "donor_assignment_version": 2,
         "instruction": donor.instruction,
         "compliance": compliance,
         "compliance_score": score,
@@ -251,8 +289,7 @@ async def run_model(cfg, jobs: list[tuple]) -> None:
     by_type = {ct: len(v) for ct, v in pool_by_ctype.items()}
     print(f"[icl:{cfg.model_short}] {len(cells)} target cells across {by_type}")
 
-    rng = random.Random(cfg.seed + 1)  # donor RNG, distinct from cell-build RNG
-    donor_of = {c.question: pick_donor(c, pool_by_ctype[c.ctype], rng) for c in cells}
+    donor_of = select_donors(cells, cfg.seed)
 
     cache = AsyncCache(cfg.eval_name, cfg.run_name, "mini", save_every=25)
     await cache.load()
@@ -261,16 +298,21 @@ async def run_model(cfg, jobs: list[tuple]) -> None:
     sem = asyncio.Semaphore(cfg.concurrency)
 
     tasks = [
-        run_one_icl(cell, donor_of[cell.question], variant, length_spec, len_tag, s, cfg, cache, sem)
-        for cell in cells if donor_of[cell.question] is not None
+        run_one_icl(cell, donor_of[(cell.ctype, cell.question)], variant, length_spec, len_tag, s, cfg, cache, sem)
+        for cell in cells if donor_of[(cell.ctype, cell.question)] is not None
         for (variant, length_spec, len_tag) in jobs
         for s in range(cfg.n_samples)
     ]
     labels = [f"{v}@{lt or 'fixed'}" for v, _, lt in jobs]
     print(f"[icl:{cfg.model_short}] {len(tasks)} completions "
           f"({len(jobs)} conditions x n={cfg.n_samples}): {labels}")
-    await tqdm_asyncio.gather(*tasks)
-    await cache.flush()
+    try:
+        await tqdm_asyncio.gather(*tasks)
+    finally:
+        await cache.flush()
+    errors = sum("error" in v for v in cache.data.values())
+    if errors:
+        raise RuntimeError(f"{errors} failed cells; resume this run to retry (CSV withheld)")
     write_csv(cfg, cache)
 
 
@@ -361,7 +403,12 @@ def main() -> None:
     models = default_models
     if args.models:
         want = set(args.models.split(","))
+        unknown = want - {s for s, _ in MODELS}
+        if unknown:
+            ap.error(f"Unknown model(s): {sorted(unknown)}")
         models = [(s, m) for s, m in MODELS if s in want]
+    if args.run_name and len(models) != 1:
+        ap.error("--run-name requires exactly one model")
 
     def jobs_for(short: str) -> list[tuple]:
         if args.scale:
