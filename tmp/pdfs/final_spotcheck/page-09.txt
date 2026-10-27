@@ -1,0 +1,109 @@
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462
+463
+464
+465
+466
+467
+468
+469
+470
+471
+472
+473
+474
+475
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+Under review as a conference paper at ICLR 2027
+Together with the elicitation results, these findings suggest that aggregate controllability scores can
+obscure distinctions relevant to monitoring. The distinction between suppression and addition/style
+is reflected in some monitorability evaluations, but does not consistently predict the direction of
+association. This is not to say that addition and style capabilitiesimprovemonitorability, or that
+suppression capabilities cause models to conceal information, as we do not test for deliberate moni-
+tor evasion. Rather, our results motivate reporting individual control tasks alongside category-level
+summaries when using controllability benchmarks to assess risks to CoT monitoring.
+5 DISCUSSION
+Our results qualify the reassurance that low CoT controllability (as measured by current bench-
+marks) can provide about our trust in the reliability of CoT monitoring. Two of our three addition
+tasks and all three stylistic modification tasks impose constraints from the beginning of the reason-
+ing trace. Their scores therefore depend partly on whether models can depart from entrenched open-
+ings. One possible explanation is that a noncompliant opening establishes a pattern that subsequent
+generation continues, despite the control instruction. However, adding misleading information or
+obscuring relevant reasoning does not require changing a conventional opening. Sensitivity to this
+opening bottleneck may therefore cause current benchmarks to understate the control models can
+exercise later in their traces. We argue that evaluations intended to measure these risks should dis-
+tinguish the ability to initiate a prescribed format from the ability to selectively alter what reasoning
+conveys.
+The monitorability results further complicate this picture of controllability as a safety indicator.
+Rather than a uniform negative relationship between controllability and monitorability, we find as-
+sociations that vary across control tasks and evaluations: addition and style tasks show positive
+associations in most evaluations, while suppression tasks show both positive and negative associa-
+tions. However, these associations do not establish that addition and style capabilities are benign,
+or that suppression proxies directly measure concealment. The positive associations observed for
+some addition and style tasks are compatible with models producing informative reasoning in ordi-
+nary settings while retaining the ability to make it misleading under different incentives. Likewise,
+negative associations for suppression do not establish that avoiding characters or phrases measures
+the ability to conceal relevant reasoning. This uncertainty concerns both sides of the comparison:
+monitorability evaluations are themselves proxies, and success at identifying a cue, theorem, or out-
+come property does not establish that a monitor can reliably detect strategically omitted or fabricated
+information in a different setting. Consequently, these correlations should inform the validation of
+both evaluation suites, rather than be treated as direct relationships between control capabilities and
+the reliability of oversight. Our results therefore challenge a uniform inverse relationship between
+controllability and monitorability, without resolving how particular control capabilities contribute to
+intentional monitor evasion. Thus, the relevant question for future work is which forms of control
+enable models to withhold or misrepresent information that a monitor needs.
+Our conclusions are limited by the number and diversity of models and control tasks studied, as
+well as uncertainty in their measured scores. Several monitorability evaluations place many models
+near the floor or ceiling, leaving limited separation between them. When these differences are small
+relative to evaluation uncertainty, rank correlations can depend on orderings that the measurements
+do not reliably distinguish. The cross-model associations we report are therefore descriptive. These
+limitations motivate reporting control tasks separately and validating them against deliberate con-
+cealment and misleading disclosure. Low controllability is most informative as a safety indicator
+when we understand why a model fails the task and whether that failure actually limits its ability to
+evade oversight.
+AIUSE STATEMENT
+In this work, we used generative AI tools for generation of synthetic datasets and translation (LLM
+rewrites for certain control task compliant responses), providing feedback on experiments, and sup-
+porting data analysis. We have not used generative AI tools for interpreting results and proposing or
+refining hypothesis, and theoretical models or conceptual frameworks, formulation of mathematical
+claim, proving mathematical claims, implementing methods, and cleaning and reformating datasets
+are not applicable to this work. Additionally, we used generative AI tools for creating figures, creat-
+9

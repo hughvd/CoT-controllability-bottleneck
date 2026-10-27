@@ -1,0 +1,21 @@
+{
+  "tests_passed": 5,
+  "python_javascript_comparisons": 280,
+  "browser_verified": [
+    "all evaluation plots",
+    "four family plots",
+    "control selector",
+    "soft/hard selector",
+    "model exclusion",
+    "zero models undefined correlations",
+    "restored all models"
+  ],
+  "browser_console_errors": 0,
+  "html_sha256": "9917ba5854babfca586b790a025ac53450ac79c2ae1ea3dc6d7a57d88ab5ddd4",
+  "code_sha256": {
+    "monitorability/control_type_viewer.py": "5607a37483d595c7a5c26281102b944944a396b6a7b4dd8565a4695e07c98475",
+    "monitorability/control_type_viewer.js": "7789f34fa369dee29d7e0539ceb2b3d525f39a91460f5312850cf89d31eff990",
+    "monitorability/control_type_viewer_template.html": "1123a5089a05cc5ec8b358cce744d9ce918194f2f3fb4a48b24d5823c9cf7d14",
+    "monitorability/test_control_type_viewer.py": "b33e3fc8fcbcd2e087c1269c518767c612c36c5ec58f9b7e4ebef363bbfbddbf"
+  }
+}

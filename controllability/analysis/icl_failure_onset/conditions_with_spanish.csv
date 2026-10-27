@@ -1,0 +1,4 @@
+condition,all_failed,opening_failures,pct,spanish_failed,four_task_failed,four_task_opening,four_task_pct
+instruction_only,4090,2591,63.349633251833744,513,2113,2068,97.870326549929
+user_icl,3573,2416,67.61824797089281,461,1957,1935,98.87583035258048
+assistant_icl,3609,2448,67.83042394014963,462,2003,1962,97.9530703944084

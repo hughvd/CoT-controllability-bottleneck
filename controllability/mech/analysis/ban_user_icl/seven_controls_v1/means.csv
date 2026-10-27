@@ -1,0 +1,289 @@
+model,behavior,metric,condition,arm,label,mean,ci_low,ci_high,n,n_scored
+qwen32,leetspeak,continuation_soft,instruction_only,baseline,Instruction,0.013126568716464932,0.0007047960787947303,0.03710760641708387,90,90
+qwen32,leetspeak,continuation_soft,instruction_only,fixed_ban,Banning,0.26011248659174213,0.1617718383001979,0.3618395531171768,90,90
+qwen32,leetspeak,continuation_soft,user_icl,baseline,User ICL,0.013492174067796936,0.002180488909341301,0.03094884388769566,90,90
+qwen32,leetspeak,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.6522606936208896,0.5200236840024834,0.7763772383451201,90,90
+qwen32,spanish,continuation_soft,instruction_only,baseline,Instruction,0.02777777777777778,0.0,0.08333333333333333,90,90
+qwen32,spanish,continuation_soft,instruction_only,fixed_ban,Banning,0.5222222222222221,0.4118975468975468,0.6333333333333333,90,90
+qwen32,spanish,continuation_soft,user_icl,baseline,User ICL,0.027777777777777776,0.0026881720430107525,0.0625157828282826,90,90
+qwen32,spanish,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.5966666666666666,0.4802434289127837,0.7068005505505504,90,90
+qwen32,chinese,continuation_soft,instruction_only,baseline,Instruction,0.9244444444444445,0.8869748263888889,0.9563497899159663,90,90
+qwen32,chinese,continuation_soft,instruction_only,fixed_ban,Banning,0.951111111111111,0.9289845537757437,0.9722222222222222,90,90
+qwen32,chinese,continuation_soft,user_icl,baseline,User ICL,0.9644444444444444,0.9399970238095239,0.9854166666666666,90,90
+qwen32,chinese,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.9644444444444444,0.9368055555555556,0.987917025862069,90,90
+qwen32,uppercase_thinking,continuation_soft,instruction_only,baseline,Instruction,0.029058358740865677,0.026947163159918845,0.0314440632460887,90,90
+qwen32,uppercase_thinking,continuation_soft,instruction_only,fixed_ban,Banning,0.09240585120774518,0.02783837912877611,0.17959176198935403,90,90
+qwen32,uppercase_thinking,continuation_soft,user_icl,baseline,User ICL,0.02625300947086593,0.024329289246105053,0.028320046018236636,90,90
+qwen32,uppercase_thinking,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.7754415650896179,0.6637913030493122,0.8735939132045285,90,90
+qwen32,prefix_sentences,continuation_soft,instruction_only,baseline,Instruction,0.03375059389557614,0.012463697083873782,0.059688078649627406,90,90
+qwen32,prefix_sentences,continuation_soft,instruction_only,fixed_ban,Banning,0.06372385893599551,0.02019277079692901,0.11947738625036497,90,84
+qwen32,prefix_sentences,continuation_soft,user_icl,baseline,User ICL,0.2744498291621615,0.1751116355429364,0.3851923510771053,90,90
+qwen32,prefix_sentences,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.33842710009545707,0.19647123027263574,0.49683174216890513,90,75
+qwen32,no_first_person,continuation_soft,instruction_only,baseline,Instruction,0.14444444444444443,0.06172839506172839,0.24691358024691357,90,90
+qwen32,no_first_person,continuation_soft,instruction_only,fixed_ban,Banning,0.47777777777777775,0.346141975308642,0.6021505376344085,90,90
+qwen32,no_first_person,continuation_soft,user_icl,baseline,User ICL,0.5555555555555555,0.41874999999999996,0.6956628303495309,90,90
+qwen32,no_first_person,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.7444444444444444,0.619047619047619,0.8555555555555555,90,90
+qwen32,omit_word,continuation_soft,instruction_only,baseline,Instruction,0.3222222222222222,0.1818181818181818,0.4722222222222222,90,90
+qwen32,omit_word,continuation_soft,instruction_only,fixed_ban,Banning,0.4222222222222222,0.2857142857142857,0.5641025641025641,90,90
+qwen32,omit_word,continuation_soft,user_icl,baseline,User ICL,0.49999999999999994,0.3478109903381642,0.6543209876543209,90,90
+qwen32,omit_word,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.4666666666666667,0.31577761972498813,0.6212121212121212,90,90
+qwen32,average,continuation_soft,instruction_only,baseline,Instruction,0.21354634432025651,0.18774107349264527,0.24039287756841485,630,630
+qwen32,average,continuation_soft,instruction_only,fixed_ban,Banning,0.3985107900098308,0.36302652417558345,0.4341598621175383,630,624
+qwen32,average,continuation_soft,user_icl,baseline,User ICL,0.33742468435408607,0.30370570269786606,0.3713776185879541,630,630
+qwen32,average,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.6483359401468839,0.603551048399046,0.6931838302799792,630,615
+qwen32,leetspeak,whole_soft,instruction_only,baseline,Instruction,0.013110343330421706,0.0007019068404903549,0.03706366157352164,90,90
+qwen32,leetspeak,whole_soft,instruction_only,fixed_ban,Banning,0.25954924218151965,0.1614515282694314,0.3610095951172713,90,90
+qwen32,leetspeak,whole_soft,user_icl,baseline,User ICL,0.013450272775413072,0.0021766186931618256,0.030846851472665332,90,90
+qwen32,leetspeak,whole_soft,user_icl,fixed_ban,User ICL + banning,0.6519353858040461,0.5194815782974287,0.775832680743427,90,90
+qwen32,spanish,whole_soft,instruction_only,baseline,Instruction,0.025,0.0,0.08012820512820513,90,90
+qwen32,spanish,whole_soft,instruction_only,fixed_ban,Banning,0.5105555555555555,0.3957139016897081,0.62441192680776,90,90
+qwen32,spanish,whole_soft,user_icl,baseline,User ICL,0.03055555555555555,0.004380482456140353,0.06579404239766075,90,90
+qwen32,spanish,whole_soft,user_icl,fixed_ban,User ICL + banning,0.6044444444444446,0.4873450328407225,0.7140015625,90,90
+qwen32,chinese,whole_soft,instruction_only,baseline,Instruction,0.9483333333333334,0.9191042392566783,0.9731491545893719,90,90
+qwen32,chinese,whole_soft,instruction_only,fixed_ban,Banning,0.961111111111111,0.9416666666666668,0.9786463541666667,90,90
+qwen32,chinese,whole_soft,user_icl,baseline,User ICL,0.9761111111111112,0.9516640625000001,0.9950454621287955,90,90
+qwen32,chinese,whole_soft,user_icl,fixed_ban,User ICL + banning,0.9783333333333334,0.9566666666666667,0.9947916666666666,90,90
+qwen32,uppercase_thinking,whole_soft,instruction_only,baseline,Instruction,0.02996100397591778,0.02780921010062517,0.03235468074392538,90,90
+qwen32,uppercase_thinking,whole_soft,instruction_only,fixed_ban,Banning,0.10353375550871659,0.03853614352037284,0.1904096296467554,90,90
+qwen32,uppercase_thinking,whole_soft,user_icl,baseline,User ICL,0.02738545480861342,0.025467255158172195,0.02941063235990953,90,90
+qwen32,uppercase_thinking,whole_soft,user_icl,fixed_ban,User ICL + banning,0.7754555745845008,0.6638186811138542,0.8736111529809503,90,90
+qwen32,prefix_sentences,whole_soft,instruction_only,baseline,Instruction,0.03172979583196301,0.011757150525266465,0.05590159222567793,90,90
+qwen32,prefix_sentences,whole_soft,instruction_only,fixed_ban,Banning,0.055834042990624014,0.01777335192169929,0.10682309334585646,90,90
+qwen32,prefix_sentences,whole_soft,user_icl,baseline,User ICL,0.24978290367235859,0.1612832957910052,0.3498287199385182,90,90
+qwen32,prefix_sentences,whole_soft,user_icl,fixed_ban,User ICL + banning,0.2994530527096597,0.16917351618969267,0.451175617087356,90,90
+qwen32,no_first_person,whole_soft,instruction_only,baseline,Instruction,0.14444444444444443,0.06172839506172839,0.24691358024691357,90,90
+qwen32,no_first_person,whole_soft,instruction_only,fixed_ban,Banning,0.4666666666666667,0.3416666666666667,0.5926215277777773,90,90
+qwen32,no_first_person,whole_soft,user_icl,baseline,User ICL,0.5555555555555555,0.41874999999999996,0.6956628303495309,90,90
+qwen32,no_first_person,whole_soft,user_icl,fixed_ban,User ICL + banning,0.7444444444444444,0.619047619047619,0.8555555555555555,90,90
+qwen32,omit_word,whole_soft,instruction_only,baseline,Instruction,0.3222222222222222,0.1818181818181818,0.4722222222222222,90,90
+qwen32,omit_word,whole_soft,instruction_only,fixed_ban,Banning,0.4222222222222222,0.2857142857142857,0.5641025641025641,90,90
+qwen32,omit_word,whole_soft,user_icl,baseline,User ICL,0.49999999999999994,0.3478109903381642,0.6543209876543209,90,90
+qwen32,omit_word,whole_soft,user_icl,fixed_ban,User ICL + banning,0.4666666666666667,0.31577761972498813,0.6212121212121212,90,90
+qwen32,average,whole_soft,instruction_only,baseline,Instruction,0.2164001633054718,0.19149976682930464,0.24311186829256123,630,630
+qwen32,average,whole_soft,instruction_only,fixed_ban,Banning,0.3970675137480594,0.3611319346060653,0.4332274075023807,630,630
+qwen32,average,whole_soft,user_icl,baseline,User ICL,0.3361201219255153,0.3028644008837175,0.36931845231241633,630,630
+qwen32,average,whole_soft,user_icl,fixed_ban,User ICL + banning,0.6458189859981566,0.602720428560245,0.6892578317082451,630,630
+qwen32,leetspeak,answer_correct,instruction_only,baseline,Instruction,0.8555555555555555,0.7444230769230767,0.9473821271929822,90,90
+qwen32,leetspeak,answer_correct,instruction_only,fixed_ban,Banning,0.8666666666666666,0.7666666666666667,0.9487179487179488,90,90
+qwen32,leetspeak,answer_correct,user_icl,baseline,User ICL,0.8555555555555555,0.7391304347826086,0.9479166666666666,90,90
+qwen32,leetspeak,answer_correct,user_icl,fixed_ban,User ICL + banning,0.8555555555555555,0.7272727272727273,0.9599999999999999,90,90
+qwen32,spanish,answer_correct,instruction_only,baseline,Instruction,1.0,1.0,1.0,90,90
+qwen32,spanish,answer_correct,instruction_only,fixed_ban,Banning,0.9777777777777776,0.9428571428571428,1.0,90,90
+qwen32,spanish,answer_correct,user_icl,baseline,User ICL,1.0,1.0,1.0,90,90
+qwen32,spanish,answer_correct,user_icl,fixed_ban,User ICL + banning,0.9888888888888888,0.9629629629629629,1.0,90,90
+qwen32,chinese,answer_correct,instruction_only,baseline,Instruction,1.0,1.0,1.0,90,90
+qwen32,chinese,answer_correct,instruction_only,fixed_ban,Banning,1.0,1.0,1.0,90,90
+qwen32,chinese,answer_correct,user_icl,baseline,User ICL,1.0,1.0,1.0,90,90
+qwen32,chinese,answer_correct,user_icl,fixed_ban,User ICL + banning,1.0,1.0,1.0,90,90
+qwen32,uppercase_thinking,answer_correct,instruction_only,baseline,Instruction,0.9777777777777779,0.9259259259259259,1.0,90,90
+qwen32,uppercase_thinking,answer_correct,instruction_only,fixed_ban,Banning,0.9888888888888888,0.9629629629629629,1.0,90,90
+qwen32,uppercase_thinking,answer_correct,user_icl,baseline,User ICL,0.9333333333333333,0.84,1.0,90,90
+qwen32,uppercase_thinking,answer_correct,user_icl,fixed_ban,User ICL + banning,0.9666666666666667,0.9102477477477476,1.0,90,90
+qwen32,prefix_sentences,answer_correct,instruction_only,baseline,Instruction,0.8444444444444444,0.717948717948718,0.9565217391304348,90,90
+qwen32,prefix_sentences,answer_correct,instruction_only,fixed_ban,Banning,0.8333333333333334,0.6989119303635432,0.9487179487179487,90,90
+qwen32,prefix_sentences,answer_correct,user_icl,baseline,User ICL,0.8444444444444444,0.7126436781609196,0.9583333333333334,90,90
+qwen32,prefix_sentences,answer_correct,user_icl,fixed_ban,User ICL + banning,0.8444444444444444,0.7142857142857143,0.9565217391304348,90,90
+qwen32,no_first_person,answer_correct,instruction_only,baseline,Instruction,0.9444444444444443,0.8850574712643677,0.9898989898989898,90,90
+qwen32,no_first_person,answer_correct,instruction_only,fixed_ban,Banning,0.9777777777777776,0.9425287356321839,1.0,90,90
+qwen32,no_first_person,answer_correct,user_icl,baseline,User ICL,0.9888888888888888,0.9629365079365079,1.0,90,90
+qwen32,no_first_person,answer_correct,user_icl,fixed_ban,User ICL + banning,0.9222222222222222,0.8484848484848485,0.9848484848484848,90,90
+qwen32,omit_word,answer_correct,instruction_only,baseline,Instruction,0.9555555555555555,0.8787878787878788,1.0,90,90
+qwen32,omit_word,answer_correct,instruction_only,fixed_ban,Banning,0.9333333333333333,0.8541666666666665,0.9901960784313727,90,90
+qwen32,omit_word,answer_correct,user_icl,baseline,User ICL,0.9333333333333333,0.8461309523809524,1.0,90,90
+qwen32,omit_word,answer_correct,user_icl,fixed_ban,User ICL + banning,0.9333333333333333,0.8541666666666665,0.9901960784313727,90,90
+qwen32,average,answer_correct,instruction_only,baseline,Instruction,0.9396825396825398,0.9116109183726541,0.9649224596165545,630,630
+qwen32,average,answer_correct,instruction_only,fixed_ban,Banning,0.9396825396825397,0.9125665285244393,0.964008567941112,630,630
+qwen32,average,answer_correct,user_icl,baseline,User ICL,0.9365079365079365,0.9071981732206461,0.9633789743740013,630,630
+qwen32,average,answer_correct,user_icl,fixed_ban,User ICL + banning,0.9301587301587302,0.9004441206152872,0.9572286386695442,630,630
+glm,leetspeak,continuation_soft,instruction_only,baseline,Instruction,0.35590195791736756,0.2663955048478086,0.4514835284833728,90,90
+glm,leetspeak,continuation_soft,instruction_only,fixed_ban,Banning,0.6627014443883839,0.5462275155811719,0.7696597860365701,90,90
+glm,leetspeak,continuation_soft,user_icl,baseline,User ICL,0.4138667423944632,0.3598355034669286,0.4683250159064052,90,90
+glm,leetspeak,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.5105665475856032,0.4301439991899325,0.5916054960089884,90,90
+glm,spanish,continuation_soft,instruction_only,baseline,Instruction,0.6111111111111112,0.5146666666666667,0.7055598958333333,90,90
+glm,spanish,continuation_soft,instruction_only,fixed_ban,Banning,0.8716666666666666,0.8339285714285715,0.907658523908524,90,90
+glm,spanish,continuation_soft,user_icl,baseline,User ICL,0.8161111111111111,0.7458306623931623,0.8802092978395061,90,90
+glm,spanish,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.7922222222222222,0.7269220430107527,0.8525694444444443,90,90
+glm,chinese,continuation_soft,instruction_only,baseline,Instruction,0.8938888888888887,0.8305531609195402,0.9472265624999999,90,90
+glm,chinese,continuation_soft,instruction_only,fixed_ban,Banning,0.9577777777777778,0.9277777777777778,0.9826923076923078,90,90
+glm,chinese,continuation_soft,user_icl,baseline,User ICL,0.8105555555555557,0.7390494791666666,0.8750067204301075,90,90
+glm,chinese,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.8650000000000001,0.8059988095238094,0.9162274774774772,90,90
+glm,uppercase_thinking,continuation_soft,instruction_only,baseline,Instruction,0.6719194792537857,0.5556777845070774,0.7817459575760771,90,90
+glm,uppercase_thinking,continuation_soft,instruction_only,fixed_ban,Banning,0.8759228041616389,0.8038330075455254,0.9420439685819151,90,90
+glm,uppercase_thinking,continuation_soft,user_icl,baseline,User ICL,0.49721526381162123,0.3849865622443784,0.6091374498582135,90,90
+glm,uppercase_thinking,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.7938984900377996,0.7029822389155144,0.879607872112223,90,90
+glm,prefix_sentences,continuation_soft,instruction_only,baseline,Instruction,0.7338852160206777,0.6010787230296797,0.8517188184440441,90,87
+glm,prefix_sentences,continuation_soft,instruction_only,fixed_ban,Banning,0.7788347109701727,0.6491857270240904,0.891111546871631,90,87
+glm,prefix_sentences,continuation_soft,user_icl,baseline,User ICL,0.5683279891883565,0.48266930414387993,0.6533835809525701,90,90
+glm,prefix_sentences,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.8920757016841573,0.828743192755634,0.9455411913029098,90,86
+glm,no_first_person,continuation_soft,instruction_only,baseline,Instruction,0.8222222222222222,0.7160493827160493,0.9166666666666667,90,90
+glm,no_first_person,continuation_soft,instruction_only,fixed_ban,Banning,0.9666666666666667,0.9275249094202898,1.0,90,90
+glm,no_first_person,continuation_soft,user_icl,baseline,User ICL,0.8777777777777778,0.7733333333333333,0.9642857142857142,90,90
+glm,no_first_person,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.8333333333333334,0.7352450980392158,0.9200158730158728,90,90
+glm,omit_word,continuation_soft,instruction_only,baseline,Instruction,0.6666666666666666,0.5353535353535352,0.7878787878787878,90,90
+glm,omit_word,continuation_soft,instruction_only,fixed_ban,Banning,0.6666666666666666,0.5333333333333333,0.7866666666666666,90,90
+glm,omit_word,continuation_soft,user_icl,baseline,User ICL,0.4444444444444444,0.3225806451612903,0.5652173913043478,90,90
+glm,omit_word,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.6222222222222221,0.5097903050108931,0.7333333333333333,90,90
+glm,average,continuation_soft,instruction_only,baseline,Instruction,0.679370791725817,0.6404701388560855,0.7183540127512678,630,627
+glm,average,continuation_soft,instruction_only,fixed_ban,Banning,0.8257481053282819,0.7928702767136693,0.8562859730667415,630,627
+glm,average,continuation_soft,user_icl,baseline,User ICL,0.63261412632619,0.5989814792731168,0.6647567771031726,630,630
+glm,average,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.758474073869334,0.7275828875897333,0.7883740084252536,630,626
+glm,leetspeak,whole_soft,instruction_only,baseline,Instruction,0.35420620323735424,0.2651396315920405,0.44929263803916264,90,90
+glm,leetspeak,whole_soft,instruction_only,fixed_ban,Banning,0.6608911669610349,0.5470632411068835,0.7663749942939371,90,90
+glm,leetspeak,whole_soft,user_icl,baseline,User ICL,0.4099792034250071,0.3566027506462378,0.46378324282466904,90,90
+glm,leetspeak,whole_soft,user_icl,fixed_ban,User ICL + banning,0.5058394641834753,0.42639358016723095,0.585226971737618,90,90
+glm,spanish,whole_soft,instruction_only,baseline,Instruction,0.6316666666666666,0.5371759259259259,0.7220728291316525,90,90
+glm,spanish,whole_soft,instruction_only,fixed_ban,Banning,0.8916666666666667,0.8522988505747127,0.9282852170352169,90,90
+glm,spanish,whole_soft,user_icl,baseline,User ICL,0.8027777777777778,0.730640526510938,0.8685897435897435,90,90
+glm,spanish,whole_soft,user_icl,fixed_ban,User ICL + banning,0.7816666666666667,0.7123440545808967,0.8456195175438596,90,90
+glm,chinese,whole_soft,instruction_only,baseline,Instruction,0.8944444444444443,0.8301249999999999,0.9494070165945167,90,90
+glm,chinese,whole_soft,instruction_only,fixed_ban,Banning,0.9611111111111111,0.9325370012870012,0.9845679012345678,90,90
+glm,chinese,whole_soft,user_icl,baseline,User ICL,0.8372222222222222,0.7628186274509804,0.9030873842592594,90,90
+glm,chinese,whole_soft,user_icl,fixed_ban,User ICL + banning,0.8961111111111111,0.8409717261904762,0.9435534274193548,90,90
+glm,uppercase_thinking,whole_soft,instruction_only,baseline,Instruction,0.6740878730132354,0.5579232190921538,0.7840373842814087,90,90
+glm,uppercase_thinking,whole_soft,instruction_only,fixed_ban,Banning,0.8778750579021373,0.8068480515011979,0.943694419885222,90,90
+glm,uppercase_thinking,whole_soft,user_icl,baseline,User ICL,0.4977399644285117,0.3861637362475821,0.6088100997518994,90,90
+glm,uppercase_thinking,whole_soft,user_icl,fixed_ban,User ICL + banning,0.7943935775344351,0.7040586634554494,0.8798887102260585,90,90
+glm,prefix_sentences,whole_soft,instruction_only,baseline,Instruction,0.7222607130262468,0.588684500317232,0.8443202141098645,90,90
+glm,prefix_sentences,whole_soft,instruction_only,fixed_ban,Banning,0.7642977500632838,0.6319247652932959,0.880540455398481,90,90
+glm,prefix_sentences,whole_soft,user_icl,baseline,User ICL,0.5494029927788013,0.46507249670268763,0.6351126687169404,90,90
+glm,prefix_sentences,whole_soft,user_icl,fixed_ban,User ICL + banning,0.8439525929202546,0.7709747992675077,0.9097125207581533,90,90
+glm,no_first_person,whole_soft,instruction_only,baseline,Instruction,0.8222222222222222,0.7160493827160493,0.9166666666666667,90,90
+glm,no_first_person,whole_soft,instruction_only,fixed_ban,Banning,0.9666666666666667,0.9275249094202898,1.0,90,90
+glm,no_first_person,whole_soft,user_icl,baseline,User ICL,0.8777777777777778,0.7733333333333333,0.9642857142857142,90,90
+glm,no_first_person,whole_soft,user_icl,fixed_ban,User ICL + banning,0.8444444444444444,0.7526881720430108,0.9259259259259259,90,90
+glm,omit_word,whole_soft,instruction_only,baseline,Instruction,0.6444444444444444,0.5151515151515151,0.7666666666666665,90,90
+glm,omit_word,whole_soft,instruction_only,fixed_ban,Banning,0.6666666666666666,0.5333333333333333,0.7866666666666666,90,90
+glm,omit_word,whole_soft,user_icl,baseline,User ICL,0.4444444444444444,0.3225806451612903,0.5652173913043478,90,90
+glm,omit_word,whole_soft,user_icl,fixed_ban,User ICL + banning,0.6222222222222221,0.5097903050108931,0.7333333333333333,90,90
+glm,average,whole_soft,instruction_only,baseline,Instruction,0.6776189381506591,0.6380602110985667,0.7164016567473637,630,630
+glm,average,whole_soft,instruction_only,fixed_ban,Banning,0.827025012291081,0.7942572846200653,0.8578238611179437,630,630
+glm,average,whole_soft,user_icl,baseline,User ICL,0.6313349118363633,0.5980482338632327,0.6636114326284337,630,630
+glm,average,whole_soft,user_icl,fixed_ban,User ICL + banning,0.755518582726087,0.7241189115366066,0.7853298182016893,630,630
+glm,leetspeak,answer_correct,instruction_only,baseline,Instruction,0.8111111111111111,0.6913580246913581,0.9135802469135803,90,90
+glm,leetspeak,answer_correct,instruction_only,fixed_ban,Banning,0.8666666666666667,0.75,0.9607843137254903,90,90
+glm,leetspeak,answer_correct,user_icl,baseline,User ICL,0.8555555555555555,0.7407407407407407,0.9537116858237547,90,90
+glm,leetspeak,answer_correct,user_icl,fixed_ban,User ICL + banning,0.8444444444444444,0.7291666666666666,0.9425287356321839,90,90
+glm,spanish,answer_correct,instruction_only,baseline,Instruction,1.0,1.0,1.0,90,90
+glm,spanish,answer_correct,instruction_only,fixed_ban,Banning,0.9888888888888888,0.9615384615384616,1.0,90,90
+glm,spanish,answer_correct,user_icl,baseline,User ICL,0.9777777777777776,0.9444444444444444,1.0,90,90
+glm,spanish,answer_correct,user_icl,fixed_ban,User ICL + banning,0.9666666666666666,0.9275362318840579,1.0,90,90
+glm,chinese,answer_correct,instruction_only,baseline,Instruction,0.9888888888888888,0.9629629629629629,1.0,90,90
+glm,chinese,answer_correct,instruction_only,fixed_ban,Banning,1.0,1.0,1.0,90,90
+glm,chinese,answer_correct,user_icl,baseline,User ICL,1.0,1.0,1.0,90,90
+glm,chinese,answer_correct,user_icl,fixed_ban,User ICL + banning,1.0,1.0,1.0,90,90
+glm,uppercase_thinking,answer_correct,instruction_only,baseline,Instruction,0.9111111111111111,0.8333333333333334,0.9743589743589743,90,90
+glm,uppercase_thinking,answer_correct,instruction_only,fixed_ban,Banning,0.8777777777777778,0.7708333333333334,0.9629629629629629,90,90
+glm,uppercase_thinking,answer_correct,user_icl,baseline,User ICL,0.9,0.7956782464846981,0.9841362126245844,90,90
+glm,uppercase_thinking,answer_correct,user_icl,fixed_ban,User ICL + banning,0.8555555555555555,0.7466666666666667,0.9444444444444443,90,90
+glm,prefix_sentences,answer_correct,instruction_only,baseline,Instruction,0.9111111111111111,0.8235294117647058,0.9753086419753086,90,90
+glm,prefix_sentences,answer_correct,instruction_only,fixed_ban,Banning,0.9111111111111111,0.8235294117647058,0.9753086419753086,90,90
+glm,prefix_sentences,answer_correct,user_icl,baseline,User ICL,0.9,0.8083270202020201,0.9733333333333333,90,90
+glm,prefix_sentences,answer_correct,user_icl,fixed_ban,User ICL + banning,0.8666666666666667,0.7733333333333334,0.9466666666666668,90,90
+glm,no_first_person,answer_correct,instruction_only,baseline,Instruction,0.9,0.8148148148148148,0.9696969696969697,90,90
+glm,no_first_person,answer_correct,instruction_only,fixed_ban,Banning,0.7333333333333333,0.6166666666666666,0.84375,90,90
+glm,no_first_person,answer_correct,user_icl,baseline,User ICL,0.9777777777777776,0.9430836236933797,1.0,90,90
+glm,no_first_person,answer_correct,user_icl,fixed_ban,User ICL + banning,0.8777777777777778,0.7849462365591398,0.9537116858237545,90,90
+glm,omit_word,answer_correct,instruction_only,baseline,Instruction,0.9222222222222222,0.84,0.9861111111111112,90,90
+glm,omit_word,answer_correct,instruction_only,fixed_ban,Banning,0.8,0.6756756756756757,0.911111111111111,90,90
+glm,omit_word,answer_correct,user_icl,baseline,User ICL,0.9555555555555555,0.8787878787878788,1.0,90,90
+glm,omit_word,answer_correct,user_icl,fixed_ban,User ICL + banning,0.9444444444444444,0.8636363636363636,1.0,90,90
+glm,average,answer_correct,instruction_only,baseline,Instruction,0.9206349206349207,0.8931078900638959,0.9460132325447547,630,630
+glm,average,answer_correct,instruction_only,fixed_ban,Banning,0.8825396825396826,0.8487774572926567,0.9145831423967434,630,630
+glm,average,answer_correct,user_icl,baseline,User ICL,0.9380952380952381,0.9102294080275461,0.9630419086173305,630,630
+glm,average,answer_correct,user_icl,fixed_ban,User ICL + banning,0.907936507936508,0.8778493039538546,0.9363851332282626,630,630
+olmo31,leetspeak,continuation_soft,instruction_only,baseline,Instruction,0.017957177011652704,0.004785466985604779,0.04316028774066845,90,90
+olmo31,leetspeak,continuation_soft,instruction_only,fixed_ban,Banning,0.05275075437546029,0.021444804694495438,0.09173356589669984,90,90
+olmo31,leetspeak,continuation_soft,user_icl,baseline,User ICL,0.08521484617507173,0.051877510763317855,0.1241059776789397,90,90
+olmo31,leetspeak,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.7465616552395706,0.7270918422580475,0.7629964190226373,90,90
+olmo31,spanish,continuation_soft,instruction_only,baseline,Instruction,0.0761111111111111,0.04443965517241379,0.10882730015082949,90,90
+olmo31,spanish,continuation_soft,instruction_only,fixed_ban,Banning,0.7711111111111111,0.6521288254755997,0.8781262400793649,90,90
+olmo31,spanish,continuation_soft,user_icl,baseline,User ICL,0.14166666666666666,0.09597341954022989,0.19167261904761898,90,90
+olmo31,spanish,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.43555555555555553,0.3361945812807881,0.535120701058201,90,90
+olmo31,chinese,continuation_soft,instruction_only,baseline,Instruction,0.0,0.0,0.0,90,90
+olmo31,chinese,continuation_soft,instruction_only,fixed_ban,Banning,0.6066666666666666,0.482663492063492,0.7222275641025642,90,90
+olmo31,chinese,continuation_soft,user_icl,baseline,User ICL,0.009444444444444445,0.0011111111111111111,0.01981981981981982,90,90
+olmo31,chinese,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.8683333333333335,0.8234841470258137,0.908135162601626,90,90
+olmo31,uppercase_thinking,continuation_soft,instruction_only,baseline,Instruction,0.04718640794278109,0.031182872582532165,0.08031877404754699,90,90
+olmo31,uppercase_thinking,continuation_soft,instruction_only,fixed_ban,Banning,0.5740821203657556,0.4420230503715706,0.6932873614932769,90,90
+olmo31,uppercase_thinking,continuation_soft,user_icl,baseline,User ICL,0.034611657994754054,0.0316818433144285,0.03779867731376885,90,90
+olmo31,uppercase_thinking,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.5419740766996877,0.3950743304637599,0.6849940291227682,90,90
+olmo31,prefix_sentences,continuation_soft,instruction_only,baseline,Instruction,0.0026455026455026445,0.0,0.008818342151675481,90,90
+olmo31,prefix_sentences,continuation_soft,instruction_only,fixed_ban,Banning,0.1412571204284229,0.05583250431841136,0.24037502180198597,90,89
+olmo31,prefix_sentences,continuation_soft,user_icl,baseline,User ICL,0.019100698321752357,0.007148975696228551,0.03424397152048193,90,90
+olmo31,prefix_sentences,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.29855297207916015,0.16462780248464434,0.4370572291819683,90,90
+olmo31,no_first_person,continuation_soft,instruction_only,baseline,Instruction,0.02222222222222222,0.0,0.05555555555555555,90,90
+olmo31,no_first_person,continuation_soft,instruction_only,fixed_ban,Banning,0.13333333333333333,0.05208333333333333,0.22523184949655525,90,90
+olmo31,no_first_person,continuation_soft,user_icl,baseline,User ICL,0.05555555555555555,0.0101010101010101,0.11827956989247311,90,90
+olmo31,no_first_person,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.14444444444444443,0.07575757575757575,0.2222222222222222,90,90
+olmo31,omit_word,continuation_soft,instruction_only,baseline,Instruction,0.05555555555555555,0.0,0.1264367816091954,90,90
+olmo31,omit_word,continuation_soft,instruction_only,fixed_ban,Banning,0.02222222222222222,0.0,0.05555555555555555,90,90
+olmo31,omit_word,continuation_soft,user_icl,baseline,User ICL,0.11111111111111112,0.030303030303030304,0.21297222222222206,90,90
+olmo31,omit_word,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.15555555555555553,0.06451612903225806,0.2608793576184879,90,90
+olmo31,average,continuation_soft,instruction_only,baseline,Instruction,0.03166828235554647,0.020434749423470205,0.044696002323376255,630,630
+olmo31,average,continuation_soft,instruction_only,fixed_ban,Banning,0.3287747612147102,0.29259557888288584,0.3631659554539231,630,629
+olmo31,average,continuation_soft,user_icl,baseline,User ICL,0.065243568609908,0.048551770227779345,0.08405393847761897,630,630
+olmo31,average,continuation_soft,user_icl,fixed_ban,User ICL + banning,0.45585394184390104,0.4190262553110058,0.4937010297840776,630,630
+olmo31,leetspeak,whole_soft,instruction_only,baseline,Instruction,0.017950277139370252,0.004782057065950455,0.04314632340254644,90,90
+olmo31,leetspeak,whole_soft,instruction_only,fixed_ban,Banning,0.05274564136032957,0.02143927068276608,0.09172461572438016,90,90
+olmo31,leetspeak,whole_soft,user_icl,baseline,User ICL,0.08521640379709412,0.05185030406587234,0.12408726656746848,90,90
+olmo31,leetspeak,whole_soft,user_icl,fixed_ban,User ICL + banning,0.7470487193573887,0.7275452695035359,0.7634763237150524,90,90
+olmo31,spanish,whole_soft,instruction_only,baseline,Instruction,0.06444444444444444,0.03333333333333333,0.09852994458653025,90,90
+olmo31,spanish,whole_soft,instruction_only,fixed_ban,Banning,0.7788888888888889,0.6583333333333333,0.8849462365591398,90,90
+olmo31,spanish,whole_soft,user_icl,baseline,User ICL,0.11666666666666667,0.07598039215686275,0.1619196428571426,90,90
+olmo31,spanish,whole_soft,user_icl,fixed_ban,User ICL + banning,0.43944444444444447,0.33518353174603177,0.5427083333333333,90,90
+olmo31,chinese,whole_soft,instruction_only,baseline,Instruction,0.0,0.0,0.0,90,90
+olmo31,chinese,whole_soft,instruction_only,fixed_ban,Banning,0.6388888888888888,0.5133282828282828,0.7583392857142857,90,90
+olmo31,chinese,whole_soft,user_icl,baseline,User ICL,0.005555555555555555,0.0,0.014367816091954021,90,90
+olmo31,chinese,whole_soft,user_icl,fixed_ban,User ICL + banning,0.9150000000000001,0.8712630616509927,0.9521743897787948,90,90
+olmo31,uppercase_thinking,whole_soft,instruction_only,baseline,Instruction,0.04761323578295086,0.03165954203843012,0.08064366417081452,90,90
+olmo31,uppercase_thinking,whole_soft,instruction_only,fixed_ban,Banning,0.5742641631566062,0.4423022080118621,0.6933504043523638,90,90
+olmo31,uppercase_thinking,whole_soft,user_icl,baseline,User ICL,0.0351002097961919,0.03220079386333611,0.038247884889242995,90,90
+olmo31,uppercase_thinking,whole_soft,user_icl,fixed_ban,User ICL + banning,0.5424066285078464,0.39557205222694763,0.6851672934313853,90,90
+olmo31,prefix_sentences,whole_soft,instruction_only,baseline,Instruction,0.0025252525252525246,0.0,0.008417508417508414,90,90
+olmo31,prefix_sentences,whole_soft,instruction_only,fixed_ban,Banning,0.15077037822363584,0.06011656814601995,0.2553952270595466,90,90
+olmo31,prefix_sentences,whole_soft,user_icl,baseline,User ICL,0.018651150172805307,0.007048572156911316,0.033388546942304,90,90
+olmo31,prefix_sentences,whole_soft,user_icl,fixed_ban,User ICL + banning,0.3016536981287238,0.16659019325276944,0.4412069885444673,90,90
+olmo31,no_first_person,whole_soft,instruction_only,baseline,Instruction,0.02222222222222222,0.0,0.05555555555555555,90,90
+olmo31,no_first_person,whole_soft,instruction_only,fixed_ban,Banning,0.13333333333333333,0.05208333333333333,0.22523184949655525,90,90
+olmo31,no_first_person,whole_soft,user_icl,baseline,User ICL,0.05555555555555555,0.0101010101010101,0.11827956989247311,90,90
+olmo31,no_first_person,whole_soft,user_icl,fixed_ban,User ICL + banning,0.14444444444444443,0.07575757575757575,0.2222222222222222,90,90
+olmo31,omit_word,whole_soft,instruction_only,baseline,Instruction,0.05555555555555555,0.0,0.1264367816091954,90,90
+olmo31,omit_word,whole_soft,instruction_only,fixed_ban,Banning,0.02222222222222222,0.0,0.05555555555555555,90,90
+olmo31,omit_word,whole_soft,user_icl,baseline,User ICL,0.11111111111111112,0.030303030303030304,0.21297222222222206,90,90
+olmo31,omit_word,whole_soft,user_icl,fixed_ban,User ICL + banning,0.15555555555555553,0.06451612903225806,0.2608793576184879,90,90
+olmo31,average,whole_soft,instruction_only,baseline,Instruction,0.030044426809970836,0.01892340441772648,0.04316830073198991,630,630
+olmo31,average,whole_soft,instruction_only,fixed_ban,Banning,0.3358733594391293,0.298959132143647,0.37052979891915916,630,630
+olmo31,average,whole_soft,user_icl,baseline,User ICL,0.061122378950711466,0.044933744853686744,0.07955867109477513,630,630
+olmo31,average,whole_soft,user_icl,fixed_ban,User ICL + banning,0.4636504986340576,0.4263969074962403,0.5015603521881209,630,630
+olmo31,leetspeak,answer_correct,instruction_only,baseline,Instruction,0.7888888888888889,0.6555555555555554,0.9090909090909091,90,90
+olmo31,leetspeak,answer_correct,instruction_only,fixed_ban,Banning,0.7777777777777779,0.6436781609195402,0.8999999999999999,90,90
+olmo31,leetspeak,answer_correct,user_icl,baseline,User ICL,0.8444444444444444,0.7395833333333333,0.9411764705882353,90,90
+olmo31,leetspeak,answer_correct,user_icl,fixed_ban,User ICL + banning,0.8,0.6785714285714286,0.9080459770114941,90,90
+olmo31,spanish,answer_correct,instruction_only,baseline,Instruction,0.9666666666666667,0.8888888888888888,1.0,90,90
+olmo31,spanish,answer_correct,instruction_only,fixed_ban,Banning,0.9333333333333332,0.8518518518518519,0.9898989898989898,90,90
+olmo31,spanish,answer_correct,user_icl,baseline,User ICL,0.9777777777777777,0.9259259259259259,1.0,90,90
+olmo31,spanish,answer_correct,user_icl,fixed_ban,User ICL + banning,0.9777777777777777,0.9259259259259259,1.0,90,90
+olmo31,chinese,answer_correct,instruction_only,baseline,Instruction,1.0,1.0,1.0,90,90
+olmo31,chinese,answer_correct,instruction_only,fixed_ban,Banning,1.0,1.0,1.0,90,90
+olmo31,chinese,answer_correct,user_icl,baseline,User ICL,0.9777777777777777,0.9444444444444443,1.0,90,90
+olmo31,chinese,answer_correct,user_icl,fixed_ban,User ICL + banning,0.9555555555555555,0.8958184523809523,1.0,90,90
+olmo31,uppercase_thinking,answer_correct,instruction_only,baseline,Instruction,0.9333333333333333,0.8405652173913044,1.0,90,90
+olmo31,uppercase_thinking,answer_correct,instruction_only,fixed_ban,Banning,0.9222222222222222,0.8148148148148148,1.0,90,90
+olmo31,uppercase_thinking,answer_correct,user_icl,baseline,User ICL,0.9555555555555555,0.8709677419354839,1.0,90,90
+olmo31,uppercase_thinking,answer_correct,user_icl,fixed_ban,User ICL + banning,0.9555555555555555,0.8974358974358974,1.0,90,90
+olmo31,prefix_sentences,answer_correct,instruction_only,baseline,Instruction,0.7333333333333333,0.5904761904761905,0.8645833333333333,90,90
+olmo31,prefix_sentences,answer_correct,instruction_only,fixed_ban,Banning,0.7333333333333333,0.5897435897435896,0.8636363636363636,90,90
+olmo31,prefix_sentences,answer_correct,user_icl,baseline,User ICL,0.8333333333333334,0.6956219806763285,0.9540229885057471,90,90
+olmo31,prefix_sentences,answer_correct,user_icl,fixed_ban,User ICL + banning,0.8,0.6551621510673233,0.9310344827586207,90,90
+olmo31,no_first_person,answer_correct,instruction_only,baseline,Instruction,0.9777777777777777,0.9444444444444443,1.0,90,90
+olmo31,no_first_person,answer_correct,instruction_only,fixed_ban,Banning,1.0,1.0,1.0,90,90
+olmo31,no_first_person,answer_correct,user_icl,baseline,User ICL,0.9888888888888888,0.9629629629629629,1.0,90,90
+olmo31,no_first_person,answer_correct,user_icl,fixed_ban,User ICL + banning,0.9888888888888888,0.9629365079365079,1.0,90,90
+olmo31,omit_word,answer_correct,instruction_only,baseline,Instruction,0.9222222222222222,0.8166522988505748,1.0,90,90
+olmo31,omit_word,answer_correct,instruction_only,fixed_ban,Banning,0.8999999999999999,0.7931034482758621,0.9848484848484848,90,90
+olmo31,omit_word,answer_correct,user_icl,baseline,User ICL,0.9333333333333333,0.8333333333333334,1.0,90,90
+olmo31,omit_word,answer_correct,user_icl,fixed_ban,User ICL + banning,0.9333333333333333,0.8333333333333334,1.0,90,90
+olmo31,average,answer_correct,instruction_only,baseline,Instruction,0.9031746031746033,0.868035660779044,0.9366273092791493,630,630
+olmo31,average,answer_correct,instruction_only,fixed_ban,Banning,0.895238095238095,0.8583205014686749,0.92992197865423,630,630
+olmo31,average,answer_correct,user_icl,baseline,User ICL,0.9301587301587302,0.8986054594103965,0.9600109407278424,630,630
+olmo31,average,answer_correct,user_icl,fixed_ban,User ICL + banning,0.915873015873016,0.8827632400176981,0.946902801289211,630,630

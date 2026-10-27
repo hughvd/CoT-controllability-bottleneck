@@ -1,0 +1,301 @@
+source_row,question,condition,sample,compliance_score_before,compliance_score_after,compliance_before,compliance_after
+1550,Where might a television used at night be?,prefill_only,0,0.0,0.0,0.0,0.0
+1553,Where might a television used at night be?,prefill_only,1,0.0,0.0,0.0,0.0
+1562,Where might a television used at night be?,prefill_only,3,0.0,0.0,0.0,0.0
+1564,Where might a television used at night be?,prefill_only,4,0.0,0.0,0.0,0.0
+1570,Where might a television used at night be?,prefill_only,2,0.0,0.0,0.0,0.0
+1571,Where might a television used at night be?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+1577,Where might a television used at night be?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+1579,Where might a television used at night be?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+1588,Where might a television used at night be?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+1589,Where might a television used at night be?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+1597,Where might a small dog run in packs?,prefill_only,0,0.0,0.0,0.0,0.0
+1599,Where might a small dog run in packs?,prefill_only,2,0.0,0.0,0.0,0.0
+1604,Where might a small dog run in packs?,prefill_only,4,0.0,0.0,0.0,0.0
+1608,Where might a small dog run in packs?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+1609,Where might a small dog run in packs?,prefill_only,3,0.0,0.0,0.0,0.0
+1613,Where might a small dog run in packs?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+1616,Where might a small dog run in packs?,prefill_only,1,0.0,0.0,0.0,0.0
+1623,Where might a small dog run in packs?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+1624,Where might a small dog run in packs?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+1631,"A cat can't talk, but a cat can what?",prefill_only,1,0.0,0.0,0.0,0.0
+1632,"A cat can't talk, but a cat can what?",prefill_only,0,0.0,0.0,0.0,0.0
+1635,Where might a small dog run in packs?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+1647,"A cat can't talk, but a cat can what?",prefill_only,3,0.0,0.0,0.0,0.0
+1650,"A cat can't talk, but a cat can what?",prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+1651,"A cat can't talk, but a cat can what?",prefill_only,2,0.0,0.0,0.0,0.0
+1659,"A cat can't talk, but a cat can what?",prefill_only,4,0.0,0.0,0.0,0.0
+1661,"A cat can't talk, but a cat can what?",prefill_plus_instruction,2,0.0,1.0,0.0,1.0
+1664,"A cat can't talk, but a cat can what?",prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+1668,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",prefill_only,0,0.0,0.0,0.0,0.0
+1673,"A cat can't talk, but a cat can what?",prefill_plus_instruction,3,0.0,1.0,0.0,1.0
+1675,"A cat can't talk, but a cat can what?",prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+1681,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",prefill_only,1,0.0,0.0,0.0,0.0
+1684,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",prefill_only,2,0.0,0.0,0.0,0.0
+1687,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",prefill_only,4,0.0,0.0,0.0,0.0
+1689,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",prefill_only,3,0.0,0.0,0.0,0.0
+1691,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+1694,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+1699,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+1706,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",prefill_plus_instruction,3,0.0,1.0,0.0,1.0
+1710,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+1712,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,prefill_only,1,0.0,0.0,0.0,0.0
+1713,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,prefill_only,0,0.0,0.0,0.0,0.0
+1716,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,prefill_only,2,0.0,0.0,0.0,0.0
+1718,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,prefill_only,3,0.0,0.0,0.0,0.0
+1720,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,prefill_only,4,0.0,0.0,0.0,0.0
+1733,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+1734,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,prefill_plus_instruction,1,0.0,1.0,0.0,1.0
+1738,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+1744,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+1751,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+1781,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+1794,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+1806,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+1809,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,prefill_only,0,0.0,0.0,0.0,0.0
+1810,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+1812,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,prefill_only,1,0.0,0.0,0.0,0.0
+1815,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,prefill_only,2,0.0,0.0,0.0,0.0
+1828,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+1830,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+1832,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+1833,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+1838,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,prefill_only,3,0.0,0.0,0.0,0.0
+1839,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,prefill_only,4,0.0,0.0,0.0,0.0
+1844,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,prefill_plus_instruction,3,0.0,1.0,0.0,1.0
+1847,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+1852,"If I am forgiving, what might people think I have?",prefill_only,2,0.0,0.0,0.0,0.0
+1856,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,prefill_only,4,0.0,0.0,0.0,0.0
+1857,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,prefill_only,3,0.0,0.0,0.0,0.0
+1858,"If I am forgiving, what might people think I have?",prefill_only,0,0.0,0.0,0.0,0.0
+1860,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,prefill_only,1,0.0,0.0,0.0,0.0
+1862,"If I am forgiving, what might people think I have?",prefill_only,1,0.0,0.0,0.0,0.0
+1865,"If I am forgiving, what might people think I have?",prefill_only,3,0.0,0.0,0.0,0.0
+1869,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,prefill_only,2,0.0,0.0,0.0,0.0
+1872,"If I am forgiving, what might people think I have?",prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+1875,"If I am forgiving, what might people think I have?",prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+1876,"If I am forgiving, what might people think I have?",prefill_only,4,0.0,0.0,0.0,0.0
+1877,"If I am forgiving, what might people think I have?",prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+1882,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,prefill_only,0,0.0,0.0,0.0,0.0
+1888,"If I am forgiving, what might people think I have?",prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+1890,"If I am forgiving, what might people think I have?",prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+1899,What are students trying to do?,prefill_only,0,0.0,0.0,0.0,0.0
+1902,What are students trying to do?,prefill_only,1,0.0,0.0,0.0,0.0
+1908,What are students trying to do?,prefill_only,2,0.0,0.0,0.0,0.0
+1913,What are students trying to do?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+1915,What are students trying to do?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+1916,What are students trying to do?,prefill_only,4,0.0,0.0,0.0,0.0
+1917,What are students trying to do?,prefill_only,3,0.0,0.0,0.0,0.0
+1923,What are students trying to do?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+1925,What are students trying to do?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+1927,What are students trying to do?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+1931,Where in the U.S. do many ships from the pacific ocean unload their wares?,prefill_only,0,0.0,0.0,0.0,0.0
+1937,Where in the U.S. do many ships from the pacific ocean unload their wares?,prefill_only,2,0.0,0.0,0.0,0.0
+1947,Where in the U.S. do many ships from the pacific ocean unload their wares?,prefill_only,3,0.0,0.0,0.0,0.0
+1949,Where in the U.S. do many ships from the pacific ocean unload their wares?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+1959,Where in the U.S. do many ships from the pacific ocean unload their wares?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+1960,Where in the U.S. do many ships from the pacific ocean unload their wares?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+1963,Where in the U.S. do many ships from the pacific ocean unload their wares?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+1964,Where in the U.S. do many ships from the pacific ocean unload their wares?,prefill_only,4,0.0,0.0,0.0,0.0
+1966,Where in the U.S. do many ships from the pacific ocean unload their wares?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+1979,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",prefill_only,0,0.0,0.0,0.0,0.0
+1987,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",prefill_only,2,0.0,0.0,0.0,0.0
+1990,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+1991,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",prefill_only,3,0.0,0.0,0.0,0.0
+1992,Where in the U.S. do many ships from the pacific ocean unload their wares?,prefill_only,1,0.0,0.0,0.0,0.0
+1993,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+1995,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",prefill_only,4,0.0,0.0,0.0,0.0
+1999,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",prefill_only,1,0.0,0.0,0.0,0.0
+2004,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2010,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",prefill_only,2,0.0,0.0,0.0,0.0
+2013,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2014,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+2021,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",prefill_only,0,0.0,0.0,0.0,0.0
+2024,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",prefill_only,3,0.0,0.0,0.0,0.0
+2026,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",prefill_only,1,0.0,0.0,0.0,0.0
+2033,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2036,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",prefill_only,4,0.0,0.0,0.0,0.0
+2040,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+2044,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2046,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2049,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+2062,What does a police officer in their sixities?,prefill_only,0,0.0,0.0,0.0,0.0
+2071,What does a police officer in their sixities?,prefill_only,2,0.0,0.0,0.0,0.0
+2076,What does a police officer in their sixities?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2081,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",prefill_only,0,0.0,0.0,0.0,0.0
+2082,What does a police officer in their sixities?,prefill_only,3,0.0,0.0,0.0,0.0
+2087,What does a police officer in their sixities?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+2089,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",prefill_only,1,0.0,0.0,0.0,0.0
+2091,What does a police officer in their sixities?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2093,What does a police officer in their sixities?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2100,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",prefill_only,2,0.0,0.0,0.0,0.0
+2102,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",prefill_only,3,0.0,0.0,0.0,0.0
+2105,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",prefill_only,4,0.0,0.0,0.0,0.0
+2107,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2108,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+2109,What does a police officer in their sixities?,prefill_only,4,0.0,0.0,0.0,0.0
+2110,What does a police officer in their sixities?,prefill_only,1,0.0,0.0,0.0,0.0
+2111,What does a police officer in their sixities?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+2117,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2122,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2127,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+2133,In a company a chief oversees what people?,prefill_only,0,0.0,0.0,0.0,0.0
+2136,In a company a chief oversees what people?,prefill_only,2,0.0,0.0,0.0,0.0
+2139,In a company a chief oversees what people?,prefill_only,1,0.0,0.0,0.0,0.0
+2140,In a company a chief oversees what people?,prefill_only,3,0.0,0.0,0.0,0.0
+2148,In a company a chief oversees what people?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2149,In a company a chief oversees what people?,prefill_only,4,0.0,0.0,0.0,0.0
+2156,In a company a chief oversees what people?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+2160,In a company a chief oversees what people?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2162,In a company a chief oversees what people?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+2176,In a company a chief oversees what people?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2180,Where could you find a laundry room that is only used by staff?,prefill_only,0,0.0,0.0,0.0,0.0
+2184,Where could you find a laundry room that is only used by staff?,prefill_only,1,0.0,0.0,0.0,0.0
+2187,Where could you find a laundry room that is only used by staff?,prefill_only,2,0.0,0.0,0.0,0.0
+2188,Where could you find a laundry room that is only used by staff?,prefill_only,3,0.0,0.0,0.0,0.0
+2190,Where could you find a laundry room that is only used by staff?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2197,Where could you find a laundry room that is only used by staff?,prefill_only,4,0.0,0.0,0.0,0.0
+2204,Where could you find a laundry room that is only used by staff?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2206,Where could you find a laundry room that is only used by staff?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+2217,Where could you find a laundry room that is only used by staff?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2222,Where could you find a laundry room that is only used by staff?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+2231,"She needs to visit a bookshop after buying the latest fashion, where should she look?",prefill_only,1,0.0,0.0,0.0,0.0
+2235,"She needs to visit a bookshop after buying the latest fashion, where should she look?",prefill_only,0,0.0,0.0,0.0,0.0
+2239,"She needs to visit a bookshop after buying the latest fashion, where should she look?",prefill_only,3,0.0,0.0,0.0,0.0
+2244,"She needs to visit a bookshop after buying the latest fashion, where should she look?",prefill_only,4,0.0,0.0,0.0,0.0
+2245,"She needs to visit a bookshop after buying the latest fashion, where should she look?",prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2257,"She needs to visit a bookshop after buying the latest fashion, where should she look?",prefill_only,2,0.0,0.0,0.0,0.0
+2261,"She needs to visit a bookshop after buying the latest fashion, where should she look?",prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2262,"She needs to visit a bookshop after buying the latest fashion, where should she look?",prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+2263,"She needs to visit a bookshop after buying the latest fashion, where should she look?",prefill_plus_instruction,3,0.0,1.0,0.0,1.0
+2269,"She needs to visit a bookshop after buying the latest fashion, where should she look?",prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+2275,Why do scientists perform multiple trials of the same experiment?,prefill_only,0,0.0,0.0,0.0,0.0
+2285,Why do scientists perform multiple trials of the same experiment?,prefill_only,1,0.0,0.0,0.0,0.0
+2288,Why do scientists perform multiple trials of the same experiment?,prefill_only,2,0.0,0.0,0.0,0.0
+2290,Why do scientists perform multiple trials of the same experiment?,prefill_only,3,0.0,0.0,0.0,0.0
+2299,Why do scientists perform multiple trials of the same experiment?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2300,Why do scientists perform multiple trials of the same experiment?,prefill_only,4,0.0,0.0,0.0,0.0
+2301,Why do scientists perform multiple trials of the same experiment?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+2313,Why do scientists perform multiple trials of the same experiment?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2318,Why do scientists perform multiple trials of the same experiment?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+2320,Why do scientists perform multiple trials of the same experiment?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2335, What are the rabbinical commentaries produced after the Mishnah called?,prefill_only,1,0.0,0.0,0.0,0.0
+2337, What are the rabbinical commentaries produced after the Mishnah called?,prefill_only,0,0.0,0.0,0.0,0.0
+2356, What are the rabbinical commentaries produced after the Mishnah called?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2357, What are the rabbinical commentaries produced after the Mishnah called?,prefill_only,4,0.0,0.0,0.0,0.0
+2363, What are the rabbinical commentaries produced after the Mishnah called?,prefill_only,3,0.0,0.0,0.0,0.0
+2368,Where above your kitchen sink could you store canned food?,prefill_only,0,0.0,0.0,0.0,0.0
+2369, What are the rabbinical commentaries produced after the Mishnah called?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+2371, What are the rabbinical commentaries produced after the Mishnah called?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2372, What are the rabbinical commentaries produced after the Mishnah called?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2373, What are the rabbinical commentaries produced after the Mishnah called?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+2375,Where above your kitchen sink could you store canned food?,prefill_only,1,0.0,0.0,0.0,0.0
+2378, What are the rabbinical commentaries produced after the Mishnah called?,prefill_only,2,0.0,0.0,0.0,0.0
+2380,Where above your kitchen sink could you store canned food?,prefill_only,2,0.0,0.0,0.0,0.0
+2386,Where above your kitchen sink could you store canned food?,prefill_only,3,0.0,0.0,0.0,0.0
+2387,Where above your kitchen sink could you store canned food?,prefill_only,4,0.0,0.0,0.0,0.0
+2397,Where above your kitchen sink could you store canned food?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2400,Where above your kitchen sink could you store canned food?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+2407,Where above your kitchen sink could you store canned food?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2412,Where above your kitchen sink could you store canned food?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2418,Where above your kitchen sink could you store canned food?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+2432,What proof is required to purchase beer?,prefill_only,0,0.0,0.0,0.0,0.0
+2435,What proof is required to purchase beer?,prefill_only,2,0.0,0.0,0.0,0.0
+2441,What proof is required to purchase beer?,prefill_only,4,0.0,0.0,0.0,0.0
+2449,What proof is required to purchase beer?,prefill_only,3,0.0,0.0,0.0,0.0
+2450,What proof is required to purchase beer?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2454,What proof is required to purchase beer?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2458,What proof is required to purchase beer?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+2461,What proof is required to purchase beer?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2463,What proof is required to purchase beer?,prefill_only,1,0.0,0.0,0.0,0.0
+2466,What proof is required to purchase beer?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+2471,What would you see if you are looking at people that are agreeing with each other?,prefill_only,1,0.0,0.0,0.0,0.0
+2474,What would you see if you are looking at people that are agreeing with each other?,prefill_only,0,0.0,0.0,0.0,0.0
+2487,What would you see if you are looking at people that are agreeing with each other?,prefill_only,2,0.0,0.0,0.0,0.0
+2488,What would you see if you are looking at people that are agreeing with each other?,prefill_only,3,0.0,0.0,0.0,0.0
+2497,What would you see if you are looking at people that are agreeing with each other?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2507,What would you see if you are looking at people that are agreeing with each other?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+2511,What would you see if you are looking at people that are agreeing with each other?,prefill_only,4,0.0,0.0,0.0,0.0
+2512,What would you see if you are looking at people that are agreeing with each other?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2517,What would you see if you are looking at people that are agreeing with each other?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2519,What would you see if you are looking at people that are agreeing with each other?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+2523,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",prefill_only,0,0.0,0.0,0.0,0.0
+2530,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",prefill_only,2,0.0,0.0,0.0,0.0
+2532,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",prefill_only,3,0.0,0.0,0.0,0.0
+2533,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",prefill_only,1,0.0,0.0,0.0,0.0
+2536,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",prefill_only,4,0.0,0.0,0.0,0.0
+2539,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2541,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+2545,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2547,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2548,Which statement is true about the particles of a liquid compared to the particles of a gas?,prefill_only,1,0.0,0.0,0.0,0.0
+2549,Which statement is true about the particles of a liquid compared to the particles of a gas?,prefill_only,3,0.0,0.0,0.0,0.0
+2550,Which statement is true about the particles of a liquid compared to the particles of a gas?,prefill_only,2,0.0,0.0,0.0,0.0
+2551,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+2553,Which statement is true about the particles of a liquid compared to the particles of a gas?,prefill_only,0,0.0,0.0,0.0,0.0
+2555,Which statement is true about the particles of a liquid compared to the particles of a gas?,prefill_only,4,0.0,0.0,0.0,0.0
+2556,Which statement is true about the particles of a liquid compared to the particles of a gas?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2557,Which statement is true about the particles of a liquid compared to the particles of a gas?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+2559,Which statement is true about the particles of a liquid compared to the particles of a gas?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2560,Which statement is true about the particles of a liquid compared to the particles of a gas?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+2565,"What would you do if you want to eat dinner, but do not have any raw ingredients?",prefill_only,2,0.0,1.0,0.0,1.0
+2568,"What would you do if you want to eat dinner, but do not have any raw ingredients?",prefill_only,1,0.0,1.0,0.0,1.0
+2571,"What would you do if you want to eat dinner, but do not have any raw ingredients?",prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2572,"What would you do if you want to eat dinner, but do not have any raw ingredients?",prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+2573,Which statement is true about the particles of a liquid compared to the particles of a gas?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2574,"What would you do if you want to eat dinner, but do not have any raw ingredients?",prefill_only,0,0.0,0.0,0.0,0.0
+2575,"What would you do if you want to eat dinner, but do not have any raw ingredients?",prefill_plus_instruction,2,0.0,1.0,0.0,1.0
+2577,"What would you do if you want to eat dinner, but do not have any raw ingredients?",prefill_only,4,0.0,0.0,0.0,0.0
+2579,"What would you do if you want to eat dinner, but do not have any raw ingredients?",prefill_only,3,0.0,1.0,0.0,1.0
+2580,"What would you do if you want to eat dinner, but do not have any raw ingredients?",prefill_plus_instruction,4,0.0,1.0,0.0,1.0
+2582,"What would you do if you want to eat dinner, but do not have any raw ingredients?",prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2587,Which graph is best to present data collected on yearly water usage in the United States?,prefill_only,2,0.0,0.0,0.0,0.0
+2591,Which graph is best to present data collected on yearly water usage in the United States?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2592,Which graph is best to present data collected on yearly water usage in the United States?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+2594,Which graph is best to present data collected on yearly water usage in the United States?,prefill_only,1,0.0,0.0,0.0,0.0
+2595,Which graph is best to present data collected on yearly water usage in the United States?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2599,Which graph is best to present data collected on yearly water usage in the United States?,prefill_only,3,0.0,0.0,0.0,0.0
+2600,Which graph is best to present data collected on yearly water usage in the United States?,prefill_only,0,0.0,0.0,0.0,0.0
+2601,Which graph is best to present data collected on yearly water usage in the United States?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+2604,what might someone feel after hurting someone else?,prefill_only,0,0.0,0.0,0.0,0.0
+2605,what might someone feel after hurting someone else?,prefill_only,2,0.0,0.0,0.0,0.0
+2608,what might someone feel after hurting someone else?,prefill_only,1,0.0,0.0,0.0,0.0
+2609,Which graph is best to present data collected on yearly water usage in the United States?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2611,what might someone feel after hurting someone else?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2612,what might someone feel after hurting someone else?,prefill_only,4,0.0,0.0,0.0,0.0
+2615,what might someone feel after hurting someone else?,prefill_plus_instruction,1,0.0,1.0,0.0,1.0
+2616,Which graph is best to present data collected on yearly water usage in the United States?,prefill_only,4,0.0,0.0,0.0,0.0
+2617,what might someone feel after hurting someone else?,prefill_only,3,0.0,0.0,0.0,0.0
+2618,what might someone feel after hurting someone else?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2620,what might someone feel after hurting someone else?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+2621,what might someone feel after hurting someone else?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2622,Sam and June bought loose corn because it was less expensive than what other variety?,prefill_only,1,0.0,0.0,0.0,0.0
+2634,Sam and June bought loose corn because it was less expensive than what other variety?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+2638,Sam and June bought loose corn because it was less expensive than what other variety?,prefill_only,0,0.0,0.0,0.0,0.0
+2639,Sam and June bought loose corn because it was less expensive than what other variety?,prefill_only,3,0.0,0.0,0.0,0.0
+2642,Sam and June bought loose corn because it was less expensive than what other variety?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2645,Sam and June bought loose corn because it was less expensive than what other variety?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2647,HOw do you carry potatos home?,prefill_only,1,0.0,1.0,0.0,1.0
+2651,Sam and June bought loose corn because it was less expensive than what other variety?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+2656,HOw do you carry potatos home?,prefill_only,2,0.0,0.0,0.0,0.0
+2657,HOw do you carry potatos home?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2659,HOw do you carry potatos home?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+2660,HOw do you carry potatos home?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2662,Sam and June bought loose corn because it was less expensive than what other variety?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2664,HOw do you carry potatos home?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2665,HOw do you carry potatos home?,prefill_only,0,0.0,0.0,0.0,0.0
+2666,HOw do you carry potatos home?,prefill_only,3,0.0,1.0,0.0,1.0
+2667,If you stretch out your socks they will then have what kind of fit?,prefill_only,1,0.0,0.0,0.0,0.0
+2668,If you stretch out your socks they will then have what kind of fit?,prefill_only,4,0.0,0.0,0.0,0.0
+2669,If you stretch out your socks they will then have what kind of fit?,prefill_only,3,0.0,0.0,0.0,0.0
+2670,If you stretch out your socks they will then have what kind of fit?,prefill_only,0,0.0,0.0,0.0,0.0
+2671,If you stretch out your socks they will then have what kind of fit?,prefill_only,2,0.0,0.0,0.0,0.0
+2672,Sam and June bought loose corn because it was less expensive than what other variety?,prefill_only,2,0.0,0.0,0.0,0.0
+2674,If you stretch out your socks they will then have what kind of fit?,prefill_plus_instruction,1,0.0,0.0,0.0,0.0
+2675,HOw do you carry potatos home?,prefill_only,4,0.0,0.0,0.0,0.0
+2676,If you stretch out your socks they will then have what kind of fit?,prefill_plus_instruction,0,0.0,0.0,0.0,0.0
+2677,HOw do you carry potatos home?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0
+2678,If you stretch out your socks they will then have what kind of fit?,prefill_plus_instruction,3,0.0,0.0,0.0,0.0
+2679,Sam and June bought loose corn because it was less expensive than what other variety?,prefill_only,4,0.0,0.0,0.0,0.0
+2680,If you stretch out your socks they will then have what kind of fit?,prefill_plus_instruction,2,0.0,0.0,0.0,0.0
+2681,If you stretch out your socks they will then have what kind of fit?,prefill_plus_instruction,4,0.0,0.0,0.0,0.0

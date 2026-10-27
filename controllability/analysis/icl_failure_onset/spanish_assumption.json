@@ -1,0 +1,12 @@
+{
+  "random_seed": 20260925,
+  "sampling": "8 failed Spanish responses per model, uniform within model",
+  "sample_size": 32,
+  "english_openings_observed": 32,
+  "assumption": "Treat all 513 failed Spanish responses as opening failures; sample supports English openings but does not establish token-local failure for every response.",
+  "known_opening_failures": 2078,
+  "assumed_spanish_opening_failures": 513,
+  "total_saved_failures": 4090,
+  "conditional_opening_fraction": 0.6334963325183375,
+  "grading": "Current grade_no_first_person rescoring; source cache preserved"
+}

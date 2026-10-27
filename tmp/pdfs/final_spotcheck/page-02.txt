@@ -1,0 +1,95 @@
+054
+055
+056
+057
+058
+059
+060
+061
+062
+063
+064
+065
+066
+067
+068
+069
+070
+071
+072
+073
+074
+075
+076
+077
+078
+079
+080
+081
+082
+083
+084
+085
+086
+087
+088
+089
+090
+091
+092
+093
+094
+095
+096
+097
+098
+099
+100
+101
+102
+103
+104
+105
+106
+107
+Under review as a conference paper at ICLR 2027
+Figure 1:Low controllability is related to low entropy in the first few tokens of reasoning and
+can be partially recovered by intervening on this bottleneck.
+In this work, we aim to understand the mechanism underlying reduced controllability in LLMs as
+well as its relation to monitorability. To this end, we adopt controllability tasks from Kwon et al.
+(2026) and Chen et al. (2026), and distinguish between suppressive controllability (avoiding or omit-
+ting information), additive controllability (adding information), and stylistic controllability (trans-
+forming information) following Chen et al. (2026). For monitorability, we use the evaluations from
+Guan et al. (2025), targeting three different types of monitorability. We evaluate models from three
+different families (Team, 2025; Olmo et al., 2025; GLM-5-Team et al., 2026) ranging from 14B to
+753B parameters on their ability to follow control instructions while answering questions from five
+different benchmarks. To examine whether the resulting distinctions extend across models, we ad-
+ditionally measure associations among control tasks and between controllability and monitorability
+in a separate twelve-model panel. We report three main findings:
+•Low controllability is partly an initiation problem: models assign most of the proba-
+bility mass in the first few tokens after the opening think tag to highly templated opening
+phrases (see Figure 1), leading to an entropy collapse. When intervening on these tokens,
+either by prefilling tokens compliant with the control instruction, or by banning frequent
+the model’s most frequent opener, controllability can partly but significantly recover.
+•Additive and suppressive controllability likely underlie distinct mechanisms: token in-
+terventions mainly increase additive and not suppressive controllability. Moreover, these
+control types behave as different capabilities: correlative analysis shows that a model per-
+forming well on additive or style transform types tend to do well on other additive and style
+transform types but not suppression types, and similarly performance on suppressive types
+is only predictive of performance on other suppressive types.
+•Additive and suppressive controllability show different relationships with monitora-
+bility: while suppressive controllability can sometimes correlate negatively with moni-
+torability, additive controllability mainly correlates positively with monitorability. This
+indicates that aggregate measures of controllability may obscure the patterns required for
+tracking monitorability.
+Our findings refine the role of CoT controllability in monitorability. Current evaluations of addi-
+tive and stylistic controllability may be weak proxies for the monitorability-relevant control they
+are intended to measure. These forms of controllability can be partially recovered through simple
+interventions on the first few tokens, and they tend to be associated with increased monitorabil-
+ity. This suggests these tasks might not capture a model’s ability to introduce misleading content
+that evades oversight. Second, suppressive controllability appears to be a more plausible proxy for
+monitorability-relevant control, as it is the only form of controllability that shows negative associa-
+tions with monitorability in some settings. Besides suggesting that suppressive controllability may
+depend on distinct mechanisms, our findings also indicate suppressive evaluations should not be
+collapsed into aggregate controllability measures. We therefore recommend that future work report
+2

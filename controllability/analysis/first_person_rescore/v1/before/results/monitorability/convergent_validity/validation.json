@@ -1,0 +1,6 @@
+{
+  "pair_correlations_checked_against_scipy": 180,
+  "paper_png_copies_identical": true,
+  "source_hashes_file": "data.json",
+  "checks": "Symmetry and diagonal assertions in builder; browser selectors exercised; no browser errors."
+}

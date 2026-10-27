@@ -1,0 +1,116 @@
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+Under review as a conference paper at ICLR 2027
+Information Addition:prefixing each sentence with a designated marker, suffixing each sentence
+with a designated marker, and numbering each sentence.
+Stylistic Modification:writing in spanish, writing in leetspeak, writing in uppercase.
+Our elicitation experiments use Qwen3-14B, Qwen3-32B, OLMo-3.1-32B-Think, and GLM-5.2,
+with experiment-specific restrictions described below. The cross-model analyses (Figures 7 and
+8) instead use a twelve-model panel, comparing instruction-only controllability with monitorability
+scores. We measure compliance using a control-specific score between zero and one and record 95%
+bootstrap confidence intervals. Detailed descriptions of data mixtures, control task definitions and
+scoring, and prompt examples can be found in Appendix A.
+3.2 LOWCOT CONTROLLABILITY IS ANINITIATIONPROBLEM
+Figure 2:ICL examples have a meaningful
+but limited effect on controllability.
+ICL experiments.We evaluate two types of
+in-context learning (ICL) examples: ‘user-ICL’
+where we place the compliant example in the user
+prompt and ‘asst-ICL’ where we place a complete
+user + assistant response turn in context (where
+the compliant trace is prepended to the assistant
+response). We run these experiments on Qwen-3-
+14b, Qwen-3-32b, Olmo-3.1-32b, and GLM-5.2
+and evaluate controllability on our main 8 control
+tasks.
+Figure 2 shows that ICL examples have a mean-
+ingful but limited effect on increasing controlla-
+bility. We see that GLM-5.2 is already quite con-
+trollable, and under ‘asst-ICL’, base control com-
+pliance rises from 50.0% to 64.4%. Qwen3-(14 and 32b) and Olmo-3.1-32b remain relatively un-
+controllable even with ICL examples (though Qwen-3-32b sees a sizable increase with user-ICL).
+Figure 9 shows per-control-type performance. Suppression tasks generally benefit from ICL, al-
+though gains depend on the model and ICL type. Addition control types see more inconsistent
+benefits: ‘User-ICL’ significantly increases ‘Sentence endings‘ compliance for both Qwen3-(14b
+and 32b) and moderately for GLM-5.2. All style control types remain close to 0 for Qwen3-(14b
+and 32b) and Olmo3.1-32b, and see meaningful increases for GLM-5.2. Interestingly, we find that
+for all prompt strategies, over 63% of responses with scores below 0.5 fail at the first token.
+Figure 3:Control instructions promote com-
+pliant alternatives despite opening failures.
+Geometric-mean rank of the highest-probability
+compliant token with and without the control in-
+struction.
+Control instructions increase likelihood of
+compliant tokens even during failure.Even
+when models fail to follow control instructions,
+those instructions may still affect their predicted
+distributions. We investigate this possibility for
+four tasks with token-level compliance rules (up-
+percase, leetspeak, sentence prefixes, and num-
+bered sentences) where 97.9–98.9% of failed re-
+sponses across the three prompting conditions
+from above violate the constraint in their first
+non-whitespace token. For Qwen3-32B and
+OLMo-3.1-32B-Think, we locate the first viola-
+tion in each saved response and rescore that pre-
+diction with and without the control instruction,
+holding the preceding generated tokens fixed. We
+measure both the rank of the highest-probability
+locally compliant token and the total probability
+assigned to locally compliant tokens. 1
+Across all four tasks, every evaluated response
+first violates its local constraint at the opening
+1We exclude GLM-5.2 because its API does not return reasoning token likelihoods.
+4

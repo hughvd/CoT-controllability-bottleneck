@@ -1,0 +1,93 @@
+702
+703
+704
+705
+706
+707
+708
+709
+710
+711
+712
+713
+714
+715
+716
+717
+718
+719
+720
+721
+722
+723
+724
+725
+726
+727
+728
+729
+730
+731
+732
+733
+734
+735
+736
+737
+738
+739
+740
+741
+742
+743
+744
+745
+746
+747
+748
+749
+750
+751
+752
+753
+754
+755
+Under review as a conference paper at ICLR 2027
+Experiment CSQA ARC-C GPQA MMLU-Pro HLE Total
+ICL 149 75 6 8 2 240
+Token prefilling 149 75 6 8 2 240
+Opening concentration/entropy 76 37 2 3 2 120
+First-token banning 149 75 6 8 2 240
+Token-rank analysis 0 0 42 25 49 116
+12-model correlations 149 75 6 8 2 240
+Table 1: Question mixtures for the reported controllability experiments. ICL, prefilling, banning,
+and correlations use the eight main control tasks; opening concentration/entropy and rank analysis
+use their respective four-task subsets.
+A CONTROLLABILITYEXPERIMENTDETAILS
+A.1 QUESTIONS AND EXPERIMENTAL COVERAGE
+We draw multiple-choice questions from CommonsenseQA (CSQA), ARC-Challenge (ARC-C),
+GPQA, MMLU-Pro, and Humanity’s Last Exam (HLE). Table 1 reports the question mixtures ac-
+tually used in the reported analyses. Counts refer to distinct question–control pairs: a question
+evaluated under two controls contributes twice, while repeated samples, conditions, and instruction
+phrasings do not increase the count.
+The eight-control suites share 240 question–control pairs covering 178 distinct questions. Sentence
+numbering and sentence endings reuse the 30 sentence-prefix questions; sentence endings also reuse
+their marker assignments. The opening concentration/entropy analysis contains 119 distinct ques-
+tions, and the four-control rank analysis contains 108. Question–control pairs are shared across
+models within each analysis.
+Elicitation questions are selected from a pool with existing reasoning traces and suitable com-
+pliant examples. Sampling is not stratified by dataset, and dataset proportions vary across con-
+trol tasks. The rank analysis instead reuses saved responses to prompts sampled from a separate
+GPQA/HLE/MMLU-Pro pool. Thus, question mixtures are matched within experiments but are not
+uniform across the paper.
+A.2 CONTROL TASKS AND SCORING
+Our main elicitation and correlation analyses use eight controls across information addition, in-
+formation suppression, and stylistic modification. Table 2 summarizes their response-level scores.
+Compliance is evaluated independently of final-answer correctness.
+Sentence boundaries are punctuation marks (.!?) followed by whitespace. Prefix matching is case-
+sensitive. Language grading uses Gemini-2.5-Flash-Lite, instructed to assess linguistic compliance
+rather than correctness and to treat formulas, code, and proper nouns as language-neutral. First-
+person grading exempts uppercase “US” and dotted abbreviations and does not prohibit “let’s.”
+Markers (for Sentence prefixes and Sentence endings):BEEP,BOOP,CRUNCH,DING,GLOOP,
+NOTE,PING,SNAP,WHIZ,YAP,ZORP.
+14

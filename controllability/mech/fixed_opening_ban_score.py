@@ -26,10 +26,13 @@ async def score(name):
  assert len({r['request_id'] for r in raws})==len(raws)
  api.s.ROOT=f.ROOT/'grading';client=api.PaidClient(cap=8.,retries=8);client.sem=asyncio.Semaphore(16)
  scoredb=sqlite3.connect(root/'scores.sqlite');scoredb.execute('create table if not exists scores (id text primary key,payload text)');scoredb.commit()
+ import control_expansion as expansion
+ suffix_grader_sha256=f.base.file_hash(expansion.__file__)
  async def one(raw):
   rid=raw['request_id']
-  if scoredb.execute('select 1 from scores where id=?',(rid,)).fetchone():return
   r=requests[rid];c=cells[r['cell_id']]
+  cached=scoredb.execute('select payload from scores where id=?',(rid,)).fetchone()
+  if cached and (c['behavior']!='suffix_sentences' or json.loads(cached[0]).get('suffix_grader_sha256')==suffix_grader_sha256):return
   full,answer=split_reasoning(raw['raw_text']);answer=raw.get('answer_text') or answer
   pre=raw['first_token_text'];stable=split_reasoning(pre)[0].rstrip('\ufffd')
   assert full.startswith(stable),(rid,repr(pre),repr(full[:40]))
@@ -50,11 +53,16 @@ async def score(name):
      ch=resp['choices'][0];value,_,repair=parse_judgment(lg,ch['message'].get('content') or '',ch.get('finish_reason'))
      if value is not None:break
     assert value is not None and 0<=value<=1
+   elif c['behavior'] in ['numbered_sentences','suffix_sentences']:
+    from control_expansion import score_text
+    value,units=score_text(c['behavior'],seed,text,c.get('marker'))
+    row[label+'_eligible_units']=units
    else:
     value,units=suite.deterministic_score(c,seed,text)
     row[label+'_eligible_units']=units
    row[label+'_soft']=value
-  with scoredb:scoredb.execute('insert into scores values (?,?)',(rid,json.dumps(row,ensure_ascii=False)))
+  if c['behavior']=='suffix_sentences':row['suffix_grader_sha256']=suffix_grader_sha256
+  with scoredb:scoredb.execute('insert or replace into scores values (?,?)',(rid,json.dumps(row,ensure_ascii=False)))
  queue=iter(raws);errors=[]
  async def worker():
   while not errors:

@@ -11,7 +11,9 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from monitorability.control_type_viewer import ROOT, correlation
 from controllability.analysis.paper_style import apply_style, export_figure, BEHAVIOR_LABELS
-from controllability.control_groups import CONTROLS, GROUPS, LABELS
+from controllability.control_groups import GROUPS, LABELS
+
+CONTROLS = sum((GROUPS[g] for g in ['Addition', 'Style', 'Suppression']), [])
 
 OUT = ROOT / 'results/monitorability/convergent_validity'
 SOURCE = OUT / 'data.json'
@@ -26,7 +28,7 @@ EVALUATIONS = [
 ]
 
 
-def draw_heatmap(values, row_labels, name, boundaries):
+def draw_heatmap(values, row_labels, name, boundaries, note=''):
     apply_style()
     fig, ax = plt.subplots(figsize=(9, 6.2 if len(row_labels) == 6 else 6.8))
     fig.subplots_adjust(left=.23, right=.86, top=.88, bottom=.24)
@@ -42,17 +44,20 @@ def draw_heatmap(values, row_labels, name, boundaries):
                     color='white' if abs(value) >= .60 else '#202020')
     for boundary in boundaries:
         ax.axhline(boundary, color='#202020', linewidth=1.0)
-    for boundary in [2.5,4.5]:ax.axvline(boundary, color='#202020', linewidth=1.0)
-    for label, center in [('Addition', 1), ('Suppression', 3.5), ('Style', 6)]:
+    for boundary in [2.5,5.5]:ax.axvline(boundary, color='#202020', linewidth=1.0)
+    for label, center in [('Addition', 1), ('Style', 4), ('Suppression', 6.5)]:
         ax.text(center, 1.045, label, transform=ax.get_xaxis_transform(),
                 ha='center', va='bottom', fontsize=14)
     cax = fig.add_axes([.885, .24, .018, .64])
     fig.colorbar(im, cax=cax, label='Spearman correlation', ticks=[-1, -.5, 0, .5, 1])
+    if note:fig.text(.23,-.055,note,fontsize=9,ha='left',va='top')
     export_figure(fig, OUT, name)
 
 
 def main():
     data = json.loads(SOURCE.read_text())
+    from monitorability.gpqa_figure_snapshot import snapshot_note
+    note=snapshot_note(data)
     rows = []
     for ev, label in EVALUATIONS:
         for control in CONTROLS:
@@ -71,20 +76,20 @@ def main():
         'models': [m['model'] for m in data['models']],
         'controls': CONTROLS, 'evaluations': EVALUATIONS,
         'pair_counts': sorted(frame.n.unique().tolist()),
-        'source_run_hashes': data['sources'],
+        'source_run_hashes': data['sources'], 'gpqa_snapshot': data.get('gpqa_snapshot'),
     }, indent=2))
     (OUT / f'{NAME}_caption.md').write_text(
         'Spearman correlations across 12 models between mean soft controllability '
         '(K=0, with instruction) and each monitorability evaluation. '
         'Intervention and outcome evaluations use g-mean; process uses TPR. '
         'All evaluations use CoT-only monitoring. Columns group three addition, '
-        'two suppression, and three style controls. '
+        'three style, and two suppression controls. '
         'Rows above the first horizontal line are intervention evaluations; '
         'the fifth row is outcome monitoring on Flaky Tools (CharXiv), and the '
         'sixth is process monitoring on GPQA Physics. '
         'Lines separate evaluation and control groups. Correlations are descriptive; '
         'cells do not indicate statistical significance. No aggregate evaluations '
-        'or composite scores are included.\n')
+        'or composite scores are included. '+note+'\n')
     print(f'{len(rows)} correlations; paired model counts: {sorted(frame.n.unique())}')
     control_name = 'control_by_control_spearman'
     control_rows = []
@@ -100,7 +105,7 @@ def main():
     assert np.allclose(control_values, control_values.T,equal_nan=True)
     assert np.allclose(np.diag(control_values)[np.isfinite(np.diag(control_values))], 1)
     control_frame.to_csv(OUT / f'{control_name}.csv', index=False)
-    draw_heatmap(control_values, [LABELS[c] for c in CONTROLS], control_name, [2.5,4.5])
+    draw_heatmap(control_values, [LABELS[c] for c in CONTROLS], control_name, [2.5,5.5])
     provenance = json.loads((OUT / f'{NAME}_provenance.json').read_text())
     provenance.pop('evaluations')
     provenance['pair_counts'] = sorted(control_frame.n.unique().tolist())
@@ -108,7 +113,7 @@ def main():
     (OUT / f'{control_name}_caption.md').write_text(
         'Pairwise Spearman correlations across 12 models between mean soft '
         'controllability scores (K=0, with instruction). Both axes use the same '
-        'ordering: three addition, two suppression, and three style controls. '
+        'ordering: three addition, three style, and two suppression controls. '
         'Thin lines separate these groups; group labels appear above the columns. '
         'Chinese and character/persona styles are excluded. '
         'Correlations are descriptive and cells do not indicate statistical significance.\n')

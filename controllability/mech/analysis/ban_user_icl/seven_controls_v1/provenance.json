@@ -1,0 +1,52 @@
+{
+  "sources": {
+    "qwen32": [
+      {
+        "root": "/Users/hughv/Research/monitorability-scaling/controllability/results/ban_user_icl/v1",
+        "manifest": "5de065d7befec0004eb0364c9d7deb7ed4d7ed51a1c78ac6521ab742cdb2c275",
+        "scores": "db04ac0d312115bfa467bb232fb84df5634202606964d36056a6bb98191abedd"
+      },
+      {
+        "root": "/Users/hughv/Research/monitorability-scaling/controllability/results/ban_user_icl/seven_controls_extension_v1",
+        "manifest": "f37aefd1bb5e6191110aa8166e16662afa201e54288ee11b16d7ceb60bdd5635",
+        "scores": "977c8f22f995e4723451f3623866fe6935142ff1cc4270af53689da6c392dd8f"
+      }
+    ],
+    "glm": [
+      {
+        "root": "/Users/hughv/Research/monitorability-scaling/controllability/results/ban_user_icl/v1",
+        "manifest": "7f8d0c587b43a8dc1e4262be3a731d0dd6902c047a6352f3a826f3582930b553",
+        "scores": "ee219f1fdd0c90112ba07ca2b683c29f3fbed942323e97be11b638681af4484d"
+      },
+      {
+        "root": "/Users/hughv/Research/monitorability-scaling/controllability/results/ban_user_icl/seven_controls_extension_v1",
+        "manifest": "3fd9b75dd2bf7ca5090ec88a2081f4013450f1c2d63435fd08ecc0f8791d75ad",
+        "scores": "a53339c8f9e9599118928cbc8644ad157ac834a91473f400baa976ea570e3f7b"
+      }
+    ],
+    "olmo31": [
+      {
+        "root": "/Users/hughv/Research/monitorability-scaling/controllability/results/ban_user_icl/v1",
+        "manifest": "510199eb7a8bdc6d7c90060e5566216fa207cf0bb9c053b29a17d5c68618ffcd",
+        "scores": "aa57a0709f99f6e658b3d2ffe59502b8271c50f48c23b7a2be87b603f4260bdf"
+      },
+      {
+        "root": "/Users/hughv/Research/monitorability-scaling/controllability/results/ban_user_icl/seven_controls_extension_v1",
+        "manifest": "c57e29a026f2cd69f8991ae145ea3dca3ca25049fc501952d9b5817e63c2ed57",
+        "scores": "2ba02398311eac84427fc3e86c9550c6db216759959d242768e8daad6e135f2d"
+      }
+    ]
+  },
+  "bootstrap_seed": 20260924,
+  "bootstrap_draws": 5000,
+  "controls": [
+    "leetspeak",
+    "spanish",
+    "chinese",
+    "uppercase_thinking",
+    "prefix_sentences",
+    "no_first_person",
+    "omit_word"
+  ],
+  "primary_metric": "whole_soft"
+}

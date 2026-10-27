@@ -18,7 +18,7 @@ from monitorability.control_type_viewer import build_data, correlation, FAMILIES
 from controllability.control_groups import LABELS as CONTROL_LABELS
 
 OUT = ROOT / 'results/monitorability/convergent_validity'
-FAMILY = FAMILIES
+FAMILY = {name:FAMILIES[name] for name in ['addition','style','suppression']}
 TYPES = sum(FAMILY.values(), [])
 LABELS = [CONTROL_LABELS[c] for c in TYPES]
 GROUPS = {k.title():v for k,v in FAMILY.items()}
@@ -45,13 +45,13 @@ def plot_heatmap(values, xs, ys, title, grouped=False):
         margin=dict(l=215, r=45, b=155, t=70), yaxis=dict(autorange='reversed'),
         xaxis=dict(tickangle=-40))
     if grouped:
-        for p in [2.5, 4.5]:
+        for p in [2.5, 5.5]:
             fig.add_hline(y=p, line_color='#333', line_width=1.5)
             fig.add_vline(x=p, line_color='#333', line_width=1.5)
     return fig.to_html(full_html=False, include_plotlyjs=False)
 
 
-def png_heatmap(values, xs, ys, filename, grouped=False):
+def png_heatmap(values, xs, ys, filename, grouped=False, note=''):
     fig, ax = plt.subplots(figsize=(9, 7.3))
     im = ax.imshow(values, vmin=-1, vmax=1, cmap='RdBu_r', aspect='auto')
     ax.set_xticks(range(len(xs)), xs, rotation=45, ha='right', fontsize=10)
@@ -62,10 +62,13 @@ def png_heatmap(values, xs, ys, filename, grouped=False):
             ax.text(j, i, f'{v:.2f}' if np.isfinite(v) else '—', ha='center', va='center',
                     fontsize=9, color='white' if abs(v) > .65 else '#202020')
     if grouped:
-        for p in [2.5, 4.5]:
+        for p in [2.5, 5.5]:
             ax.axhline(p, color='black', lw=1.2); ax.axvline(p, color='black', lw=1.2)
     fig.colorbar(im, ax=ax, label='Spearman correlation across models', shrink=.8)
     fig.tight_layout()
+    if note:
+        fig.subplots_adjust(bottom=.30)
+        fig.text(.04,.025,note,fontsize=9,ha='left',va='bottom',wrap=True)
     fig.savefig(OUT / filename, dpi=220)
     fig.savefig(OUT / filename.replace('.png', '.pdf'))
     plt.close(fig)
@@ -74,6 +77,8 @@ def png_heatmap(values, xs, ys, filename, grouped=False):
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     data = build_data()
+    from monitorability.gpqa_figure_snapshot import snapshot_note
+    note=snapshot_note(data)
     (OUT/'data.json').write_text(json.dumps(data, indent=2, allow_nan=False))
     mon = pd.DataFrame([{k: m['monitor'].get(k) for k, _ in MON} for m in data['models']])
     sections = []; pairs = []; summaries = []; associations = []; points = []
@@ -89,9 +94,13 @@ def main():
             assert np.allclose(cm, cm.T, equal_nan=True)
             assert np.allclose(np.diag(cm)[np.isfinite(np.diag(cm))], 1)
             for a, b in combinations(TYPES, 2):
+                loo={m['model']:correlation(ctrl[a].drop(i),ctrl[b].drop(i))[method] for i,m in enumerate(data['models'])}
+                finite=[v for v in loo.values() if v is not None]
                 pairs.append(dict(metric=metric, method=method, a=a, b=b,
                     family_a=family_of[a], family_b=family_of[b],
-                    same_family=family_of[a] == family_of[b], value=cm[TYPES.index(a), TYPES.index(b)]))
+                    same_family=family_of[a] == family_of[b], value=cm[TYPES.index(a), TYPES.index(b)],
+                    leave_one_out_min=min(finite) if finite else None,leave_one_out_max=max(finite) if finite else None,
+                    without_deepseek_v4_pro=loo['deepseek-v4-pro']))
             these = [p for p in pairs if p['metric'] == metric and p['method'] == method]
             for label, subset in [('Within family', [p for p in these if p['same_family']]),
                                   ('Between families', [p for p in these if not p['same_family']]),
@@ -133,6 +142,7 @@ def main():
                 pd.DataFrame(cm,index=TYPES,columns=TYPES).to_csv(OUT/'control_spearman_soft.csv')
     for name, rows in [('pairs',pairs),('family_summary',summaries),('monitor_associations',associations),('model_scores',points)]:
         pd.DataFrame(rows).to_csv(OUT/f'{name}.csv',index=False)
+    pd.DataFrame(pairs).query("metric=='soft' and method=='spearman'")[['a','b','value','leave_one_out_min','leave_one_out_max','without_deepseek_v4_pro']].rename(columns={'value':'spearman'}).to_csv(OUT/'control_pair_sensitivity.csv',index=False)
     intro = '''<h1>Do controllability evaluations measure different capabilities?</h1>
 <p>Descriptive convergent / discriminant validity check on the existing 12-model sweep.
 Each correlation uses models as observations, not sampled responses. Default: soft compliance and Spearman.</p>
@@ -146,6 +156,7 @@ Models share lineages; historical runs differ in effort/backend. Soft scores mix
 Floor/ceiling counts (≤0.05 / ≥0.95) and monitor spans appear below. Process uses TPR; other evaluations use g-mean.
 These data cannot identify opening entropy as the cause or demonstrate concealment/gaming. Use the organism and prefill experiments for those separate claims.</p>'''
     page = '<!doctype html><html><head><meta charset="utf-8"><title>Convergent validity</title><style>body{font:15px system-ui;color:#233047;max-width:1200px;margin:30px auto;padding:0 20px}p{line-height:1.55}table{border-collapse:collapse;font-size:12px;width:100%;margin-bottom:30px}td,th{padding:8px;border-bottom:1px solid #dde3ed;text-align:left}select{padding:9px;margin:8px}section[hidden]{display:none}h2{margin-top:35px}</style><script>'+get_plotlyjs()+'</script></head><body>'+intro
+    if note:page+='<p><strong>'+html.escape(note)+'</strong></p>'
     page += '<label>Compliance <select id="metric"><option>soft</option><option>hard</option></select></label><label>Correlation <select id="method"><option>spearman</option><option>pearson</option></select></label>'+''.join(sections)
     page += '''<script>function update(){document.querySelectorAll('section').forEach(s=>{s.hidden=s.id!==document.getElementById('metric').value+'-'+document.getElementById('method').value;if(!s.hidden)s.querySelectorAll('.plotly-graph-div').forEach(p=>Plotly.Plots.resize(p))})}document.querySelectorAll('select').forEach(s=>s.addEventListener('change',update));</script></body></html>'''
     (OUT/'index.html').write_text(page)
@@ -167,7 +178,9 @@ def write_findings(summaries,associations,data):
     selected=lambda rs:[r for r in rs if r['metric']=='soft' and r['method']=='spearman']
     text='# Eight-control convergent-validity results\n\n'
     text+='Twelve models; instruction-only soft compliance. Addition: sentence prefixes, numbering, sentence endings. Suppression: word omission, no first person. Style: uppercase, leetspeak, Spanish. Category scores equally weight their constituent tasks. Chinese and persona styles are excluded.\n\n'
-    text+='Numbering and sentence endings use fresh runs on the same 30 target questions as sentence prefixes (five samples each); six retained tasks and every monitorability evaluation reuse historical results. Source hashes and sample counts are in `data.json`.\n\n'
+    text+='Numbering and sentence endings use fresh runs on the same 30 target questions as sentence prefixes (five samples each); six retained tasks reuse historical results. Source hashes and sample counts are in `data.json`.\n\n'
+    from monitorability.gpqa_figure_snapshot import snapshot_note
+    if snapshot_note(data):text+=snapshot_note(data)+'\n\n'
     quality=[r for r in data['counts'] if r['control'] in ['numbered_sentences','suffix_sentences']]
     text+='## New-task response coverage\n\n'+table(quality,['model','control','valid_samples','empty_reasoning'])+'\n\n'
     text+='Empty reasoning receives zero compliance, matching the historical correlation protocol. Counts distinguish this behavior from nonempty reasoning that fails the constraint.\n\n'

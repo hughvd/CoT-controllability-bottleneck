@@ -1,0 +1,77 @@
+648
+649
+650
+651
+652
+653
+654
+655
+656
+657
+658
+659
+660
+661
+662
+663
+664
+665
+666
+667
+668
+669
+670
+671
+672
+673
+674
+675
+676
+677
+678
+679
+680
+681
+682
+683
+684
+685
+686
+687
+688
+689
+690
+691
+692
+693
+694
+695
+696
+697
+698
+699
+700
+701
+Under review as a conference paper at ICLR 2027
+Amy Deng Sydney V on Arx. Cot may be highly informa-
+tive despite “unfaithfulness”.https://metr.org/blog/
+2025-08-08-cot-may-be-highly-informative-despite-unfaithfulness/,
+08 2025.
+Alon Talmor, Jonathan Herzig, Nicholas Lourie, and Jonathan Berant. Commonsenseqa: A question
+answering challenge targeting commonsense knowledge. InProceedings of the 2019 Conference
+of the North American Chapter of the Association for Computational Linguistics: Human Lan-
+guage Technologies, Volume 1 (Long and Short Papers), pp. 4149–4158, 2019.
+Qwen Team. Qwen3 technical report, 2025. URLhttps://arxiv.org/abs/2505.09388.
+Miles Turpin, Julian Michael, Ethan Perez, and Samuel Bowman. Language models don’t always
+say what they think: Unfaithful explanations in chain-of-thought prompting.Advances in Neural
+Information Processing Systems, 36:74952–74965, 2023.
+Xuezhi Wang and Denny Zhou. Chain-of-thought reasoning without prompting.Advances in Neural
+Information Processing Systems, 37:66383–66409, 2024.
+Yubo Wang, Xueguang Ma, Ge Zhang, Yuansheng Ni, Abhranil Chandra, Shiguang Guo, Weiming
+Ren, Aaran Arulraj, Xuan He, Ziyan Jiang, et al. Mmlu-pro: A more robust and challenging multi-
+task language understanding benchmark.Advances in Neural Information Processing Systems,
+37:95266–95290, 2024.
+Chen Yueh-Han, Robert McCarthy, Bruce W. Lee, He He, Ian Kivlichan, Bowen Baker, Micah
+Carroll, and Tomek Korbak. Reasoning models struggle to control their chains of thought, 2026.
+URLhttps://arxiv.org/abs/2603.05706.
+13

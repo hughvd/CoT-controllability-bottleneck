@@ -1,0 +1,601 @@
+source_row,model,target_question,variant,sample,compliance_score_before,compliance_score_after,compliance_before,compliance_after
+3538,qwen3-32b,Where might a small dog run in packs?,instruction_only,0,0.0,0.0,0.0,0.0
+3540,qwen3-32b,Where might a small dog run in packs?,instruction_only,1,0.0,0.0,0.0,0.0
+3543,qwen3-32b,Where might a small dog run in packs?,instruction_only,2,0.0,0.0,0.0,0.0
+3544,qwen3-32b,Where might a small dog run in packs?,instruction_only,3,0.0,0.0,0.0,0.0
+3551,qwen3-32b,Where might a small dog run in packs?,icl_user_plain,0,1.0,1.0,1.0,1.0
+3557,qwen3-32b,Where might a small dog run in packs?,icl_user_plain,1,1.0,1.0,1.0,1.0
+3559,qwen3-32b,Where might a small dog run in packs?,icl_user_plain,2,1.0,1.0,1.0,1.0
+3562,qwen3-32b,Where might a small dog run in packs?,instruction_only,4,0.0,0.0,0.0,0.0
+3563,qwen3-32b,Where might a small dog run in packs?,icl_user_plain,3,0.0,0.0,0.0,0.0
+3568,qwen3-32b,Where might a small dog run in packs?,icl_user_think,0,1.0,1.0,1.0,1.0
+3570,qwen3-32b,Where might a small dog run in packs?,icl_user_think,1,1.0,1.0,1.0,1.0
+3573,qwen3-32b,Where might a small dog run in packs?,icl_user_think,2,1.0,1.0,1.0,1.0
+3575,qwen3-32b,Where might a small dog run in packs?,icl_user_plain,4,0.0,0.0,0.0,0.0
+3577,qwen3-32b,Where might a small dog run in packs?,icl_user_think,3,1.0,1.0,1.0,1.0
+3580,qwen3-32b,Where might a small dog run in packs?,icl_user_think,4,1.0,1.0,1.0,1.0
+3584,qwen3-32b,Where might a small dog run in packs?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+3590,qwen3-32b,Where might a small dog run in packs?,icl_assistant_visible,2,1.0,1.0,1.0,1.0
+3593,qwen3-32b,Where might a small dog run in packs?,icl_assistant_visible,3,0.0,1.0,0.0,1.0
+3600,qwen3-32b,"A cat can't talk, but a cat can what?",instruction_only,0,0.0,0.0,0.0,0.0
+3601,qwen3-32b,"A cat can't talk, but a cat can what?",instruction_only,2,0.0,1.0,0.0,1.0
+3603,qwen3-32b,Where might a small dog run in packs?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+3605,qwen3-32b,"A cat can't talk, but a cat can what?",instruction_only,1,0.0,0.0,0.0,0.0
+3606,qwen3-32b,"A cat can't talk, but a cat can what?",instruction_only,3,0.0,0.0,0.0,0.0
+3607,qwen3-32b,Where might a small dog run in packs?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+3610,qwen3-32b,"A cat can't talk, but a cat can what?",instruction_only,4,0.0,1.0,0.0,1.0
+3613,qwen3-32b,"A cat can't talk, but a cat can what?",icl_user_plain,0,0.0,1.0,0.0,1.0
+3616,qwen3-32b,"A cat can't talk, but a cat can what?",icl_user_plain,4,0.0,0.0,0.0,0.0
+3617,qwen3-32b,"A cat can't talk, but a cat can what?",icl_user_plain,3,0.0,0.0,0.0,0.0
+3618,qwen3-32b,"A cat can't talk, but a cat can what?",icl_user_plain,1,1.0,1.0,1.0,1.0
+3620,qwen3-32b,"A cat can't talk, but a cat can what?",icl_user_plain,2,0.0,1.0,0.0,1.0
+3622,qwen3-32b,"A cat can't talk, but a cat can what?",icl_user_think,2,1.0,1.0,1.0,1.0
+3623,qwen3-32b,"A cat can't talk, but a cat can what?",icl_user_think,1,1.0,1.0,1.0,1.0
+3626,qwen3-32b,"A cat can't talk, but a cat can what?",icl_user_think,3,1.0,1.0,1.0,1.0
+3627,qwen3-32b,"A cat can't talk, but a cat can what?",icl_user_think,0,1.0,1.0,1.0,1.0
+3630,qwen3-32b,"A cat can't talk, but a cat can what?",icl_user_think,4,1.0,1.0,1.0,1.0
+3635,qwen3-32b,"A cat can't talk, but a cat can what?",icl_assistant_visible,0,0.0,1.0,0.0,1.0
+3636,qwen3-32b,"A cat can't talk, but a cat can what?",icl_assistant_visible,4,1.0,1.0,1.0,1.0
+3637,qwen3-32b,"A cat can't talk, but a cat can what?",icl_assistant_visible,1,0.0,0.0,0.0,0.0
+3638,qwen3-32b,"A cat can't talk, but a cat can what?",icl_assistant_visible,3,0.0,1.0,0.0,1.0
+3641,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",instruction_only,0,0.0,0.0,0.0,0.0
+3643,qwen3-32b,"A cat can't talk, but a cat can what?",icl_assistant_visible,2,0.0,0.0,0.0,0.0
+3644,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",instruction_only,1,0.0,0.0,0.0,0.0
+3646,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",instruction_only,3,0.0,0.0,0.0,0.0
+3647,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",instruction_only,2,0.0,0.0,0.0,0.0
+3649,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",instruction_only,4,0.0,0.0,0.0,0.0
+3650,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_plain,0,0.0,0.0,0.0,0.0
+3652,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_plain,1,0.0,0.0,0.0,0.0
+3655,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_plain,2,0.0,0.0,0.0,0.0
+3660,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_plain,3,0.0,0.0,0.0,0.0
+3665,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_think,0,0.0,0.0,0.0,0.0
+3666,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_plain,4,0.0,0.0,0.0,0.0
+3667,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_think,2,0.0,0.0,0.0,0.0
+3669,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_think,1,0.0,0.0,0.0,0.0
+3673,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_think,3,0.0,0.0,0.0,0.0
+3676,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_think,4,0.0,0.0,0.0,0.0
+3682,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_assistant_visible,0,0.0,0.0,0.0,0.0
+3685,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_assistant_visible,1,0.0,0.0,0.0,0.0
+3687,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_assistant_visible,2,0.0,0.0,0.0,0.0
+3688,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_assistant_visible,3,0.0,1.0,0.0,1.0
+3691,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,instruction_only,0,0.0,1.0,0.0,1.0
+3693,qwen3-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_assistant_visible,4,0.0,0.0,0.0,0.0
+3697,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,instruction_only,1,0.0,1.0,0.0,1.0
+3700,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,instruction_only,2,0.0,0.0,0.0,0.0
+3704,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,instruction_only,3,0.0,0.0,0.0,0.0
+3706,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_plain,0,1.0,1.0,1.0,1.0
+3709,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_plain,2,1.0,1.0,1.0,1.0
+3710,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,instruction_only,4,0.0,0.0,0.0,0.0
+3711,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_plain,4,1.0,1.0,1.0,1.0
+3712,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_plain,3,1.0,1.0,1.0,1.0
+3713,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_plain,1,0.0,1.0,0.0,1.0
+3714,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_think,1,1.0,1.0,1.0,1.0
+3715,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_think,0,0.0,1.0,0.0,1.0
+3717,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_think,4,0.0,1.0,0.0,1.0
+3719,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_think,3,0.0,1.0,0.0,1.0
+3720,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_think,2,0.0,1.0,0.0,1.0
+3722,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_assistant_visible,1,0.0,1.0,0.0,1.0
+3724,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_assistant_visible,4,0.0,1.0,0.0,1.0
+3725,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_assistant_visible,2,0.0,1.0,0.0,1.0
+3726,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+3727,qwen3-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_assistant_visible,3,0.0,1.0,0.0,1.0
+3728,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_think,0,0.0,0.0,0.0,0.0
+3729,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_plain,0,0.0,0.0,0.0,0.0
+3730,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_plain,2,0.0,0.0,0.0,0.0
+3731,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_think,1,0.0,0.0,0.0,0.0
+3732,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,instruction_only,0,0.0,0.0,0.0,0.0
+3733,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_think,2,0.0,0.0,0.0,0.0
+3734,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,instruction_only,3,0.0,0.0,0.0,0.0
+3735,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,instruction_only,2,0.0,0.0,0.0,0.0
+3736,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+3737,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_plain,3,0.0,0.0,0.0,0.0
+3738,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,instruction_only,1,0.0,0.0,0.0,0.0
+3739,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,instruction_only,4,0.0,0.0,0.0,0.0
+3740,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,instruction_only,0,0.0,1.0,0.0,1.0
+3741,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,instruction_only,1,0.0,0.0,0.0,0.0
+3742,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,instruction_only,2,0.0,1.0,0.0,1.0
+3743,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,instruction_only,3,0.0,0.0,0.0,0.0
+3744,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+3745,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_plain,1,1.0,1.0,1.0,1.0
+3746,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_plain,0,0.0,1.0,0.0,1.0
+3747,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_plain,2,1.0,1.0,1.0,1.0
+3748,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_think,4,0.0,0.0,0.0,0.0
+3749,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,instruction_only,4,0.0,1.0,0.0,1.0
+3750,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+3751,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+3752,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+3753,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_think,0,0.0,1.0,0.0,1.0
+3754,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_think,1,0.0,1.0,0.0,1.0
+3755,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_plain,3,0.0,1.0,0.0,1.0
+3756,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_think,3,0.0,1.0,0.0,1.0
+3757,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_think,2,0.0,1.0,0.0,1.0
+3758,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_plain,4,0.0,1.0,0.0,1.0
+3759,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_think,4,0.0,1.0,0.0,1.0
+3760,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_assistant_visible,3,1.0,1.0,1.0,1.0
+3761,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_assistant_visible,4,1.0,1.0,1.0,1.0
+3762,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_assistant_visible,0,0.0,1.0,0.0,1.0
+3763,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_assistant_visible,2,0.0,1.0,0.0,1.0
+3764,qwen3-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+3765,qwen3-32b,"If I am forgiving, what might people think I have?",instruction_only,1,0.0,0.0,0.0,0.0
+3766,qwen3-32b,"If I am forgiving, what might people think I have?",icl_user_plain,1,1.0,1.0,1.0,1.0
+3767,qwen3-32b,"If I am forgiving, what might people think I have?",instruction_only,3,0.0,0.0,0.0,0.0
+3768,qwen3-32b,"If I am forgiving, what might people think I have?",icl_user_plain,0,0.0,1.0,0.0,1.0
+3769,qwen3-32b,"If I am forgiving, what might people think I have?",instruction_only,0,0.0,0.0,0.0,0.0
+3770,qwen3-32b,"If I am forgiving, what might people think I have?",icl_user_plain,2,0.0,1.0,0.0,1.0
+3771,qwen3-32b,"If I am forgiving, what might people think I have?",icl_user_plain,3,1.0,1.0,1.0,1.0
+3772,qwen3-32b,"If I am forgiving, what might people think I have?",instruction_only,2,0.0,0.0,0.0,0.0
+3773,qwen3-32b,"If I am forgiving, what might people think I have?",icl_user_plain,4,1.0,1.0,1.0,1.0
+3774,qwen3-32b,"If I am forgiving, what might people think I have?",icl_user_think,3,0.0,1.0,0.0,1.0
+3775,qwen3-32b,"If I am forgiving, what might people think I have?",icl_user_think,1,0.0,1.0,0.0,1.0
+3776,qwen3-32b,"If I am forgiving, what might people think I have?",instruction_only,4,0.0,0.0,0.0,0.0
+3777,qwen3-32b,"If I am forgiving, what might people think I have?",icl_user_think,0,0.0,1.0,0.0,1.0
+3778,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_think,3,0.0,0.0,0.0,0.0
+3779,qwen3-32b,"If I am forgiving, what might people think I have?",icl_assistant_visible,1,0.0,1.0,0.0,1.0
+3780,qwen3-32b,"If I am forgiving, what might people think I have?",icl_user_think,2,0.0,0.0,0.0,0.0
+3781,qwen3-32b,"If I am forgiving, what might people think I have?",icl_assistant_visible,0,0.0,1.0,0.0,1.0
+3782,qwen3-32b,"If I am forgiving, what might people think I have?",icl_assistant_visible,2,0.0,1.0,0.0,1.0
+3783,qwen3-32b,What are students trying to do?,instruction_only,0,0.0,0.0,0.0,0.0
+3784,qwen3-32b,"If I am forgiving, what might people think I have?",icl_user_think,4,0.0,0.0,0.0,0.0
+3785,qwen3-32b,What are students trying to do?,instruction_only,1,0.0,0.0,0.0,0.0
+3786,qwen3-32b,"If I am forgiving, what might people think I have?",icl_assistant_visible,4,0.0,0.0,0.0,0.0
+3787,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_plain,1,0.0,0.0,0.0,0.0
+3789,qwen3-32b,"If I am forgiving, what might people think I have?",icl_assistant_visible,3,0.0,0.0,0.0,0.0
+3790,qwen3-32b,What are students trying to do?,instruction_only,2,0.0,0.0,0.0,0.0
+3791,qwen3-32b,What are students trying to do?,icl_user_plain,0,0.0,0.0,0.0,0.0
+3792,qwen3-32b,What are students trying to do?,instruction_only,3,0.0,0.0,0.0,0.0
+3797,qwen3-32b,What are students trying to do?,icl_user_plain,1,0.0,0.0,0.0,0.0
+3799,qwen3-32b,What are students trying to do?,icl_user_plain,2,0.0,1.0,0.0,1.0
+3800,qwen3-32b,What are students trying to do?,instruction_only,4,0.0,0.0,0.0,0.0
+3802,qwen3-32b,What are students trying to do?,icl_user_plain,4,0.0,0.0,0.0,0.0
+3806,qwen3-32b,What are students trying to do?,icl_user_plain,3,0.0,1.0,0.0,1.0
+3810,qwen3-32b,What are students trying to do?,icl_user_think,0,0.0,1.0,0.0,1.0
+3811,qwen3-32b,What are students trying to do?,icl_user_think,1,0.0,0.0,0.0,0.0
+3816,qwen3-32b,What are students trying to do?,icl_user_think,2,0.0,0.0,0.0,0.0
+3818,qwen3-32b,What are students trying to do?,icl_user_think,4,0.0,0.0,0.0,0.0
+3821,qwen3-32b,What are students trying to do?,icl_user_think,3,0.0,0.0,0.0,0.0
+3827,qwen3-32b,What are students trying to do?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+3828,qwen3-32b,What are students trying to do?,icl_assistant_visible,1,0.0,1.0,0.0,1.0
+3831,qwen3-32b,What are students trying to do?,icl_assistant_visible,3,1.0,1.0,1.0,1.0
+3832,qwen3-32b,What are students trying to do?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+3836,qwen3-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_plain,4,0.0,0.0,0.0,0.0
+3838,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,instruction_only,0,0.0,0.0,0.0,0.0
+3840,qwen3-32b,What are students trying to do?,icl_assistant_visible,4,0.0,1.0,0.0,1.0
+3843,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,instruction_only,1,0.0,0.0,0.0,0.0
+3844,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,instruction_only,2,0.0,0.0,0.0,0.0
+3849,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,instruction_only,4,0.0,0.0,0.0,0.0
+3853,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_plain,1,0.0,0.0,0.0,0.0
+3857,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_plain,0,0.0,1.0,0.0,1.0
+3859,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_plain,2,1.0,1.0,1.0,1.0
+3860,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,instruction_only,3,0.0,0.0,0.0,0.0
+3863,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_plain,3,0.0,0.0,0.0,0.0
+3865,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_plain,4,0.0,0.0,0.0,0.0
+3867,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_think,1,1.0,1.0,1.0,1.0
+3870,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_think,0,0.0,0.0,0.0,0.0
+3873,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_think,2,0.0,0.0,0.0,0.0
+3874,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_think,3,0.0,0.0,0.0,0.0
+3875,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_think,4,0.0,1.0,0.0,1.0
+3882,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+3883,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+3886,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+3889,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+3894,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",instruction_only,0,0.0,0.0,0.0,0.0
+3895,qwen3-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+3897,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",instruction_only,1,0.0,0.0,0.0,0.0
+3905,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",instruction_only,3,0.0,0.0,0.0,0.0
+3907,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",instruction_only,2,0.0,0.0,0.0,0.0
+3911,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_plain,0,0.0,0.0,0.0,0.0
+3913,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_plain,1,0.0,0.0,0.0,0.0
+3914,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",instruction_only,4,0.0,0.0,0.0,0.0
+3915,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_plain,2,0.0,1.0,0.0,1.0
+3923,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_plain,4,0.0,1.0,0.0,1.0
+3925,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_plain,3,1.0,1.0,1.0,1.0
+3926,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_think,0,0.0,0.0,0.0,0.0
+3929,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_think,1,0.0,1.0,0.0,1.0
+3936,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_think,2,0.0,0.0,0.0,0.0
+3937,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_think,3,0.0,0.0,0.0,0.0
+3939,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_think,4,0.0,0.0,0.0,0.0
+3944,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_assistant_visible,0,0.0,0.0,0.0,0.0
+3948,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_assistant_visible,1,0.0,0.0,0.0,0.0
+3952,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_assistant_visible,2,0.0,0.0,0.0,0.0
+3953,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_assistant_visible,3,0.0,1.0,0.0,1.0
+3956,qwen3-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_assistant_visible,4,0.0,0.0,0.0,0.0
+3957,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",instruction_only,0,0.0,0.0,0.0,0.0
+3964,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",instruction_only,1,0.0,0.0,0.0,0.0
+3966,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",instruction_only,2,0.0,0.0,0.0,0.0
+3967,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",instruction_only,3,0.0,0.0,0.0,0.0
+3970,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",instruction_only,4,0.0,1.0,0.0,1.0
+3972,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_plain,0,0.0,0.0,0.0,0.0
+3975,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_plain,1,0.0,0.0,0.0,0.0
+3980,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_plain,2,0.0,0.0,0.0,0.0
+3984,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_plain,4,0.0,0.0,0.0,0.0
+3988,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_plain,3,0.0,0.0,0.0,0.0
+3990,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_think,0,0.0,0.0,0.0,0.0
+3992,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_think,1,0.0,0.0,0.0,0.0
+3993,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_think,2,0.0,0.0,0.0,0.0
+3995,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_think,3,0.0,0.0,0.0,0.0
+3996,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_think,4,0.0,1.0,0.0,1.0
+4002,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_assistant_visible,0,1.0,1.0,1.0,1.0
+4005,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_assistant_visible,2,0.0,0.0,0.0,0.0
+4009,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_assistant_visible,3,1.0,1.0,1.0,1.0
+4011,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_assistant_visible,1,0.0,0.0,0.0,0.0
+4018,qwen3-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_assistant_visible,4,0.0,0.0,0.0,0.0
+4026,qwen3-32b,What does a police officer in their sixities?,instruction_only,0,0.0,0.0,0.0,0.0
+4035,qwen3-32b,What does a police officer in their sixities?,icl_user_plain,0,0.0,1.0,0.0,1.0
+4036,qwen3-32b,What does a police officer in their sixities?,instruction_only,2,0.0,0.0,0.0,0.0
+4038,qwen3-32b,What does a police officer in their sixities?,instruction_only,1,0.0,0.0,0.0,0.0
+4039,qwen3-32b,What does a police officer in their sixities?,instruction_only,3,0.0,0.0,0.0,0.0
+4042,qwen3-32b,What does a police officer in their sixities?,icl_user_plain,1,1.0,1.0,1.0,1.0
+4043,qwen3-32b,What does a police officer in their sixities?,instruction_only,4,0.0,0.0,0.0,0.0
+4048,qwen3-32b,What does a police officer in their sixities?,icl_user_plain,2,0.0,1.0,0.0,1.0
+4053,qwen3-32b,What does a police officer in their sixities?,icl_user_plain,3,1.0,1.0,1.0,1.0
+4056,qwen3-32b,What does a police officer in their sixities?,icl_user_plain,4,1.0,1.0,1.0,1.0
+4062,qwen3-32b,What does a police officer in their sixities?,icl_user_think,0,0.0,1.0,0.0,1.0
+4063,qwen3-32b,What does a police officer in their sixities?,icl_user_think,1,0.0,1.0,0.0,1.0
+4484,qwen3-32b,What does a police officer in their sixities?,icl_user_think,2,0.0,1.0,0.0,1.0
+4487,qwen3-32b,What does a police officer in their sixities?,icl_user_think,4,0.0,0.0,0.0,0.0
+4488,qwen3-32b,What does a police officer in their sixities?,icl_assistant_visible,0,1.0,1.0,1.0,1.0
+4489,qwen3-32b,What does a police officer in their sixities?,icl_assistant_visible,1,1.0,1.0,1.0,1.0
+4490,qwen3-32b,What does a police officer in their sixities?,icl_assistant_visible,2,0.0,1.0,0.0,1.0
+4491,qwen3-32b,What does a police officer in their sixities?,icl_assistant_visible,4,0.0,1.0,0.0,1.0
+4493,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",instruction_only,0,0.0,0.0,0.0,0.0
+4495,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",instruction_only,2,0.0,0.0,0.0,0.0
+4496,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",instruction_only,1,0.0,0.0,0.0,0.0
+4497,qwen3-32b,What does a police officer in their sixities?,icl_assistant_visible,3,0.0,1.0,0.0,1.0
+4498,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_plain,1,0.0,1.0,0.0,1.0
+4499,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",instruction_only,4,0.0,0.0,0.0,0.0
+4500,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_plain,2,0.0,1.0,0.0,1.0
+4501,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_plain,4,0.0,0.0,0.0,0.0
+4502,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",instruction_only,3,0.0,0.0,0.0,0.0
+4503,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_plain,3,0.0,0.0,0.0,0.0
+4504,qwen3-32b,What does a police officer in their sixities?,icl_user_think,3,0.0,0.0,0.0,0.0
+4505,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_think,0,1.0,1.0,1.0,1.0
+4507,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_plain,0,0.0,1.0,0.0,1.0
+4508,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_think,2,0.0,0.0,0.0,0.0
+4509,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_think,1,0.0,1.0,0.0,1.0
+4510,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_think,3,0.0,1.0,0.0,1.0
+4511,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_think,4,0.0,1.0,0.0,1.0
+4515,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_assistant_visible,1,0.0,0.0,0.0,0.0
+4516,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_assistant_visible,0,0.0,0.0,0.0,0.0
+4517,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_assistant_visible,2,0.0,0.0,0.0,0.0
+4518,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_assistant_visible,3,0.0,0.0,0.0,0.0
+4519,qwen3-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_assistant_visible,4,0.0,0.0,0.0,0.0
+4523,qwen3-32b,In a company a chief oversees what people?,instruction_only,0,0.0,0.0,0.0,0.0
+4527,qwen3-32b,In a company a chief oversees what people?,instruction_only,4,0.0,0.0,0.0,0.0
+4530,qwen3-32b,In a company a chief oversees what people?,instruction_only,1,0.0,0.0,0.0,0.0
+4531,qwen3-32b,In a company a chief oversees what people?,icl_user_plain,1,1.0,1.0,1.0,1.0
+4532,qwen3-32b,In a company a chief oversees what people?,instruction_only,3,0.0,0.0,0.0,0.0
+4536,qwen3-32b,In a company a chief oversees what people?,icl_user_plain,0,0.0,0.0,0.0,0.0
+4538,qwen3-32b,In a company a chief oversees what people?,instruction_only,2,0.0,0.0,0.0,0.0
+4539,qwen3-32b,In a company a chief oversees what people?,icl_user_plain,3,1.0,1.0,1.0,1.0
+4540,qwen3-32b,In a company a chief oversees what people?,icl_user_plain,2,0.0,0.0,0.0,0.0
+4542,qwen3-32b,In a company a chief oversees what people?,icl_user_think,0,1.0,1.0,1.0,1.0
+4544,qwen3-32b,In a company a chief oversees what people?,icl_user_plain,4,0.0,0.0,0.0,0.0
+4545,qwen3-32b,In a company a chief oversees what people?,icl_user_think,1,1.0,1.0,1.0,1.0
+4547,qwen3-32b,In a company a chief oversees what people?,icl_user_think,4,1.0,1.0,1.0,1.0
+4548,qwen3-32b,In a company a chief oversees what people?,icl_user_think,3,1.0,1.0,1.0,1.0
+4550,qwen3-32b,In a company a chief oversees what people?,icl_user_think,2,0.0,1.0,0.0,1.0
+4555,qwen3-32b,In a company a chief oversees what people?,icl_assistant_visible,1,0.0,1.0,0.0,1.0
+4558,qwen3-32b,In a company a chief oversees what people?,icl_assistant_visible,2,1.0,1.0,1.0,1.0
+4561,qwen3-32b,In a company a chief oversees what people?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+4562,qwen3-32b,Where could you find a laundry room that is only used by staff?,instruction_only,0,0.0,0.0,0.0,0.0
+4564,qwen3-32b,Where could you find a laundry room that is only used by staff?,instruction_only,3,0.0,0.0,0.0,0.0
+4565,qwen3-32b,In a company a chief oversees what people?,icl_assistant_visible,3,0.0,1.0,0.0,1.0
+4566,qwen3-32b,In a company a chief oversees what people?,icl_assistant_visible,4,0.0,1.0,0.0,1.0
+4567,qwen3-32b,Where could you find a laundry room that is only used by staff?,instruction_only,2,0.0,0.0,0.0,0.0
+4569,qwen3-32b,Where could you find a laundry room that is only used by staff?,instruction_only,4,0.0,0.0,0.0,0.0
+4570,qwen3-32b,Where could you find a laundry room that is only used by staff?,icl_user_plain,1,0.0,0.0,0.0,0.0
+4572,qwen3-32b,Where could you find a laundry room that is only used by staff?,icl_user_plain,0,1.0,1.0,1.0,1.0
+4576,qwen3-32b,Where could you find a laundry room that is only used by staff?,icl_user_plain,2,1.0,1.0,1.0,1.0
+4577,qwen3-32b,Where could you find a laundry room that is only used by staff?,instruction_only,1,0.0,0.0,0.0,0.0
+4580,qwen3-32b,Where could you find a laundry room that is only used by staff?,icl_user_plain,3,0.0,0.0,0.0,0.0
+4581,qwen3-32b,Where could you find a laundry room that is only used by staff?,icl_user_think,0,0.0,1.0,0.0,1.0
+4582,qwen3-32b,Where could you find a laundry room that is only used by staff?,icl_user_plain,4,0.0,0.0,0.0,0.0
+4583,qwen3-32b,Where could you find a laundry room that is only used by staff?,icl_user_think,1,0.0,1.0,0.0,1.0
+4584,qwen3-32b,Where could you find a laundry room that is only used by staff?,icl_user_think,2,1.0,1.0,1.0,1.0
+4587,qwen3-32b,Where could you find a laundry room that is only used by staff?,icl_user_think,4,0.0,0.0,0.0,0.0
+4588,qwen3-32b,Where could you find a laundry room that is only used by staff?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+4591,qwen3-32b,Where could you find a laundry room that is only used by staff?,icl_user_think,3,0.0,0.0,0.0,0.0
+4595,qwen3-32b,Where could you find a laundry room that is only used by staff?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+4596,qwen3-32b,Where could you find a laundry room that is only used by staff?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+4599,qwen3-32b,Where could you find a laundry room that is only used by staff?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+4601,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",instruction_only,0,0.0,1.0,0.0,1.0
+4602,qwen3-32b,Where could you find a laundry room that is only used by staff?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+4605,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",instruction_only,2,0.0,0.0,0.0,0.0
+4607,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",instruction_only,1,0.0,1.0,0.0,1.0
+4610,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_plain,1,0.0,1.0,0.0,1.0
+4612,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",instruction_only,3,0.0,1.0,0.0,1.0
+4613,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",instruction_only,4,0.0,1.0,0.0,1.0
+4617,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_plain,2,0.0,1.0,0.0,1.0
+4618,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_plain,3,1.0,1.0,1.0,1.0
+4620,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_think,1,0.0,1.0,0.0,1.0
+4621,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_plain,0,0.0,1.0,0.0,1.0
+4623,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_plain,4,0.0,1.0,0.0,1.0
+4624,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_think,0,0.0,1.0,0.0,1.0
+4626,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_think,4,0.0,1.0,0.0,1.0
+4627,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_think,2,0.0,1.0,0.0,1.0
+4629,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_assistant_visible,0,0.0,1.0,0.0,1.0
+4632,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_think,3,0.0,1.0,0.0,1.0
+4634,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_assistant_visible,1,0.0,1.0,0.0,1.0
+4635,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_assistant_visible,2,0.0,1.0,0.0,1.0
+4639,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_assistant_visible,4,0.0,1.0,0.0,1.0
+4640,qwen3-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_assistant_visible,3,0.0,1.0,0.0,1.0
+4643,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,instruction_only,2,0.0,0.0,0.0,0.0
+4644,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,instruction_only,0,0.0,0.0,0.0,0.0
+4646,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,instruction_only,3,0.0,0.0,0.0,0.0
+4648,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,instruction_only,1,0.0,0.0,0.0,0.0
+4649,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_plain,0,0.0,1.0,0.0,1.0
+4652,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,instruction_only,4,0.0,0.0,0.0,0.0
+4654,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_plain,1,0.0,1.0,0.0,1.0
+4657,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_plain,2,0.0,1.0,0.0,1.0
+4658,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_plain,4,0.0,1.0,0.0,1.0
+4659,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_plain,3,0.0,1.0,0.0,1.0
+4660,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_think,1,0.0,1.0,0.0,1.0
+4662,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_think,0,0.0,1.0,0.0,1.0
+4744,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_think,3,0.0,0.0,0.0,0.0
+4745,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_think,2,0.0,0.0,0.0,0.0
+4750,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_think,4,0.0,0.0,0.0,0.0
+4754,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+4755,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+4756,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,icl_assistant_visible,2,0.0,1.0,0.0,1.0
+4758,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,icl_assistant_visible,3,0.0,1.0,0.0,1.0
+4759,qwen3-32b,Why do scientists perform multiple trials of the same experiment?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+4760,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,instruction_only,0,0.0,0.0,0.0,0.0
+4761,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,instruction_only,1,0.0,0.0,0.0,0.0
+4762,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,instruction_only,2,0.0,0.0,0.0,0.0
+4763,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,instruction_only,3,0.0,0.0,0.0,0.0
+4764,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_plain,0,0.0,0.0,0.0,0.0
+4765,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,instruction_only,4,0.0,0.0,0.0,0.0
+4766,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_plain,2,0.0,0.0,0.0,0.0
+4767,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_plain,1,0.0,1.0,0.0,1.0
+4768,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_plain,3,1.0,1.0,1.0,1.0
+4769,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_think,0,0.0,1.0,0.0,1.0
+4770,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_think,2,0.0,0.0,0.0,0.0
+4771,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_think,1,0.0,0.0,0.0,0.0
+4772,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_plain,4,0.0,1.0,0.0,1.0
+4773,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_think,3,0.0,0.0,0.0,0.0
+4774,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_think,4,0.0,0.0,0.0,0.0
+4775,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+4776,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+4777,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+4778,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+4779,qwen3-32b,Where above your kitchen sink could you store canned food?,instruction_only,0,0.0,0.0,0.0,0.0
+4781,qwen3-32b,Where above your kitchen sink could you store canned food?,instruction_only,2,0.0,0.0,0.0,0.0
+4784,qwen3-32b,Where above your kitchen sink could you store canned food?,instruction_only,3,0.0,0.0,0.0,0.0
+4786,qwen3-32b,Where above your kitchen sink could you store canned food?,instruction_only,1,0.0,0.0,0.0,0.0
+4787,qwen3-32b,Where above your kitchen sink could you store canned food?,instruction_only,4,0.0,0.0,0.0,0.0
+4788,qwen3-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+4789,qwen3-32b,Where above your kitchen sink could you store canned food?,icl_user_plain,0,1.0,1.0,1.0,1.0
+4792,qwen3-32b,Where above your kitchen sink could you store canned food?,icl_user_plain,2,0.0,1.0,0.0,1.0
+4793,qwen3-32b,Where above your kitchen sink could you store canned food?,icl_user_plain,3,0.0,1.0,0.0,1.0
+4794,qwen3-32b,Where above your kitchen sink could you store canned food?,icl_user_plain,1,0.0,1.0,0.0,1.0
+4796,qwen3-32b,Where above your kitchen sink could you store canned food?,icl_user_plain,4,1.0,1.0,1.0,1.0
+4798,qwen3-32b,Where above your kitchen sink could you store canned food?,icl_user_think,1,1.0,1.0,1.0,1.0
+4799,qwen3-32b,Where above your kitchen sink could you store canned food?,icl_user_think,0,0.0,1.0,0.0,1.0
+4801,qwen3-32b,Where above your kitchen sink could you store canned food?,icl_user_think,2,0.0,1.0,0.0,1.0
+4803,qwen3-32b,Where above your kitchen sink could you store canned food?,icl_user_think,3,0.0,0.0,0.0,0.0
+4807,qwen3-32b,Where above your kitchen sink could you store canned food?,icl_user_think,4,0.0,1.0,0.0,1.0
+4809,qwen3-32b,Where above your kitchen sink could you store canned food?,icl_assistant_visible,0,0.0,1.0,0.0,1.0
+4811,qwen3-32b,Where above your kitchen sink could you store canned food?,icl_assistant_visible,2,0.0,1.0,0.0,1.0
+4812,qwen3-32b,Where above your kitchen sink could you store canned food?,icl_assistant_visible,1,0.0,1.0,0.0,1.0
+4814,qwen3-32b,Where above your kitchen sink could you store canned food?,icl_assistant_visible,3,0.0,1.0,0.0,1.0
+4816,qwen3-32b,Where above your kitchen sink could you store canned food?,icl_assistant_visible,4,0.0,1.0,0.0,1.0
+4824,qwen3-32b,What proof is required to purchase beer?,instruction_only,2,0.0,0.0,0.0,0.0
+4825,qwen3-32b,What proof is required to purchase beer?,instruction_only,0,0.0,0.0,0.0,0.0
+4826,qwen3-32b,What proof is required to purchase beer?,instruction_only,1,0.0,0.0,0.0,0.0
+4828,qwen3-32b,What proof is required to purchase beer?,instruction_only,4,0.0,0.0,0.0,0.0
+4834,qwen3-32b,What proof is required to purchase beer?,icl_user_plain,1,0.0,1.0,0.0,1.0
+4835,qwen3-32b,What proof is required to purchase beer?,instruction_only,3,0.0,0.0,0.0,0.0
+4836,qwen3-32b,What proof is required to purchase beer?,icl_user_plain,2,0.0,0.0,0.0,0.0
+4840,qwen3-32b,What proof is required to purchase beer?,icl_user_plain,3,0.0,0.0,0.0,0.0
+4842,qwen3-32b,What proof is required to purchase beer?,icl_user_plain,0,0.0,1.0,0.0,1.0
+4843,qwen3-32b,What proof is required to purchase beer?,icl_user_think,2,0.0,0.0,0.0,0.0
+4845,qwen3-32b,What proof is required to purchase beer?,icl_user_think,1,0.0,0.0,0.0,0.0
+4847,qwen3-32b,What proof is required to purchase beer?,icl_user_think,3,0.0,0.0,0.0,0.0
+4848,qwen3-32b,What proof is required to purchase beer?,icl_user_think,4,0.0,1.0,0.0,1.0
+4851,qwen3-32b,What proof is required to purchase beer?,icl_user_think,0,0.0,0.0,0.0,0.0
+4852,qwen3-32b,What proof is required to purchase beer?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+4855,qwen3-32b,What proof is required to purchase beer?,icl_user_plain,4,0.0,1.0,0.0,1.0
+4856,qwen3-32b,What proof is required to purchase beer?,icl_assistant_visible,1,0.0,1.0,0.0,1.0
+4858,qwen3-32b,What proof is required to purchase beer?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+4859,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,instruction_only,1,0.0,0.0,0.0,0.0
+4861,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,instruction_only,0,0.0,0.0,0.0,0.0
+4862,qwen3-32b,What proof is required to purchase beer?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+4863,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,instruction_only,2,0.0,0.0,0.0,0.0
+4864,qwen3-32b,What proof is required to purchase beer?,icl_assistant_visible,3,0.0,1.0,0.0,1.0
+4866,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,instruction_only,3,0.0,0.0,0.0,0.0
+4869,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,instruction_only,4,0.0,0.0,0.0,0.0
+4871,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_plain,2,1.0,1.0,1.0,1.0
+4874,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_plain,0,0.0,0.0,0.0,0.0
+4875,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_plain,4,0.0,0.0,0.0,0.0
+4876,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_think,0,0.0,0.0,0.0,0.0
+4877,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_plain,1,0.0,0.0,0.0,0.0
+4880,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_plain,3,0.0,0.0,0.0,0.0
+4883,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_think,2,0.0,1.0,0.0,1.0
+4885,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_think,1,0.0,0.0,0.0,0.0
+4887,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_think,4,0.0,0.0,0.0,0.0
+4888,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+4892,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_think,3,0.0,1.0,0.0,1.0
+4894,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+4895,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+4898,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+4900,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",instruction_only,2,0.0,1.0,0.0,1.0
+4902,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",instruction_only,1,0.0,1.0,0.0,1.0
+4904,qwen3-32b,What would you see if you are looking at people that are agreeing with each other?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+4906,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",instruction_only,3,0.0,0.0,0.0,0.0
+4908,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",instruction_only,4,0.0,0.0,0.0,0.0
+4909,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_plain,1,0.0,0.0,0.0,0.0
+4910,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",instruction_only,0,0.0,0.0,0.0,0.0
+4911,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_plain,0,0.0,0.0,0.0,0.0
+4913,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_plain,4,0.0,1.0,0.0,1.0
+4914,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_plain,2,0.0,0.0,0.0,0.0
+4916,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_think,0,0.0,1.0,0.0,1.0
+4919,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_plain,3,0.0,1.0,0.0,1.0
+4921,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_think,3,0.0,1.0,0.0,1.0
+4922,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_think,2,0.0,1.0,0.0,1.0
+4926,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_think,1,0.0,1.0,0.0,1.0
+4927,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_assistant_visible,0,0.0,0.0,0.0,0.0
+4928,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_think,4,0.0,1.0,0.0,1.0
+4933,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_assistant_visible,3,0.0,1.0,0.0,1.0
+4934,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_assistant_visible,1,0.0,1.0,0.0,1.0
+4935,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_assistant_visible,2,0.0,1.0,0.0,1.0
+4942,qwen3-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_assistant_visible,4,0.0,1.0,0.0,1.0
+4943,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,instruction_only,0,0.0,0.0,0.0,0.0
+4945,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,instruction_only,2,0.0,0.0,0.0,0.0
+4946,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,instruction_only,3,0.0,0.0,0.0,0.0
+4948,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,instruction_only,4,0.0,0.0,0.0,0.0
+4949,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_plain,0,0.0,0.0,0.0,0.0
+4950,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_plain,1,0.0,1.0,0.0,1.0
+4952,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,instruction_only,1,0.0,0.0,0.0,0.0
+4957,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_plain,2,0.0,0.0,0.0,0.0
+4958,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_plain,3,0.0,0.0,0.0,0.0
+4961,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_plain,4,1.0,1.0,1.0,1.0
+4962,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_think,1,0.0,0.0,0.0,0.0
+4965,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_think,0,0.0,0.0,0.0,0.0
+4966,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_think,2,0.0,0.0,0.0,0.0
+4967,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_think,3,0.0,0.0,0.0,0.0
+4969,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+4970,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_think,4,0.0,0.0,0.0,0.0
+4971,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+4972,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",instruction_only,0,0.0,1.0,0.0,1.0
+4974,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+4975,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+4977,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",instruction_only,1,0.0,1.0,0.0,1.0
+4978,qwen3-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+4979,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",instruction_only,3,0.0,1.0,0.0,1.0
+4980,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_plain,1,0.0,1.0,0.0,1.0
+4981,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_plain,0,0.0,0.0,0.0,0.0
+4982,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_plain,2,0.0,1.0,0.0,1.0
+4983,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_plain,3,0.0,1.0,0.0,1.0
+4984,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",instruction_only,2,0.0,1.0,0.0,1.0
+4986,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_plain,4,1.0,1.0,1.0,1.0
+4987,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",instruction_only,4,0.0,1.0,0.0,1.0
+4988,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_think,0,0.0,1.0,0.0,1.0
+4989,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_think,2,1.0,1.0,1.0,1.0
+4990,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_think,1,0.0,1.0,0.0,1.0
+4991,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_think,4,0.0,1.0,0.0,1.0
+4992,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_assistant_visible,4,0.0,1.0,0.0,1.0
+4993,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_assistant_visible,0,0.0,1.0,0.0,1.0
+4994,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_think,3,0.0,1.0,0.0,1.0
+4995,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_assistant_visible,2,0.0,0.0,0.0,0.0
+4997,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_assistant_visible,3,0.0,1.0,0.0,1.0
+4998,qwen3-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_assistant_visible,1,0.0,1.0,0.0,1.0
+4999,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_plain,1,1.0,1.0,1.0,1.0
+5000,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,instruction_only,2,0.0,0.0,0.0,0.0
+5001,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,instruction_only,1,0.0,0.0,0.0,0.0
+5002,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_plain,0,1.0,1.0,1.0,1.0
+5003,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,instruction_only,0,0.0,0.0,0.0,0.0
+5004,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_plain,4,1.0,1.0,1.0,1.0
+5005,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_think,0,0.0,1.0,0.0,1.0
+5006,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,instruction_only,4,0.0,0.0,0.0,0.0
+5007,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,instruction_only,3,0.0,0.0,0.0,0.0
+5008,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_think,1,1.0,1.0,1.0,1.0
+5009,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_plain,2,1.0,1.0,1.0,1.0
+5010,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_think,2,1.0,1.0,1.0,1.0
+5011,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_plain,3,0.0,0.0,0.0,0.0
+5012,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_think,3,1.0,1.0,1.0,1.0
+5013,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_assistant_visible,1,1.0,1.0,1.0,1.0
+5014,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+5015,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_assistant_visible,2,0.0,1.0,0.0,1.0
+5016,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+5017,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_assistant_visible,3,0.0,1.0,0.0,1.0
+5018,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,instruction_only,1,0.0,0.0,0.0,0.0
+5019,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_plain,1,0.0,0.0,0.0,0.0
+5020,qwen3-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_think,4,0.0,0.0,0.0,0.0
+5021,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,instruction_only,3,0.0,0.0,0.0,0.0
+5022,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,instruction_only,4,0.0,0.0,0.0,0.0
+5023,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,instruction_only,2,0.0,0.0,0.0,0.0
+5024,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_plain,4,1.0,1.0,1.0,1.0
+5025,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_plain,0,0.0,0.0,0.0,0.0
+5026,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_plain,3,0.0,0.0,0.0,0.0
+5027,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_think,0,0.0,0.0,0.0,0.0
+5028,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_plain,2,1.0,1.0,1.0,1.0
+5029,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_think,2,1.0,1.0,1.0,1.0
+5030,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_think,1,0.0,0.0,0.0,0.0
+5031,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_think,3,1.0,1.0,1.0,1.0
+5032,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_think,4,0.0,0.0,0.0,0.0
+5033,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+5034,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_assistant_visible,2,0.0,1.0,0.0,1.0
+5035,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,instruction_only,0,0.0,0.0,0.0,0.0
+5036,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_assistant_visible,1,1.0,1.0,1.0,1.0
+5038,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+5039,qwen3-32b,HOw do you carry potatos home?,instruction_only,2,0.0,0.0,0.0,0.0
+5040,qwen3-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_assistant_visible,0,0.0,1.0,0.0,1.0
+5042,qwen3-32b,HOw do you carry potatos home?,instruction_only,0,0.0,0.0,0.0,0.0
+5043,qwen3-32b,HOw do you carry potatos home?,icl_user_plain,1,0.0,1.0,0.0,1.0
+5044,qwen3-32b,HOw do you carry potatos home?,instruction_only,3,0.0,0.0,0.0,0.0
+5046,qwen3-32b,HOw do you carry potatos home?,icl_user_plain,2,1.0,1.0,1.0,1.0
+5047,qwen3-32b,HOw do you carry potatos home?,icl_user_plain,0,0.0,0.0,0.0,0.0
+5049,qwen3-32b,HOw do you carry potatos home?,icl_user_plain,3,1.0,1.0,1.0,1.0
+5051,qwen3-32b,HOw do you carry potatos home?,instruction_only,4,0.0,0.0,0.0,0.0
+5053,qwen3-32b,HOw do you carry potatos home?,icl_user_think,0,0.0,0.0,0.0,0.0
+5055,qwen3-32b,HOw do you carry potatos home?,icl_user_plain,4,1.0,1.0,1.0,1.0
+5056,qwen3-32b,HOw do you carry potatos home?,instruction_only,1,0.0,0.0,0.0,0.0
+5057,qwen3-32b,HOw do you carry potatos home?,icl_user_think,1,0.0,1.0,0.0,1.0
+5058,qwen3-32b,HOw do you carry potatos home?,icl_user_think,3,1.0,1.0,1.0,1.0
+5064,qwen3-32b,HOw do you carry potatos home?,icl_user_think,4,1.0,1.0,1.0,1.0
+5065,qwen3-32b,HOw do you carry potatos home?,icl_user_think,2,0.0,0.0,0.0,0.0
+5069,qwen3-32b,HOw do you carry potatos home?,icl_assistant_visible,0,0.0,1.0,0.0,1.0
+5071,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,instruction_only,1,0.0,1.0,0.0,1.0
+5073,qwen3-32b,HOw do you carry potatos home?,icl_assistant_visible,2,1.0,1.0,1.0,1.0
+5076,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,instruction_only,0,0.0,0.0,0.0,0.0
+5077,qwen3-32b,HOw do you carry potatos home?,icl_assistant_visible,4,0.0,1.0,0.0,1.0
+5078,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,instruction_only,2,0.0,0.0,0.0,0.0
+5079,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,instruction_only,4,0.0,0.0,0.0,0.0
+5082,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,instruction_only,3,0.0,0.0,0.0,0.0
+5083,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_plain,0,0.0,1.0,0.0,1.0
+5085,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_plain,2,1.0,1.0,1.0,1.0
+5086,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_plain,1,0.0,1.0,0.0,1.0
+5089,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_plain,3,1.0,1.0,1.0,1.0
+5090,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_plain,4,1.0,1.0,1.0,1.0
+5092,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_think,0,1.0,1.0,1.0,1.0
+5095,qwen3-32b,HOw do you carry potatos home?,icl_assistant_visible,3,0.0,1.0,0.0,1.0
+5097,qwen3-32b,HOw do you carry potatos home?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+5098,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_think,2,1.0,1.0,1.0,1.0
+5101,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_think,1,1.0,1.0,1.0,1.0
+5102,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_think,3,1.0,1.0,1.0,1.0
+5105,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_think,4,0.0,0.0,0.0,0.0
+5109,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+5111,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,icl_assistant_visible,1,0.0,1.0,0.0,1.0
+5113,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+5118,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,icl_assistant_visible,4,0.0,1.0,0.0,1.0
+5120,qwen3-32b,If you stretch out your socks they will then have what kind of fit?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+5696,qwen3-32b,what might someone feel after hurting someone else?,instruction_only,0,0.0,0.0,0.0,0.0
+5697,qwen3-32b,what might someone feel after hurting someone else?,instruction_only,1,0.0,0.0,0.0,0.0
+5701,qwen3-32b,what might someone feel after hurting someone else?,instruction_only,3,0.0,0.0,0.0,0.0
+5703,qwen3-32b,what might someone feel after hurting someone else?,instruction_only,2,0.0,0.0,0.0,0.0
+5706,qwen3-32b,what might someone feel after hurting someone else?,icl_user_plain,0,0.0,0.0,0.0,0.0
+5707,qwen3-32b,what might someone feel after hurting someone else?,icl_user_plain,4,0.0,0.0,0.0,0.0
+5708,qwen3-32b,what might someone feel after hurting someone else?,icl_user_think,0,1.0,1.0,1.0,1.0
+5709,qwen3-32b,what might someone feel after hurting someone else?,icl_user_plain,3,0.0,0.0,0.0,0.0
+5710,qwen3-32b,what might someone feel after hurting someone else?,instruction_only,4,0.0,0.0,0.0,0.0
+5711,qwen3-32b,what might someone feel after hurting someone else?,icl_user_plain,1,0.0,0.0,0.0,0.0
+5712,qwen3-32b,what might someone feel after hurting someone else?,icl_user_think,1,1.0,1.0,1.0,1.0
+5713,qwen3-32b,what might someone feel after hurting someone else?,icl_user_think,3,0.0,0.0,0.0,0.0
+5714,qwen3-32b,what might someone feel after hurting someone else?,icl_user_think,4,0.0,0.0,0.0,0.0
+5715,qwen3-32b,what might someone feel after hurting someone else?,icl_user_think,2,0.0,0.0,0.0,0.0
+5717,qwen3-32b,what might someone feel after hurting someone else?,icl_user_plain,2,0.0,0.0,0.0,0.0
+5718,qwen3-32b,what might someone feel after hurting someone else?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+5719,qwen3-32b,what might someone feel after hurting someone else?,icl_assistant_visible,1,1.0,1.0,1.0,1.0
+5722,qwen3-32b,what might someone feel after hurting someone else?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+5723,qwen3-32b,what might someone feel after hurting someone else?,icl_assistant_visible,4,1.0,1.0,1.0,1.0
+5724,qwen3-32b,what might someone feel after hurting someone else?,icl_assistant_visible,3,1.0,1.0,1.0,1.0
+5964,qwen3-32b,Where might a television used at night be?,instruction_only,1,0.0,0.0,0.0,0.0
+5965,qwen3-32b,Where might a television used at night be?,instruction_only,0,0.0,0.0,0.0,0.0
+5969,qwen3-32b,Where might a television used at night be?,instruction_only,2,0.0,0.0,0.0,0.0
+5971,qwen3-32b,Where might a television used at night be?,instruction_only,3,0.0,0.0,0.0,0.0
+5972,qwen3-32b,Where might a television used at night be?,icl_user_plain,0,1.0,1.0,1.0,1.0
+5974,qwen3-32b,Where might a television used at night be?,icl_user_plain,1,1.0,1.0,1.0,1.0
+5977,qwen3-32b,Where might a television used at night be?,icl_user_plain,2,1.0,1.0,1.0,1.0
+5978,qwen3-32b,Where might a television used at night be?,icl_user_plain,3,0.0,0.0,0.0,0.0
+5979,qwen3-32b,Where might a television used at night be?,icl_user_think,0,1.0,1.0,1.0,1.0
+5980,qwen3-32b,Where might a television used at night be?,icl_user_think,1,1.0,1.0,1.0,1.0
+5982,qwen3-32b,Where might a television used at night be?,icl_user_plain,4,1.0,1.0,1.0,1.0
+5983,qwen3-32b,Where might a television used at night be?,icl_user_think,2,1.0,1.0,1.0,1.0
+5984,qwen3-32b,Where might a television used at night be?,instruction_only,4,0.0,0.0,0.0,0.0
+5985,qwen3-32b,Where might a television used at night be?,icl_user_think,3,0.0,0.0,0.0,0.0
+5986,qwen3-32b,Where might a television used at night be?,icl_user_think,4,1.0,1.0,1.0,1.0
+5988,qwen3-32b,Where might a television used at night be?,icl_assistant_visible,0,1.0,1.0,1.0,1.0
+5989,qwen3-32b,Where might a television used at night be?,icl_assistant_visible,1,1.0,1.0,1.0,1.0
+5990,qwen3-32b,Where might a television used at night be?,icl_assistant_visible,4,1.0,1.0,1.0,1.0
+5991,qwen3-32b,Where might a television used at night be?,icl_assistant_visible,3,1.0,1.0,1.0,1.0
+5992,qwen3-32b,Where might a television used at night be?,icl_assistant_visible,2,0.0,0.0,0.0,0.0

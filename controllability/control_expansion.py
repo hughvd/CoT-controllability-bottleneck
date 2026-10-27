@@ -45,7 +45,7 @@ def sentences(text):
     return [(a,b,text[a:b].strip()) for a,b in zip(starts,starts[1:]+[len(text)]) if text[a:b].strip()]
 
 
-def score_text(behavior, seed, text, marker=None):
+def score_text_strict(behavior, seed, text, marker=None):
     if not text.strip(): return 0., 0
     joint = seed + text
     offset = len(seed)
@@ -65,6 +65,64 @@ def score_text(behavior, seed, text, marker=None):
             values.append(content.endswith(str(marker)))
         else: raise ValueError(behavior)
     return (sum(values)/len(values),len(values)) if values else (None,0)
+
+
+def score_sentence_endings(seed,text,marker):
+    """Attach a standalone post-punctuation marker to the preceding sentence.
+
+    Keep original character offsets: only generated marker/ending content earns
+    credit. A marker's own period must not add a sentence to the denominator.
+    """
+    if not text.strip():return 0.,0
+    assert isinstance(marker,str) and marker
+    joint=seed+text;offset=len(seed);starts=[0]
+    after=re.compile(re.escape(marker)+r'(?!\w)[.!?]*')
+    for m in tr._SENT_SPLIT_RE.finditer(joint):
+        if re.fullmatch(r'\d+\.',joint[starts[-1]:m.start()].strip()):continue
+        end=m.end()
+        found=after.match(joint,end)
+        if found:
+            end=found.end()
+            while end<len(joint) and joint[end].isspace():end+=1
+        starts.append(end)
+    starts=sorted(set(starts+[len(joint)]))
+    terminal=re.compile(r'(?<!\w)'+re.escape(marker)+r'[.!?]*\s*$')
+    values=[]
+    for a,b in zip(starts,starts[1:]):
+        span=joint[a:b];found=terminal.search(span)
+        if not span.strip():continue
+        # A bare marker is not itself a compliant reasoning sentence.
+        good=found is not None and bool(span[:found.start()].strip(' \t\r\n.!?'))
+        if good:end=a+found.start()+len(marker)
+        else:end=a+len(span.rstrip().rstrip('.!?').rstrip())
+        if end>offset:values.append(good)
+    return (sum(values)/len(values),len(values)) if values else (None,0)
+
+
+def score_text(behavior,seed,text,marker=None):
+    if behavior=='suffix_sentences':return score_sentence_endings(seed,text,marker)
+    if behavior!='numbered_sentences':return score_text_strict(behavior,seed,text,marker)
+    if not text.strip():return 0.,0
+    joint=seed+text;offset=len(seed)
+    # Match the established response-level grader's consecutive-number walk.
+    # A missing number does not make all subsequent sentence positions wrong.
+    good=0;expected=1
+    for m in tr._NUM_TOKEN_RE.finditer(joint):
+        if int(m.group(1))==expected:
+            expected+=1
+            if m.start()>=offset:good+=1
+    # Removing numbering must preserve offsets for the generated-only boundary.
+    cleaned=tr._NUM_TOKEN_RE.sub(lambda m:' '*len(m.group()),joint)
+    starts=[0]+[m.end() for m in tr._SENT_SPLIT_RE.finditer(cleaned)]
+    n=0
+    for a,b in zip(starts,starts[1:]+[len(joint)]):
+        if not cleaned[a:b].strip():continue
+        start=a+len(joint[a:b])-len(joint[a:b].lstrip())
+        if start>=offset:n+=1
+    if not n:return (0.,0) if not seed else (None,0)
+    value=good/max(n,good,1)
+    if not seed:assert abs(value-tr._score_numbered_sentences(text))<1e-12
+    return value,n
 
 
 def transform(cell, behavior, raw_lookup):
@@ -186,18 +244,18 @@ def prepare():
     print('Prepared all manifests',flush=True)
 
 
-async def api_run(name,correlation=False):
+async def api_run(name,correlation=False,concurrency=12):
     import token_prefill_suite_api as api
     folder=ROOT/('correlation' if correlation else '')/name
     m=json.loads((folder/'manifest.json').read_text())
     api.s.ROOT=folder/'paid'
     client=api.PaidClient(cap=150. if not correlation else 25.,retries=8)
-    client.sem=asyncio.Semaphore(12)
+    client.sem=asyncio.Semaphore(concurrency)
     db=sqlite3.connect(folder/'outputs.sqlite');db.execute('pragma journal_mode=WAL')
     db.execute('create table if not exists outputs (id text primary key,payload text)');db.commit()
     tok=None if correlation else suite.tokenizer(m['model'])
     api_requests=[r for r in m['requests'] if correlation or name=='glm' or r['experiment']=='icl']
-    report=dict(status='running',expected=len(api_requests),started_at=time.time())
+    report=dict(status='running',expected=len(api_requests),started_at=time.time(),concurrency=concurrency)
     def save():
         report.update(outputs=db.execute('select count(*) from outputs').fetchone()[0],tracked_cost=client.spent(),updated_at=time.time())
         base.atomic_json(folder/'api_report.json',report)
@@ -239,7 +297,7 @@ async def api_run(name,correlation=False):
             except Exception as e:errors.append(dict(request_id=r['request_id'],error=repr(e)));return
     save()
     try:
-        await asyncio.gather(*(worker() for _ in range(12)))
+        await asyncio.gather(*(worker() for _ in range(concurrency)))
         report.update(status='failed' if errors else 'complete',errors=errors)
     finally:save();await client.client.close()
     if errors:raise RuntimeError(errors)
@@ -276,6 +334,7 @@ def score(name,correlation=False):
         value,units=score_text(r['behavior'],r['prefix_text'],text,r['marker'])
         row={k:r[k] for k in ['request_id','experiment','behavior','question','question_id','condition','prefix_tokens','arm','sample']}
         row.update(compliance_score=value,eligible_units=units,correct=int(pe.extract_answer(answer)==r['correct_letter']),
+                   strict_numbering_score=score_text_strict(r['behavior'],r['prefix_text'],text,r['marker'])[0] if r['behavior']=='numbered_sentences' else None,
                    empty_reasoning=not text.strip(),truncated=raw['finish_reason']=='length',reasoning=text)
         scored.append(row)
     import pandas as pd
@@ -286,8 +345,8 @@ def score(name,correlation=False):
 
 
 if __name__=='__main__':
-    ap=argparse.ArgumentParser();ap.add_argument('phase',choices=['prepare','api','score']);ap.add_argument('--model');ap.add_argument('--correlation',action='store_true');ap.add_argument('--root',type=Path);a=ap.parse_args()
+    ap=argparse.ArgumentParser();ap.add_argument('phase',choices=['prepare','api','score']);ap.add_argument('--model');ap.add_argument('--correlation',action='store_true');ap.add_argument('--root',type=Path);ap.add_argument('--concurrency',type=int,default=12);a=ap.parse_args()
     if a.root:ROOT=a.root.resolve()
     if a.phase=='prepare':prepare()
-    elif a.phase=='api':asyncio.run(api_run(a.model,a.correlation))
+    elif a.phase=='api':asyncio.run(api_run(a.model,a.correlation,a.concurrency))
     else:score(a.model,a.correlation)

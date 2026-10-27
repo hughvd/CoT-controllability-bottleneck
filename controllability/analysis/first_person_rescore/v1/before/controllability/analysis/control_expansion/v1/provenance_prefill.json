@@ -1,0 +1,51 @@
+{
+  "groups": {
+    "Addition": [
+      "prefix_sentences",
+      "numbered_sentences",
+      "suffix_sentences"
+    ],
+    "Suppression": [
+      "omit_word",
+      "no_first_person"
+    ],
+    "Style": [
+      "uppercase_thinking",
+      "leetspeak",
+      "spanish"
+    ]
+  },
+  "controls": [
+    "prefix_sentences",
+    "numbered_sentences",
+    "suffix_sentences",
+    "omit_word",
+    "no_first_person",
+    "uppercase_thinking",
+    "leetspeak",
+    "spanish"
+  ],
+  "sources": {
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/token_prefill/full_v2/qwen14/scores.csv": "f268a85cfd4a5b919bc79370f027b08c97cf79154daedb95489817590db3d880",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/qwen14/manifest.json": "91c2c521fcb2cf5aa7a3eb3706bfcd1ff7cc8bf1a55b8a4002af88f69b01bb15",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/numbered_icl_repair/qwen14/manifest.json": "b8b36b6f8590b0b777f5fe728a1d52cf491849a8c5fa2d7f0e02b15dae668357",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/qwen14/scores.csv": "3a26329f53e456f8f9b144ae23443e18b825f21e02df56f8523b81627aa0abda",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/token_prefill/full_v2/qwen32/scores.csv": "e9a709cab8b60a63da385ee3feafc8738e7967e3019ff8007da6ad37bff0ca2d",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/qwen32/manifest.json": "b9c5f1d1559631aa4c109080ba24a320d896e6c802d8c139cbe13a82f3a7ff8a",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/numbered_icl_repair/qwen32/manifest.json": "da56ffba3514b285a2a74950b8ddbda43074f014e301612d11f10de6af869b27",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/qwen32/scores.csv": "542cd727e78d8de7e5c3156cef1915abf4eb3d9076180e6b1af8a362b7767c72",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/token_prefill/olmo31_v1/olmo31/scores.csv": "ad19f1f50deb66032477822af5dc9e77212994719b39e02654489517d0b0ba6e",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/olmo31/scores.csv": "294b246d41554ec4de714f394fefc143e8c365e44df384a6d3e79f42904d539d",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/token_prefill/model_source_v1/olmo31/scores.csv": "0c1ea2dd8584b8520c1bd70b06e8c8ebd7aa7448f8b045fe945070b7b7d97c0a",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/token_prefill/model_source_v1/olmo31/manifest.json": "5be1a6fbc9ec0765825a417fbd0cb4561cbc0a6aa9025df57d1e492b5731aa4b",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/token_prefill/model_source_v1/olmo31/examples.json": "db4f9f9fcd4b8bf3497c38cbca094bd31f4bbd1052a150869e89a48ef57f1d82",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/token_prefill/model_source_v1/olmo31/sources.json": "2bc4436dcf3b340f4b4a03b7389394fa4d3d3223a699f3aa9ad0008d9582f8e6",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/token_prefill/full_v2/glm/scores.csv": "56a06bfae6ab5a40e3908b7d9b76b6db6aed4385c026f3a6f4211f2eb22d2af6",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/glm/scores.csv": "276bfe01ab40a4eb4eab1e3857f074346f626ca073894210f3f8afbfc536a870",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/token_prefill/model_source_v1/glm/scores.csv": "56194e24dbf09bb0670fd6ca8feedc2551fe93d29f704a52283b42310d30ab4c",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/token_prefill/model_source_v1/glm/manifest.json": "210c1d2735e1394e6166db887207bfddf63aaa26b55d847542517c7260c28290",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/token_prefill/model_source_v1/glm/examples.json": "0ab2747331988d57bb26f550238faeb534daaa9871bf8ac406f3c6d14f0a5b03",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/token_prefill/model_source_v1/glm/sources.json": "7ae707535289c54861fd1f8b6a28dcd1c08a222f65ef0c6ee31b6c4932d040cf"
+  },
+  "analysis_sha256": "836f4ca26a2be602e31e119d45d0d1b61064b045b7869e862cc0c648bce9b708"
+}

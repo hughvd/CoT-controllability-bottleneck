@@ -32,9 +32,10 @@ def main():
         corr=list((ROOT/'correlation').glob('*/scoring_report.json'))
         correlation=len(corr)==12 and all(complete(p,300) for p in corr)
         old=repo/'controllability/results/ban_user_icl/seven_controls_extension_v1/glm/scoring_report.json'
-        ban=primary and old.exists() and json.loads(old.read_text()).get('scored')==1080
+        old_pipeline=old.parent.parent/'pipeline_report.json'
+        ban=primary and old.exists() and json.loads(old.read_text()).get('scored')==1080 and old_pipeline.exists() and json.loads(old_pipeline.read_text()).get('status')=='complete'
         groups={
-            'correlation':(correlation,[[sys.executable,'-m','monitorability.control_type_viewer'],[sys.executable,'-m','monitorability.convergent_validity'],[sys.executable,'-m','monitorability.plot_control_monitor_heatmap']]),
+            'correlation':(correlation,[[sys.executable,'controllability/control_expansion.py','score','--model',p.parent.name,'--correlation'] for p in sorted(corr)]+[[sys.executable,'-m','monitorability.control_type_viewer'],[sys.executable,'-m','monitorability.convergent_validity'],[sys.executable,'-m','monitorability.plot_control_monitor_heatmap']]),
             'prefill':(primary,[[sys.executable,'controllability/analysis/control_expansion_figures.py','--only','prefill']]),
             'icl':(primary,[[sys.executable,'controllability/analysis/control_expansion_figures.py','--only','icl']]),
             'ban':(ban,[[sys.executable,'controllability/analysis/control_expansion_figures.py','--only','ban']]),

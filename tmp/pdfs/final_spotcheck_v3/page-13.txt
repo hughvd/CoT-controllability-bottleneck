@@ -1,0 +1,69 @@
+648
+649
+650
+651
+652
+653
+654
+655
+656
+657
+658
+659
+660
+661
+662
+663
+664
+665
+666
+667
+668
+669
+670
+671
+672
+673
+674
+675
+676
+677
+678
+679
+680
+681
+682
+683
+684
+685
+686
+687
+688
+689
+690
+691
+692
+693
+694
+695
+696
+697
+698
+699
+700
+701
+Under review as a conference paper at ICLR 2027
+Sydney V on Arx and Amy Deng. Cot may be highly infor-
+mative despite “unfaithfulness”.https://metr.org/blog/
+2025-08-08-cot-may-be-highly-informative-despite-unfaithfulness/,
+08 2025.
+Xuezhi Wang and Denny Zhou. Chain-of-thought reasoning without prompting.Advances in Neural
+Information Processing Systems, 37:66383–66409, 2024.
+Yubo Wang, Xueguang Ma, Ge Zhang, Yuansheng Ni, Abhranil Chandra, Shiguang Guo, Weiming
+Ren, Aaran Arulraj, Xuan He, Ziyan Jiang, et al. Mmlu-pro: A more robust and challenging multi-
+task language understanding benchmark.Advances in Neural Information Processing Systems,
+37:95266–95290, 2024.
+Chen Yueh-Han, Robert McCarthy, Bruce W. Lee, He He, Ian Kivlichan, Bowen Baker, Micah
+Carroll, and Tomek Korbak. Reasoning models struggle to control their chains of thought, 2026.
+URLhttps://arxiv.org/abs/2603.05706.
+13

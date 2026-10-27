@@ -1,0 +1,232 @@
+{
+  "source": "results/monitorability/convergent_validity/data.json",
+  "source_sha256": "10dedb3ba77f987af5936289bccf9fdf619b021ce491ff153d8f6d77708f0d8d",
+  "metric": "soft compliance, K=0 + instruction",
+  "models": [
+    "qwen3-32b",
+    "gpt-oss-120b",
+    "glm-5.2",
+    "deepseek-r1-0528",
+    "kimi-k2-thinking",
+    "gemma-4-31b-it",
+    "qwen3.5-27b",
+    "qwen3.6-27b",
+    "deepseek-v3.2",
+    "deepseek-v4-pro",
+    "minimax-m3",
+    "nemotron-3-super-120b"
+  ],
+  "controls": [
+    "prefix_sentences",
+    "numbered_sentences",
+    "suffix_sentences",
+    "uppercase_thinking",
+    "leetspeak",
+    "spanish",
+    "omit_word",
+    "no_first_person"
+  ],
+  "evaluations": [
+    [
+      "mon_gmean_gpqa",
+      "GPQA"
+    ],
+    [
+      "mon_gmean_wmdp_sandbagging",
+      "WMDP"
+    ],
+    [
+      "mon_gmean_memory_advice",
+      "Memory advice"
+    ],
+    [
+      "mon_gmean_scruples_suggest_wrong",
+      "Scruples"
+    ],
+    [
+      "mon_outcome_gmean_cot_only",
+      "Flaky Tools (CharXiv)"
+    ],
+    [
+      "mon_process_tpr_cot_only",
+      "GPQA Physics"
+    ]
+  ],
+  "pair_counts": [
+    12
+  ],
+  "source_run_hashes": {
+    "controllability/results/control_expansion/v1/correlation/qwen3-32b/scores.csv": "14b1ff661a6bc4579e6efd7a7627dac8c17dddc791941752d039a5f10847a1d6",
+    "results/prefill_continuation/base_qwen3_32b_k0fix/sweep.json": "e303eaf71ad425df120c7f9f865a0b6648ef52c236acc03766616d3907a6f80c",
+    "results/monitorability/qwen3-32b/gmean_summary.csv": "5310eeacca53f18be45a462bd0ecb8a8ba77d4d8513d020f7b62167fe4f11afe",
+    "results/monitorability/qwen3-32b/outcome_metrics.json": "4ab829f8761e6a32ae527f7bd010d845b46bc3701a30141c100e8f76a95c7452",
+    "results/monitorability/qwen3-32b/process_metrics.json": "e6f78ef74356bea44b323a707653235c53fd35f0f95a0077fab1aa966bbd669e",
+    "controllability/results/control_expansion/v1/correlation/gpt-oss-120b/scores.csv": "be640ece0d4d6910cdd83ed2b62fd306bdd5410d280375453c89e849a2987af7",
+    "results/prefill_continuation/base_gptoss_120b_k0high/sweep.json": "fef3882b1c12f8cc50b537f2732229b46066dd6236faef1624f1c97de0fc5b05",
+    "results/monitorability/gpt-oss-120b/gmean_summary.csv": "2fff69d4ca78bb8e4610b6c8aaca34eee64d2f2b3058e7ccde7966e90c2c9c42",
+    "results/monitorability/gpt-oss-120b/outcome_metrics.json": "196ff57d4ab0729c2145b493730d2e1f851b643443fcf3c0a647cbdd0e020944",
+    "results/monitorability/gpt-oss-120b/process_metrics.json": "a4b4075041c842469be7bea699a5823fe712acf1026a35f121629967019544bc",
+    "controllability/results/control_expansion/v1/correlation/glm-5.2/scores.csv": "c5098228abd6bc9c66a311a84589c38d2ee1caf2a48f3d76ea539c60e74d6e34",
+    "results/prefill_continuation/base_glm_5_2/sweep.json": "3bb0c64fe27a34e7a2ffbe95f7bf0a1e68a378e1ad7d8a17d372fd33bb728731",
+    "results/monitorability/glm-5.2/gmean_summary.csv": "19d719c93c0e9b4233d688f94b91bcadfd09917181d76547dfc1ed9915a8bc2f",
+    "results/monitorability/glm-5.2/outcome_metrics.json": "16d13d52dd6fb648202eee023be0efb01389713cffa2596a7564a03f8637076f",
+    "results/monitorability/glm-5.2/process_metrics.json": "21f1c0db10f24398cc83c537ffd3a39fd579f98c3731c580d2f4ada2403bf78c",
+    "controllability/results/control_expansion/v1/correlation/deepseek-r1-0528/scores.csv": "77e12c43e52fb2106326c274b43b48608baa8ee5644109fce176dccc10a430ba",
+    "results/prefill_continuation/base_deepseek_r1_k0fix/sweep.json": "f719f65f36a70786a2a81d622399d10ac01145bd57fad405b6a7020b8bc986f1",
+    "results/monitorability/deepseek-r1-0528/gmean_summary.csv": "469c81328c7dd02eaaf1fb626e67a20c3553517828e240c1516185beb184aec1",
+    "results/monitorability/deepseek-r1-0528/outcome_metrics.json": "0434d8ab3bbaf7273afa72a30cacfdb17935ed58385125c48d4268ca5649bebb",
+    "results/monitorability/deepseek-r1-0528/process_metrics.json": "6c45f4f6316b8946b56b4b1165202b3d2158be47fcfa9057af51eb227561c066",
+    "controllability/results/control_expansion/v1/correlation/kimi-k2-thinking/scores.csv": "8d8705e5c04d20f1d735b73c6d4154b860774928d9436010934784deb93c9176",
+    "results/prefill_continuation/base_kimi_k2/sweep.json": "d55daba00d36a8f27bb5478b2d624467214b12f89e149f0a23af36a5ad36189d",
+    "results/monitorability/kimi-k2-thinking/gmean_summary.csv": "d99f6a80b9e62570ed7592b0b4496b49b6d0f8374f0e5ece4aef5fd66c372080",
+    "results/monitorability/kimi-k2-thinking/outcome_metrics.json": "94a75ce64d0045ec2a1a48bc648bee2723d6ffb04d889c3c5171a92636966ab9",
+    "results/monitorability/kimi-k2-thinking/process_metrics.json": "28183ac00c053bf605f30c8da3fd520ade7909f629fa2e2bc76ffb5421a5f452",
+    "controllability/results/control_expansion/v1/correlation/gemma-4-31b-it/scores.csv": "1614be954bdaff9bcaacaae8cb671459023cd533bb64d32607b7c96abae429f2",
+    "results/prefill_continuation/base_gemma4_31b/sweep.json": "68fe1b4645078812d4df336ba1ea063dd31dc07eb8527753b63e02ffc53368ea",
+    "results/monitorability/gemma-4-31b-it/gmean_summary.csv": "3b52d33bd203be2816cc11d00b3126f3e69818784c33ef37bede3b69a86d2e57",
+    "results/monitorability/gemma-4-31b-it/outcome_metrics.json": "7b6857a44d695bd7b2d87e779d7809d00da399146f733b387a3740c0fa99cf08",
+    "results/monitorability/gemma-4-31b-it/process_metrics.json": "e9d9b62025e8f3c89019bb4f66de28faee10a4878cc4d621d48f045595ce19f8",
+    "controllability/results/control_expansion/v1/correlation/qwen3.5-27b/scores.csv": "57e1a649a8068c78625b9e357c536069ad4d21a7bdcbf8408b5d1b92a5fc34da",
+    "results/prefill_continuation/base_qwen35_27b/sweep.json": "028e666aa2523363b80751bdad428d062db3ac9d57ccc684c67a3184cd691195",
+    "results/monitorability/qwen3.5-27b/gmean_summary.csv": "17963900eb32b295454d126503c098c3860bf319d5f32c258baf3ab49a27216a",
+    "results/monitorability/qwen3.5-27b/outcome_metrics.json": "864d068ea069140118e833cd81cbc04e8b9372dba572fb5c9e4b36634bdb739a",
+    "results/monitorability/qwen3.5-27b/process_metrics.json": "5dcc4017712d8ab70bb590c9964329a8fcde54a0cb5023d43ccecadf7525a956",
+    "controllability/results/control_expansion/v1/correlation/qwen3.6-27b/scores.csv": "c6b6741fe7f549addcc5844c2ef20fcda2e97b974f23deffdfabf846ef57620e",
+    "results/prefill_continuation/base_qwen36_27b/sweep.json": "655eb756388a3e457fd18fa47e9264755baab21418708d53cf1b8f0f25a342ab",
+    "results/monitorability/qwen3.6-27b/gmean_summary.csv": "6b1f96762c5be3524c8ee7f3c422a6f39c312bf05d791755858bc619860fafbd",
+    "results/monitorability/qwen3.6-27b/outcome_metrics.json": "d7bb124457b230f815fa02ad9bddc4d58507130eaff5b943ceff90fbf732199f",
+    "results/monitorability/qwen3.6-27b/process_metrics.json": "12f020277a60ff525558801b058c467a819c76cf653f53aee3fa408ebe3d394b",
+    "controllability/results/control_expansion/v1/correlation/deepseek-v3.2/scores.csv": "0213e618fb28f95e58040c7a1571d4871e0a087479005c0a01a92be4e2216d98",
+    "results/prefill_continuation/base_deepseek_v32/sweep.json": "40cd0c416a6cdb9b6b2021899544d1e0b4df745767bf018ffedf0704a6092c1d",
+    "results/monitorability/deepseek-v3.2/gmean_summary.csv": "72db8b33b8e5c657ace199290d79ea111cd62674622a1bfddd674b764bb288b1",
+    "results/monitorability/deepseek-v3.2/outcome_metrics.json": "ded4c9c1ff5c24013937f6d8dc264962221eab15bbbda83ecf0e5f104d639bb6",
+    "results/monitorability/deepseek-v3.2/process_metrics.json": "f9538e12436a236cb8f64d91204794877603e6eb00e3db1a181bc9d6e0413e2d",
+    "controllability/results/control_expansion/v1/correlation/deepseek-v4-pro/scores.csv": "fca1969c50252c36ca5ed3022026338de0679785e57e776c121e22bcd865b42e",
+    "results/prefill_continuation/base_deepseek_v4pro/sweep.json": "771b5b77fdeb3f6735461a46f2f8059f74f193eb460927d0aa7bfd24fafdfe46",
+    "results/monitorability/deepseek-v4-pro/gmean_summary.csv": "b44108d7eb7e9ca0fc2ee2b63a5220522d2833ce374ae463e90145ae9a0e0e53",
+    "results/monitorability/deepseek-v4-pro/outcome_metrics.json": "c64fb0abfe6669eba12b5301dc1d0df32a42c589ca3f7ba20a86d1d66ec5f280",
+    "results/monitorability/deepseek-v4-pro/process_metrics.json": "6e03ca0b555fec539a7ac7eea2f7e75dc1df13b5df9fee7313c4afc03c553360",
+    "controllability/results/control_expansion/v1/correlation/minimax-m3/scores.csv": "7245cd869b3adb4b7b1d40e483630c3e1776d654c5c654456c61937756a5b86e",
+    "results/prefill_continuation/base_minimax_m3/sweep.json": "0600ad68f4d33aa93f0a5e86efabe8acbaf3afdde2d9f40d5f4b5a358d6c3572",
+    "results/monitorability/minimax-m3/gmean_summary.csv": "5a92c1a4d5272435c9d5ba2be065d60b140cb4b9be8a065dc6c7de5955d3ef0f",
+    "results/monitorability/minimax-m3/outcome_metrics.json": "e10fc6b8ba032485018bc0c472735b51be0225ef38b8e17bbc17cec3b12a8447",
+    "results/monitorability/minimax-m3/process_metrics.json": "86c1782a69f89883c4598747671d0cb6c7c89099aff46041357cdc7db6981658",
+    "controllability/results/control_expansion/v1/correlation/nemotron-3-super-120b/scores.csv": "bfa64d8fd72467f0a363fb5c737def2784696c57f846c7c4945838f1ad5b2042",
+    "results/prefill_continuation/base_nemotron3_super/sweep.json": "a2db0165cb1561322f417546779f8b3242c069290c0797c7f150351b7a816095",
+    "results/monitorability/nemotron-3-super-120b/gmean_summary.csv": "c2479ffcf6f7892b081616bc0bb0d2d359f5601364e8c2e1d8ec4c115364a4f2",
+    "results/monitorability/nemotron-3-super-120b/outcome_metrics.json": "cbc279e7b48a310cdd370bd7af23235a768dcd392ff6aaabb5ca865622e44897",
+    "results/monitorability/nemotron-3-super-120b/process_metrics.json": "fe2080f044cdc5c999667542b7c82c91f523178e2b0f7cf40ffafb3b94ec379f",
+    "results/monitorability/gpqa_expansion/v1/current_figure_snapshot.json": "95509a769c86278a72df0df4e2830e85428be7fb336f1c389abc4c9a768d89ea",
+    "results/monitorability/gpqa_expansion/v1/figure_snapshots/20260925T235909Z/gpt-oss-120b/gmean_summary.csv": "22ba225d4301d3d7d75d1554a55409f97417e96e8a60c2fb376fee9972a3a6e5",
+    "results/monitorability/gpqa_expansion/v1/figure_snapshots/20260925T235909Z/glm-5.2/gmean_summary.csv": "3baf24a6c711586c8dac2d5895a3c09567502b707ae520c72d29e63402267249",
+    "results/monitorability/gpqa_expansion/v1/figure_snapshots/20260925T235909Z/kimi-k2-thinking/gmean_summary.csv": "1d521e322702cb3c36ea4192cc7f1f8834ce09eec0caa572d9c7a2266a7cb96b",
+    "results/monitorability/gpqa_expansion/v1/figure_snapshots/20260925T235909Z/deepseek-v3.2/gmean_summary.csv": "37911f3ca46ed5ade069873d87a1266ceddc0ff720653971cb436acd10a8ad2e",
+    "results/monitorability/gpqa_expansion/v1/figure_snapshots/20260925T235909Z/deepseek-v4-pro/gmean_summary.csv": "ee2ddcf040d318787952ba7c245a0504a6e6217eb97874d902399f6b43e75416",
+    "results/monitorability/gpqa_expansion/v1/figure_snapshots/20260925T235909Z/minimax-m3/gmean_summary.csv": "d3b073cfecc36838105cfd96ab9a3ec191649426f943f6d43062ed48db0a3994"
+  },
+  "gpqa_snapshot": {
+    "created_at_utc": "20260925T235909Z",
+    "provisional": true,
+    "expanded_models": 6,
+    "models": {
+      "qwen3-32b": {
+        "cohort": "original",
+        "questions": 80,
+        "samples_per_arm": 4,
+        "bootstrap_draws": 200,
+        "summary_path": "results/monitorability/qwen3-32b/gmean_summary.csv",
+        "summary_sha256": "5310eeacca53f18be45a462bd0ecb8a8ba77d4d8513d020f7b62167fe4f11afe"
+      },
+      "gpt-oss-120b": {
+        "cohort": "expanded",
+        "questions": 95,
+        "samples_per_arm": 20,
+        "bootstrap_draws": 1000,
+        "summary_path": "results/monitorability/gpqa_expansion/v1/figure_snapshots/20260925T235909Z/gpt-oss-120b/gmean_summary.csv",
+        "summary_sha256": "22ba225d4301d3d7d75d1554a55409f97417e96e8a60c2fb376fee9972a3a6e5"
+      },
+      "glm-5.2": {
+        "cohort": "expanded",
+        "questions": 95,
+        "samples_per_arm": 20,
+        "bootstrap_draws": 1000,
+        "summary_path": "results/monitorability/gpqa_expansion/v1/figure_snapshots/20260925T235909Z/glm-5.2/gmean_summary.csv",
+        "summary_sha256": "3baf24a6c711586c8dac2d5895a3c09567502b707ae520c72d29e63402267249"
+      },
+      "deepseek-r1-0528": {
+        "cohort": "original",
+        "questions": 80,
+        "samples_per_arm": 4,
+        "bootstrap_draws": 200,
+        "summary_path": "results/monitorability/deepseek-r1-0528/gmean_summary.csv",
+        "summary_sha256": "469c81328c7dd02eaaf1fb626e67a20c3553517828e240c1516185beb184aec1"
+      },
+      "kimi-k2-thinking": {
+        "cohort": "expanded",
+        "questions": 95,
+        "samples_per_arm": 20,
+        "bootstrap_draws": 1000,
+        "summary_path": "results/monitorability/gpqa_expansion/v1/figure_snapshots/20260925T235909Z/kimi-k2-thinking/gmean_summary.csv",
+        "summary_sha256": "1d521e322702cb3c36ea4192cc7f1f8834ce09eec0caa572d9c7a2266a7cb96b"
+      },
+      "gemma-4-31b-it": {
+        "cohort": "original",
+        "questions": 80,
+        "samples_per_arm": 4,
+        "bootstrap_draws": 200,
+        "summary_path": "results/monitorability/gemma-4-31b-it/gmean_summary.csv",
+        "summary_sha256": "3b52d33bd203be2816cc11d00b3126f3e69818784c33ef37bede3b69a86d2e57"
+      },
+      "qwen3.5-27b": {
+        "cohort": "original",
+        "questions": 80,
+        "samples_per_arm": 4,
+        "bootstrap_draws": 200,
+        "summary_path": "results/monitorability/qwen3.5-27b/gmean_summary.csv",
+        "summary_sha256": "17963900eb32b295454d126503c098c3860bf319d5f32c258baf3ab49a27216a"
+      },
+      "qwen3.6-27b": {
+        "cohort": "original",
+        "questions": 80,
+        "samples_per_arm": 4,
+        "bootstrap_draws": 200,
+        "summary_path": "results/monitorability/qwen3.6-27b/gmean_summary.csv",
+        "summary_sha256": "6b1f96762c5be3524c8ee7f3c422a6f39c312bf05d791755858bc619860fafbd"
+      },
+      "deepseek-v3.2": {
+        "cohort": "expanded",
+        "questions": 95,
+        "samples_per_arm": 20,
+        "bootstrap_draws": 1000,
+        "summary_path": "results/monitorability/gpqa_expansion/v1/figure_snapshots/20260925T235909Z/deepseek-v3.2/gmean_summary.csv",
+        "summary_sha256": "37911f3ca46ed5ade069873d87a1266ceddc0ff720653971cb436acd10a8ad2e"
+      },
+      "deepseek-v4-pro": {
+        "cohort": "expanded",
+        "questions": 95,
+        "samples_per_arm": 20,
+        "bootstrap_draws": 1000,
+        "summary_path": "results/monitorability/gpqa_expansion/v1/figure_snapshots/20260925T235909Z/deepseek-v4-pro/gmean_summary.csv",
+        "summary_sha256": "ee2ddcf040d318787952ba7c245a0504a6e6217eb97874d902399f6b43e75416"
+      },
+      "minimax-m3": {
+        "cohort": "expanded",
+        "questions": 95,
+        "samples_per_arm": 20,
+        "bootstrap_draws": 1000,
+        "summary_path": "results/monitorability/gpqa_expansion/v1/figure_snapshots/20260925T235909Z/minimax-m3/gmean_summary.csv",
+        "summary_sha256": "d3b073cfecc36838105cfd96ab9a3ec191649426f943f6d43062ed48db0a3994"
+      },
+      "nemotron-3-super-120b": {
+        "cohort": "original",
+        "questions": 80,
+        "samples_per_arm": 4,
+        "bootstrap_draws": 200,
+        "summary_path": "results/monitorability/nemotron-3-super-120b/gmean_summary.csv",
+        "summary_sha256": "c2479ffcf6f7892b081616bc0bb0d2d359f5601364e8c2e1d8ec4c115364a4f2"
+      }
+    },
+    "note": "Provisional GPQA: 6/12 expanded cohorts (95 questions, 20/arm); 6/12 original cohorts (80 questions, 4/arm). Other evaluations unchanged. Expanded: gpt-oss-120b, glm-5.2, kimi-k2-thinking, deepseek-v3.2, deepseek-v4-pro, minimax-m3.",
+    "figure_note": "Provisional GPQA: 6/12 expanded cohorts (95 questions, 20/arm);\n6/12 original cohorts (80 questions, 4/arm). Other evaluations unchanged."
+  }
+}

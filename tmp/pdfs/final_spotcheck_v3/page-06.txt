@@ -1,0 +1,111 @@
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+Under review as a conference paper at ICLR 2027
+3.3 EXPLORING THECONTROLLABILITYBOTTLENECK.
+Models can maintain control over their CoT.A simple exploit is to then prefill reasoning traces
+with sentences that are compliant with the control instruction and see if the model can maintain
+compliance. For each model, we seed the CoT withK(K= 0,1. . . ,64) tokens taken from the
+start of a compliant example and measure the control compliance score on the following generated
+reasoning trace. We do this with both control instructions and no instructions provided in the prompt.
+We evaluate controllability on our main 8 control tasks using 30 questions per control task and five
+samples per condition.
+Indeed, in Figure 5 we see that this works. Seeding with just one token has a substantial impact
+on CoT-controllability, with more tokens corresponding to a marginal increase in controllability.
+Additionally, we see that the presence of instructions improves controllability, which supports that
+models CoT are in fact affected by these control instructions (but often do not reflect that in the
+decoded tokens). Figure 10 in Appendix B shows per control type performance. Prefilling substan-
+tially improves many addition and style tasks, particularly for Qwen and OLMo. Word omission
+changes comparatively little, while first-person avoidance benefits more from longer prefixes. This
+is opposite to what we found for ICL, where suppression control types were the most affected.
+Figure 6:First-token banning increases aver-
+age reasoning compliance.
+Removing the bottleneck.In Section 3.2, we
+find that Qwen and Olmo opening thinking distri-
+butions are dominated byOkayandAlright,
+and GLM-5.2 has a sizeable concentration on
+The. Thus, another simple exploit is to ban these
+tokens at the start of the reasoning trace. We ban
+OkayandAlrightat the first reasoning posi-
+tion for Qwen and OLMo. The alternative open-
+ing is sampled from the remaining distribution,
+after which generation proceeds without restric-
+tion.2 We evaluate our eight main control tasks
+using 30 questions per task and three samples per
+question in each of four conditions: instruction-
+only, first-token banning, user ICL, and user ICL
+combined with banning. We sample at tempera-
+ture0.6with no top-ptruncation and a maximum
+of 8,192 new tokens.
+Figure 6 shows that first-token banning increases average compliance from 0.078 to 0.254 for
+Qwen3-32B and from 0.029 to 0.225 for OLMo-3.1-32B. Combining banning with user-ICL fur-
+ther increases compliance to 0.490 and 0.374, respectively, exceeding either intervention alone.
+These gains suggest that demonstrations can become more effective when models are prevented
+from choosing their dominant openings. The combination is particularly effective for Qwen up-
+percase and leetspeak, which reach 0.775 and 0.652 despite remaining near zero with user-ICL
+alone, and for OLMo numbering and leetspeak, which reach 0.418 and 0.747 (Appendix Figure 12).
+However, the interventions do not combine favorably on every task: Qwen sentence-ending compli-
+ance is higher with user-ICL alone, while OLMo Spanish compliance is higher with banning alone.
+Unlike compliant prefilling, banning leaves the alternative opening to the model. Together, these
+results support an initiation bottleneck that limits the effectiveness of prompting, while showing that
+escaping dominant openings does not uniformly recover control.
+3.4 VALIDATING THECONTROLLABILITYCONSTRUCTS
+Across the elicitation experiments, suppression tasks exhibit a different response pattern from many
+addition and style tasks, particularly in their weaker response to compliant prefilling. This raises the
+question of whether these categories capture partially distinct capabilities. We investigate this by
+measuring correlations between performance on the eight control tasks across twelve models. For
+2We do not include GLM as API does not allow this kind of access. To get around this, we attempted to
+implement this restriction through rejection sampling, which ended up being far too inefficient for effective
+evaluation.
+6

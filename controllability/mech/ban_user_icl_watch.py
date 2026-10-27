@@ -68,8 +68,12 @@ def main(experiment_root=ROOT, seven_controls=False):
 
 
 if __name__ == '__main__':
+    import fcntl
     parser=argparse.ArgumentParser()
     parser.add_argument('--experiment-root',default=str(ROOT))
     parser.add_argument('--seven-controls',action='store_true')
     args=parser.parse_args()
-    main(args.experiment_root,args.seven_controls)
+    with (Path(args.experiment_root)/'collection.lock').open('a+') as lock:
+        try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        except BlockingIOError:raise SystemExit('A collector is already running for this experiment.')
+        main(args.experiment_root,args.seven_controls)

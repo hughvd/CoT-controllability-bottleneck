@@ -1,0 +1,49 @@
+{
+  "groups": {
+    "Addition": [
+      "prefix_sentences",
+      "numbered_sentences",
+      "suffix_sentences"
+    ],
+    "Suppression": [
+      "omit_word",
+      "no_first_person"
+    ],
+    "Style": [
+      "uppercase_thinking",
+      "leetspeak",
+      "spanish"
+    ]
+  },
+  "controls": [
+    "prefix_sentences",
+    "numbered_sentences",
+    "suffix_sentences",
+    "omit_word",
+    "no_first_person",
+    "uppercase_thinking",
+    "leetspeak",
+    "spanish"
+  ],
+  "sources": {
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/iclfull_qwen3_14b_donorfix_v1_icl_per_sample.csv": "ed5d740ba4274da4543bf0c207b0e094f0ce39141dc408f74f8cd1e6369a6554",
+    "controllability/rescore_first_person.py": "83048da0115cf0b47b93b795769d182494621c7e2fae876fe896413475f2e52a",
+    "controllability/transforms.py": "31ad74fde99054e2782cf6ccf88eebea05d2a1347c9f7dd0d090885294a38844",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/qwen14/manifest.json": "91c2c521fcb2cf5aa7a3eb3706bfcd1ff7cc8bf1a55b8a4002af88f69b01bb15",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/numbered_icl_repair/qwen14/manifest.json": "b8b36b6f8590b0b777f5fe728a1d52cf491849a8c5fa2d7f0e02b15dae668357",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/qwen14/scores.csv": "3a26329f53e456f8f9b144ae23443e18b825f21e02df56f8523b81627aa0abda",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/iclfull_qwen3_32b_donorfix_v1_icl_per_sample.csv": "320b385be69b5ad75ae642219d5e54ae131fa26a74027509e1e5c3ec87bff41c",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/qwen32/manifest.json": "b9c5f1d1559631aa4c109080ba24a320d896e6c802d8c139cbe13a82f3a7ff8a",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/numbered_icl_repair/qwen32/manifest.json": "da56ffba3514b285a2a74950b8ddbda43074f014e301612d11f10de6af869b27",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/qwen32/scores.csv": "542cd727e78d8de7e5c3156cef1915abf4eb3d9076180e6b1af8a362b7767c72",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/iclfull_olmo_3_1_32b_donorfix_v1_icl_per_sample.csv": "d6cddd930d7584ece2c284f13aa2c6e0788f99ca166883979fe473bb28bccf00",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/olmo31/manifest.json": "900e37f5f3467af1b374a352557d0c7a79d86b1869cd2db5d5bfbdef05edeb3a",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/numbered_icl_repair/olmo31/manifest.json": "933c9e3dc3c8d8e20a428bc12b38d363bd27b4326a98c5f8b5eb90caeb4cc475",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/olmo31/scores.csv": "294b246d41554ec4de714f394fefc143e8c365e44df384a6d3e79f42904d539d",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/iclfull_glm_5_2_donorfix_v1_icl_per_sample.csv": "e6fd727f33148c4b947427a8c4f08e892e85f0de39b2fa3415634840bef7ae97",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/glm/manifest.json": "2f799e9ed85030917572cb64f54550da8bcbd384436208f572044de269506892",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/numbered_icl_repair/glm/manifest.json": "6d2a6addf0bb98ddee6eeec1f5f9196fad0bcefa2ee9db2d0d41c4d0eef0b814",
+    "/Users/hughv/Research/monitorability-scaling/controllability/results/control_expansion/v1/glm/scores.csv": "276bfe01ab40a4eb4eab1e3857f074346f626ca073894210f3f8afbfc536a870"
+  },
+  "analysis_sha256": "3853727d2c9ab1144fcfb875b80392e2c533aaf2fa9674a2769575aaf2d3fe0b"
+}

@@ -22,10 +22,8 @@ from paper_style import apply_style, export_figure, LABEL_SIZE, TICK_SIZE, MODEL
 ROOT = HERE.parent / 'data/rank_runs/opening_suite_v1/analysis'
 OUT = HERE / 'figs'
 NAME = 'opening_rank_probability'
-TYPES = ['uppercase_thinking', 'leetspeak', 'disemvowel', 'start_with',
-         'prefix_sentences', 'numbered_sentences']
-LABELS = ['Uppercase', 'Leetspeak', 'Disemvowel', 'Start\nmarker',
-          'Sentence\nprefixes', 'Numbered\nsentences']
+TYPES = ['uppercase_thinking', 'leetspeak', 'prefix_sentences', 'numbered_sentences']
+LABELS = ['Uppercase', 'Leetspeak', 'Sentence\nprefixes', 'Numbered\nsentences']
 MODELS = [('olmo31', 'OLMo-3.1-32B-Think', MODEL_COLORS['olmo31']),
           ('qwen32', 'Qwen3-32B', MODEL_COLORS['qwen32'])]
 CONDS = ['no_instruction', 'instruction_only']
@@ -68,7 +66,9 @@ def probability_label(value, _):
 
 def render(summary, metrics, name):
     single = len(metrics) == 1
-    fig, axes = plt.subplots(1,len(metrics),figsize=(7.2,5.8) if single else (14.5,5.2),squeeze=False)
+    size = (7.2, 4.6) if metrics == ['rank'] else (7.2, 5.8) if single else (14.5, 5.2)
+    axis_font_size = TICK_SIZE + 2 if metrics == ['rank'] else TICK_SIZE
+    fig, axes = plt.subplots(1,len(metrics),figsize=size,squeeze=False)
     axes = axes[0]
     x = np.arange(len(TYPES))
     for column, (model, label, color) in enumerate(MODELS):
@@ -88,7 +88,8 @@ def render(summary, metrics, name):
             ax.set_xlim(-.5,len(TYPES)-.5)
             ax.grid(axis='y',alpha=.25)
             ax.yaxis.set_minor_locator(NullLocator())
-            ax.set_xticks(x,LABELS,fontsize=TICK_SIZE-1)
+            ax.set_xticks(x,LABELS,fontsize=axis_font_size)
+            ax.tick_params(axis='both',labelsize=axis_font_size)
             if metric=='rank':
                 ax.set_ylim(.8,10000)
                 ax.yaxis.set_major_locator(FixedLocator([1,2,5,10,100,1000,10000]))
@@ -100,7 +101,7 @@ def render(summary, metrics, name):
                 ax.yaxis.set_major_locator(FixedLocator([1e-12,1e-10,1e-8,1e-6,1e-4,1e-2]))
                 ax.yaxis.set_major_formatter(FuncFormatter(probability_label))
     for ax, metric in zip(axes, metrics):
-        ax.set_ylabel('Best compliant-token rank' if metric == 'rank' else 'Compliant-token probability')
+        ax.set_ylabel('Best compliant-token rank' if metric == 'rank' else 'Compliant-token probability',fontsize=axis_font_size)
     handles = [Line2D([],[],marker='o',ls='none',ms=6,mew=1.5,mec='#333333',
                        mfc='white' if j==0 else '#333333',label=label)
                for j,label in enumerate(['No instruction','Instruction'])]
@@ -108,7 +109,7 @@ def render(summary, metrics, name):
                for _,label,color in MODELS] + handles
     for ax, metric in zip(axes, metrics):
         ax.legend(handles=handles,loc='upper left' if metric=='rank' else 'lower left',
-                  ncol=1,frameon=False)
+                  ncol=1,frameon=False,fontsize=TICK_SIZE)
     fig.tight_layout(pad=.8,h_pad=1.4,w_pad=1.5)
     export_figure(fig,OUT,name)
 
@@ -127,7 +128,7 @@ def main():
     summary.to_csv(OUT/f'{NAME}.csv',index=False)
     provenance=dict(source=str(source),source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
         script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-        bootstrap_draws=DRAWS,bootstrap_seed=SEED,phase='opening',
+        bootstrap_draws=DRAWS,bootstrap_seed=SEED,phase='opening',controls=TYPES,
         rank_summary='geometric mean',probability_summary='arithmetic mean',
         interval='pointwise 95% percentile; paired question resampling')
     (OUT/f'{NAME}_provenance.json').write_text(json.dumps(provenance,indent=2))

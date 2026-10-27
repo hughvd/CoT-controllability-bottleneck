@@ -1,0 +1,5 @@
+model,total,okay_all,failed,okay_failed,pct_failed,pct_all
+qwen14,150,150,150,150,100.0,100.0
+qwen32,150,150,146,146,100.0,100.0
+olmo31,150,150,150,150,100.0,100.0
+glm,150,0,67,0,0.0,0.0

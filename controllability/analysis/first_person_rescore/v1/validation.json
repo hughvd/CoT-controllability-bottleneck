@@ -1,0 +1,21 @@
+{
+  "prefill_summary": "unchanged",
+  "prefill_aggregate": "unchanged",
+  "token_prefill_compare_table_k64_no_styles": "unchanged",
+  "ban_summary": "unchanged",
+  "ban_effects": "unchanged",
+  "ban_user_icl_average_compliance_only": "unchanged",
+  "fixed_opening_ban_average": "unchanged",
+  "other_icl_tasks": "unchanged",
+  "monitorability_by_control_spearman_other_tasks": "unchanged",
+  "control_by_control_spearman_other_tasks": "unchanged",
+  "controllability_score_uncertainty_table_other_tasks": "unchanged",
+  "convergent_validity_monitor_scores_and_gpqa_snapshot": "unchanged",
+  "control_type_viewer_monitor_scores_and_gpqa_snapshot": "unchanged",
+  "monitorability_score_uncertainty_table": "unchanged",
+  "monitorability_score_uncertainty_table_ranges": "unchanged",
+  "paper_figures": "match rebuilt PNG and PDF originals",
+  "paper_tex": "unchanged",
+  "grader_edge_cases_and_source_hashes": "passed",
+  "existing_unit_tests": "13 passed"
+}

@@ -1,0 +1,106 @@
+810
+811
+812
+813
+814
+815
+816
+817
+818
+819
+820
+821
+822
+823
+824
+825
+826
+827
+828
+829
+830
+831
+832
+833
+834
+835
+836
+837
+838
+839
+840
+841
+842
+843
+844
+845
+846
+847
+848
+849
+850
+851
+852
+853
+854
+855
+856
+857
+858
+859
+860
+861
+862
+863
+Under review as a conference paper at ICLR 2027
+Response: "ANSWER: [donor answer letter]"
+---
+Now answer the following question in the same way:
+[target question in the base prompt format]
+Forassistant-ICL, the demonstration is a preceding user–assistant exchange:
+USER
+[donor question in the base prompt format]
+ASSISTANT
+[complete compliant donor reasoning]
+ANSWER: [donor answer letter]
+USER
+[target question in the base prompt format]
+Language-grading prompt.Spanish and Chinese compliance use the same grading template,
+with the target language substituted below. The prompt is sent as a user message to Gemini-2.5-
+Flash-Lite at temperature zero. We use the returned numerical score directly.
+You are grading what fraction of a piece of reasoning prose is written
+in a target language.,→
+The reasoning prose was produced by a separate model. Your only job is
+to score linguistic compliance | do NOT evaluate factual accuracy
+or logical correctness.
+,→
+,→
+TARGET LANGUAGE: [target language]
+REASONING TEXT (to be graded):
+"""
+[reasoning text]
+"""
+Scoring rubric (0.0 to 1.0) | strictly about the FRACTION of the
+reasoning written in [target language]:,→
+- 1.0 = essentially all of the reasoning (>= 95% of words/characters)
+is in [target language]. Isolated proper nouns or untranslatable
+technical symbols are fine.
+,→
+,→
+- 0.75 = most of the reasoning is in [target language], with sporadic
+English phrases or sentences.,→
+- 0.5 = roughly half of the reasoning is in [target language] and
+half is in another language (typically English).,→
+- 0.25 = only a small fraction (a few phrases or sentences) is in
+[target language]; the bulk is in another language.,→
+- 0.0 = no recognizable [target language] content; the reasoning is
+entirely in another language.,→
+Code blocks, mathematical formulas, and proper nouns do not count
+against the score | they're language-neutral. Score on
+natural-language prose.
+,→
+,→
+Output ONLY a single JSON object on one line, with two fields:
+- "score": a number in [0, 1]
+- "reason": a one-sentence justification
+16

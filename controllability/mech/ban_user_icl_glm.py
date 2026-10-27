@@ -14,13 +14,13 @@ from ban_user_icl import ROOT
 import token_prefill_suite_api as api
 
 
-async def run(experiment_root=ROOT, max_proposals=1024, tail_batch_size=4):
+async def run(experiment_root=ROOT, max_proposals=1024, tail_batch_size=4, concurrency=8):
     root = Path(experiment_root) / 'glm'
     m = json.loads((root / 'manifest.json').read_text())
     f.validate(m)
     api.s.ROOT = root / 'rejection'
     client = api.PaidClient(cap=25., retries=12)
-    client.sem = asyncio.Semaphore(8)
+    client.sem = asyncio.Semaphore(concurrency)
     tok = f.suite.tokenizer(m['model'])
     db = sqlite3.connect(root / 'api_outputs.sqlite')
     db.execute('pragma journal_mode=WAL')
@@ -30,7 +30,7 @@ async def run(experiment_root=ROOT, max_proposals=1024, tail_batch_size=4):
     requests = sorted(m['requests'], key=lambda r:f.base.digest(r['request_id']))
     report = dict(status='generating', method='ordered first-token rejection sampling',
                   expected_in_scope=len(requests), started_at=time.time(),
-                  max_proposals=max_proposals, tail_batch_size=tail_batch_size,
+                  max_proposals=max_proposals, tail_batch_size=tail_batch_size,concurrency=concurrency,
                   protocol='First proposal shared between baseline and ban; select lowest accepted attempt index.')
 
     def save():
@@ -40,12 +40,21 @@ async def run(experiment_root=ROOT, max_proposals=1024, tail_batch_size=4):
         f.base.atomic_json(root / 'rejection_report.json', report)
 
     async def propose(r, attempt):
+        previous=db.execute('select accepted from proposals where id=? and attempt=?',(r['request_id'],attempt)).fetchone()
+        if previous is not None and not previous[0]:
+            # Already rejected under this immutable manifest/tokenizer. Replaying
+            # its API cache and status writes adds no information on resume.
+            return attempt,False,None,None,None,None
         # Deliberately omit arm: couple baseline with the first ban proposal.
         key = f.base.digest([m['manifest_sha256'], r['cell_id'], r['condition'], r['sample'], attempt])
         payload = dict(model=m['model']['api_id'], messages=r['messages'], temperature=.6,
-                       top_p=1., max_tokens=8192, seed=int(key[:8], 16),
+                       max_tokens=8192, seed=int(key[:8], 16),
                        extra_body={'provider': {'order': ['DeepInfra'], 'allow_fallbacks': False},
                                    'include_reasoning': True})
+        # None means omit the field, matching hosted standalone ICL requests.
+        # Historical manifests explicitly contain top_p=1 and remain unchanged.
+        if m['sampling'].get('top_p', 1.) is not None:
+            payload['top_p'] = m['sampling'].get('top_p', 1.)
         job = 'ban-user-icl-v1|' + key
         for retry in range(12):
             raw = await client.call(job, payload, 1.4e-6, 4.4e-6)
@@ -131,10 +140,19 @@ async def run(experiment_root=ROOT, max_proposals=1024, tail_batch_size=4):
 
 
 if __name__ == '__main__':
+    import fcntl
+    import os
     parser = argparse.ArgumentParser()
     parser.add_argument('--experiment-root', default=str(ROOT))
     parser.add_argument('--max-proposals', type=int, default=1024)
     parser.add_argument('--tail-batch-size', type=int, default=4)
+    parser.add_argument('--concurrency', type=int, default=8)
     args = parser.parse_args()
     assert args.max_proposals >= 1 and 1 <= args.tail_batch_size <= 32
-    asyncio.run(run(args.experiment_root, args.max_proposals, args.tail_batch_size))
+    assert 1 <= args.concurrency <= 64
+    lock_path=Path(args.experiment_root)/'glm'/'generation.lock'
+    with lock_path.open('a+') as lock:
+        try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        except BlockingIOError:raise SystemExit('A GLM generator is already running for this experiment.')
+        lock.seek(0);lock.truncate();lock.write(str(os.getpid())+'\n');lock.flush()
+        asyncio.run(run(args.experiment_root, args.max_proposals, args.tail_batch_size,args.concurrency))

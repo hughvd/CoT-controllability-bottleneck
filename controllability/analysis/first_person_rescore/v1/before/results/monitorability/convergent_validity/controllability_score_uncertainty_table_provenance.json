@@ -1,0 +1,39 @@
+{
+  "sources": {
+    "results/monitorability/convergent_validity/data.json": "d8645672b301525308ceecb3c15e14a5a0e81e24cd1e342748f424383f44b336",
+    "results/prefill_continuation/base_qwen3_32b_k0fix/sweep.json": "e303eaf71ad425df120c7f9f865a0b6648ef52c236acc03766616d3907a6f80c",
+    "controllability/results/control_expansion/v1/correlation/qwen3-32b/scores.csv": "14b1ff661a6bc4579e6efd7a7627dac8c17dddc791941752d039a5f10847a1d6",
+    "results/prefill_continuation/base_gptoss_120b_k0high/sweep.json": "fef3882b1c12f8cc50b537f2732229b46066dd6236faef1624f1c97de0fc5b05",
+    "controllability/results/control_expansion/v1/correlation/gpt-oss-120b/scores.csv": "be640ece0d4d6910cdd83ed2b62fd306bdd5410d280375453c89e849a2987af7",
+    "results/prefill_continuation/base_glm_5_2/sweep.json": "3bb0c64fe27a34e7a2ffbe95f7bf0a1e68a378e1ad7d8a17d372fd33bb728731",
+    "controllability/results/control_expansion/v1/correlation/glm-5.2/scores.csv": "c5098228abd6bc9c66a311a84589c38d2ee1caf2a48f3d76ea539c60e74d6e34",
+    "results/prefill_continuation/base_deepseek_r1_k0fix/sweep.json": "f719f65f36a70786a2a81d622399d10ac01145bd57fad405b6a7020b8bc986f1",
+    "controllability/results/control_expansion/v1/correlation/deepseek-r1-0528/scores.csv": "77e12c43e52fb2106326c274b43b48608baa8ee5644109fce176dccc10a430ba",
+    "results/prefill_continuation/base_kimi_k2/sweep.json": "d55daba00d36a8f27bb5478b2d624467214b12f89e149f0a23af36a5ad36189d",
+    "controllability/results/control_expansion/v1/correlation/kimi-k2-thinking/scores.csv": "8d8705e5c04d20f1d735b73c6d4154b860774928d9436010934784deb93c9176",
+    "results/prefill_continuation/base_gemma4_31b/sweep.json": "68fe1b4645078812d4df336ba1ea063dd31dc07eb8527753b63e02ffc53368ea",
+    "controllability/results/control_expansion/v1/correlation/gemma-4-31b-it/scores.csv": "1614be954bdaff9bcaacaae8cb671459023cd533bb64d32607b7c96abae429f2",
+    "results/prefill_continuation/base_qwen35_27b/sweep.json": "028e666aa2523363b80751bdad428d062db3ac9d57ccc684c67a3184cd691195",
+    "controllability/results/control_expansion/v1/correlation/qwen3.5-27b/scores.csv": "57e1a649a8068c78625b9e357c536069ad4d21a7bdcbf8408b5d1b92a5fc34da",
+    "results/prefill_continuation/base_qwen36_27b/sweep.json": "655eb756388a3e457fd18fa47e9264755baab21418708d53cf1b8f0f25a342ab",
+    "controllability/results/control_expansion/v1/correlation/qwen3.6-27b/scores.csv": "c6b6741fe7f549addcc5844c2ef20fcda2e97b974f23deffdfabf846ef57620e",
+    "results/prefill_continuation/base_deepseek_v32/sweep.json": "40cd0c416a6cdb9b6b2021899544d1e0b4df745767bf018ffedf0704a6092c1d",
+    "controllability/results/control_expansion/v1/correlation/deepseek-v3.2/scores.csv": "0213e618fb28f95e58040c7a1571d4871e0a087479005c0a01a92be4e2216d98",
+    "results/prefill_continuation/base_deepseek_v4pro/sweep.json": "771b5b77fdeb3f6735461a46f2f8059f74f193eb460927d0aa7bfd24fafdfe46",
+    "controllability/results/control_expansion/v1/correlation/deepseek-v4-pro/scores.csv": "fca1969c50252c36ca5ed3022026338de0679785e57e776c121e22bcd865b42e",
+    "results/prefill_continuation/base_minimax_m3/sweep.json": "0600ad68f4d33aa93f0a5e86efabe8acbaf3afdde2d9f40d5f4b5a358d6c3572",
+    "controllability/results/control_expansion/v1/correlation/minimax-m3/scores.csv": "7245cd869b3adb4b7b1d40e483630c3e1776d654c5c654456c61937756a5b86e",
+    "results/prefill_continuation/base_nemotron3_super/sweep.json": "a2db0165cb1561322f417546779f8b3242c069290c0797c7f150351b7a816095",
+    "controllability/results/control_expansion/v1/correlation/nemotron-3-super-120b/scores.csv": "bfa64d8fd72467f0a363fb5c737def2784696c57f846c7c4945838f1ad5b2042"
+  },
+  "bootstrap_replicates": 5000,
+  "seed": 20260925,
+  "resampling_unit": "question; all valid responses retained as a cluster",
+  "estimator": "response-weighted mean compliance",
+  "uncertainty": "bootstrap standard deviation (ddof=1)",
+  "color_scale": [
+    0,
+    1
+  ],
+  "script_sha256": "da81561fa460b8ed6e97cf196f30633803be0650ba7a4fcc1e837f0c5f039861"
+}

@@ -1,0 +1,17 @@
+{
+  "status": "grader_and_completed_analyses_updated",
+  "tests": 13,
+  "updated": [
+    "ICL average",
+    "ICL control table",
+    "control-control correlations",
+    "control-monitorability correlations",
+    "category correlations",
+    "interactive correlation viewers"
+  ],
+  "pending": [
+    "prefill figures after model-source reruns",
+    "ban and ban+ICL figures after GLM protocol rerun"
+  ],
+  "grader_sha256": "0066065912d2e86931d006783f1416163b1c578ad222787d28097b3a5346a21e"
+}

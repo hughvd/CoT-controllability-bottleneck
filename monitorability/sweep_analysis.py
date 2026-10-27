@@ -63,7 +63,8 @@ def controllability_frame(run_name: str) -> pd.DataFrame:
     # prefill folds encodings into modality "family"; split leetspeak back out
     # so the category rollup matches the F2 taxonomy.
     df.loc[df.ctype == "leetspeak", "modality"] = "encoding"
-    return df.dropna(subset=["compliance_score"])
+    from controllability.rescore_first_person import rescore
+    return rescore(df.dropna(subset=["compliance_score"]), ROOT / "results/prefill_continuation" / run_name / "sweep.json")
 
 
 def controllability_scores(run_name: str) -> dict:

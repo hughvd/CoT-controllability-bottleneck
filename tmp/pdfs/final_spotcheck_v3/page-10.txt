@@ -1,0 +1,105 @@
+486
+487
+488
+489
+490
+491
+492
+493
+494
+495
+496
+497
+498
+499
+500
+501
+502
+503
+504
+505
+506
+507
+508
+509
+510
+511
+512
+513
+514
+515
+516
+517
+518
+519
+520
+521
+522
+523
+524
+525
+526
+527
+528
+529
+530
+531
+532
+533
+534
+535
+536
+537
+538
+539
+Under review as a conference paper at ICLR 2027
+the final content of this work, including text, claims or artifacts produced with the aid of generative
+AI.
+ETHICS STATEMENT
+Our work aims to improve the assessment of chain-of-thought monitoring by identifying limitations
+in current controllability benchmarks. Methods that increase control over reasoning traces could
+also be used to make those traces less informative or misleading, although our experiments do not
+establish deliberate monitor evasion. We believe that openly studying these limitations can support
+more reliable evaluations and reduce unwarranted confidence in the safety assurances drawn from
+low measured controllability.
+REPRODUCIBILITY STATEMENT
+We describe the models, datasets, prompts, grading rules, and experimental settings in the main text
+and appendix. Upon publication, we will provide a link to a public repository containing the code
+and experiment configurations, including scripts for scoring responses and reproducing the reported
+analyses and figures.
+REFERENCES
+Bowen Baker, Joost Huizinga, Leo Gao, Zehao Dou, Melody Y . Guan, Aleksander Madry, Wojciech
+Zaremba, Jakub Pachocki, and David Farhi. Monitoring reasoning models for misbehavior and
+the risks of promoting obfuscation, 2025. URLhttps://arxiv.org/abs/2503.11926.
+Yanda Chen, Joe Benton, Ansh Radhakrishnan, Jonathan Uesato, Carson Denison, John Schulman,
+Arushi Somani, Peter Hase, Misha Wagner, Fabien Roger, Vlad Mikulik, Samuel R. Bowman,
+Jan Leike, Jared Kaplan, and Ethan Perez. Reasoning models don’t always say what they think,
+2025. URLhttps://arxiv.org/abs/2505.05410.
+Peter Clark, Isaac Cowhey, Oren Etzioni, Tushar Khot, Ashish Sabharwal, Carissa Schoenick, and
+Oyvind Tafjord. Think you have solved question answering? try arc, the ai2 reasoning challenge.
+arXiv preprint arXiv:1803.05457, 2018.
+Jacob Drori, Luke Marks, Bryce Woodworth, Alex Cloud, and Alexander Matt Turner. Output
+supervision can obfuscate the chain of thought, 2025. URLhttps://arxiv.org/abs/
+2511.11584.
+Scott Emmons, Erik Jenner, David K. Elson, Rif A. Saurous, Senthooran Rajamanoharan, Heng
+Chen, Irhum Shafkat, and Rohin Shah. When chain of thought is necessary, language models
+struggle to evade monitors, 2025. URLhttps://arxiv.org/abs/2507.05246.
+GLM-5-Team, :, Aohan Zeng, Xin Lv, Zhenyu Hou, Zhengxiao Du, Qinkai Zheng, Bin Chen,
+Da Yin, Chendi Ge, Chenghua Huang, Chengxing Xie, Chenzheng Zhu, Congfeng Yin, Cunxiang
+Wang, Gengzheng Pan, Hao Zeng, Haoke Zhang, Haoran Wang, Huilong Chen, Jiajie Zhang, Jian
+Jiao, Jiaqi Guo, Jingsen Wang, Jingzhao Du, Jinzhu Wu, Kedong Wang, Lei Li, Lin Fan, Lucen
+Zhong, Mingdao Liu, Mingming Zhao, Pengfan Du, Qian Dong, Rui Lu, Shuang-Li, Shulin Cao,
+Song Liu, Ting Jiang, Xiaodong Chen, Xiaohan Zhang, Xuancheng Huang, Xuezhen Dong, Yabo
+Xu, Yao Wei, Yifan An, Yilin Niu, Yitong Zhu, Yuanhao Wen, Yukuo Cen, Yushi Bai, Zhongpei
+Qiao, Zihan Wang, Zikang Wang, Zilin Zhu, Ziqiang Liu, Zixuan Li, Bojie Wang, Bosi Wen, Can
+Huang, Changpeng Cai, Chao Yu, Chen Li, Chengwei Hu, Chenhui Zhang, Dan Zhang, Daoyan
+Lin, Dayong Yang, Di Wang, Ding Ai, Erle Zhu, Fangzhou Yi, Feiyu Chen, Guohong Wen, Hai-
+long Sun, Haisha Zhao, Haiyi Hu, Hanchen Zhang, Hanrui Liu, Hanyu Zhang, Hao Peng, Hao
+Tai, Haobo Zhang, He Liu, Hongwei Wang, Hongxi Yan, Hongyu Ge, Huan Liu, Huanpeng Chu,
+Jia’ni Zhao, Jiachen Wang, Jiajing Zhao, Jiamin Ren, Jiapeng Wang, Jiaxin Zhang, Jiayi Gui,
+Jiayue Zhao, Jijie Li, Jing An, Jing Li, Jingwei Yuan, Jinhua Du, Jinxin Liu, Junkai Zhi, Junwen
+Duan, Kaiyue Zhou, Kangjian Wei, Ke Wang, Keyun Luo, Laiqiang Zhang, Leigang Sha, Liang
+Xu, Lindong Wu, Lintao Ding, Lu Chen, Minghao Li, Nianyi Lin, Pan Ta, Qiang Zou, Rongjun
+Song, Ruiqi Yang, Shangqing Tu, Shangtong Yang, Shaoxiang Wu, Shengyan Zhang, Shijie Li,
+Shuang Li, Shuyi Fan, Wei Qin, Wei Tian, Weining Zhang, Wenbo Yu, Wenjie Liang, Xiang
+10

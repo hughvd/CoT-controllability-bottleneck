@@ -45,7 +45,8 @@ def correlation(x, y):
 
 
 def build_data():
-    rows = []; sources = {}; counts = []
+    from controllability.rescore_first_person import provenance
+    rows = []; sources = provenance(); counts = []
     for model, run in MODELS.items():
         path = ROOT / 'results/prefill_continuation' / run / 'sweep.json'
         frame = controllability_frame(run)
@@ -64,7 +65,7 @@ def build_data():
             values[control] = {'soft': float(group.compliance_score.mean()),
                                'hard': float(group.compliance_score.ge(.95).mean())}
             counts.append({'model': model, 'control': control, 'valid_samples': len(group),
-                           'empty_reasoning': int(group.empty_reasoning.fillna(group.empty_thinking).astype(bool).sum()),
+                           'empty_reasoning': int(group.empty_reasoning.astype('boolean').fillna(group.empty_thinking.astype('boolean')).sum()),
                            'questions': group.question.nunique(),
                            'run': str(extension.relative_to(ROOT)) if control in ['numbered_sentences','suffix_sentences'] else run})
         for family, members in FAMILIES.items():
@@ -89,7 +90,8 @@ def build_data():
             'evals': [dict(zip(['key', 'name', 'metric', 'scope'], e)) for e in EVALS],
             'counts': counts, 'sources': sources}
     # Normalize optional/missing values to strict JSON null, never JS NaN.
-    return clean(data)
+    from monitorability.gpqa_figure_snapshot import apply_snapshot
+    return clean(apply_snapshot(data))
 
 
 def clean(value):
@@ -124,6 +126,10 @@ def main():
     html = html.replace('__PLOTLY__', get_plotlyjs()).replace(
         '__DATA__', json.dumps(data, allow_nan=False).replace('<', '\\u003c')).replace(
         '__APP__', (HERE/'control_type_viewer.js').read_text())
+    from monitorability.gpqa_figure_snapshot import snapshot_note
+    import html as html_utils
+    if snapshot_note(data):
+        html=html.replace('</header>','<p><strong>'+html_utils.escape(snapshot_note(data))+'</strong></p></header>')
     (OUT/'index.html').write_text(html)
     (OUT/'README.md').write_text('''# Per-control controllability × monitorability viewer
 

@@ -1,0 +1,72 @@
+864
+865
+866
+867
+868
+869
+870
+871
+872
+873
+874
+875
+876
+877
+878
+879
+880
+881
+882
+883
+884
+885
+886
+887
+888
+889
+890
+891
+892
+893
+894
+895
+896
+897
+898
+899
+900
+901
+902
+903
+904
+905
+906
+907
+908
+909
+910
+911
+912
+913
+914
+915
+916
+917
+Under review as a conference paper at ICLR 2027
+Example output:
+{"score": 0.9, "reason": "Almost entirely in Spanish; one short
+English clause embedded in an otherwise Spanish paragraph."},→
+Compliant examples are constructed through deterministic transformations for uppercase, sentence
+prefixes, leetspeak, and first-person avoidance, and saved GPT-5-mini rewrites for languages and
+word omission. Prefills use an example for the target question. ICL demonstrations use a different
+question with the same control task; the donor’s instruction and control parameters are applied to
+both the demonstration and target.
+B ADDITIONALPLOTS
+Figure 9: Mean compliance by control task under instruction-only, user-ICL, and assistant-ICL
+prompting. Demonstration benefits vary by task and placement; for Qwen and OLMo, stylistic
+modification remains largely unsuccessful.
+Figure 10: Mean continuation compliance by control task. Base and +I denote no-prefill conditions
+without and with instructions; PI@1 and PI@64 supply one or 64 compliant tokens with instructions.
+Supplied text is excluded from scoring. Short prefixes rescue several addition and style tasks, while
+sentence endings and first-person avoidance benefit more from longer prefixes.
+17

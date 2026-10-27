@@ -1,10 +1,16 @@
 {
   "source": "/Users/hughv/Research/monitorability-scaling/controllability/mech/data/rank_runs/opening_suite_v1/analysis/per_question.csv",
   "source_sha256": "14793af03a51d20c720f2142b0b2fbf6cef9ad6124362dd594a8a412b6e6e68f",
-  "script_sha256": "212fdc1ea03b1781eeb7459fed9971a02d121aa6a44410f257b32ac2b74bdb58",
+  "script_sha256": "8355c997eff69adb34c83b9e3894dd3d809b998c5f93cb6acdef170a8f773faa",
   "bootstrap_draws": 10000,
   "bootstrap_seed": 20260916,
   "phase": "opening",
+  "controls": [
+    "uppercase_thinking",
+    "leetspeak",
+    "prefix_sentences",
+    "numbered_sentences"
+  ],
   "rank_summary": "geometric mean",
   "probability_summary": "arithmetic mean",
   "interval": "pointwise 95% percentile; paired question resampling"

@@ -1,0 +1,601 @@
+source_row,model,target_question,variant,sample,compliance_score_before,compliance_score_after,compliance_before,compliance_after
+1160,olmo-3.1-32b,Where might a television used at night be?,instruction_only,0,0.0,0.0,0.0,0.0
+1161,olmo-3.1-32b,Where might a television used at night be?,instruction_only,1,0.0,0.0,0.0,0.0
+1162,olmo-3.1-32b,Where might a television used at night be?,instruction_only,2,0.0,0.0,0.0,0.0
+1163,olmo-3.1-32b,Where might a television used at night be?,instruction_only,3,0.0,0.0,0.0,0.0
+1164,olmo-3.1-32b,Where might a television used at night be?,instruction_only,4,0.0,0.0,0.0,0.0
+1165,olmo-3.1-32b,Where might a television used at night be?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1166,olmo-3.1-32b,Where might a television used at night be?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1167,olmo-3.1-32b,Where might a television used at night be?,icl_user_plain,2,1.0,1.0,1.0,1.0
+1168,olmo-3.1-32b,Where might a television used at night be?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1169,olmo-3.1-32b,Where might a television used at night be?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1170,olmo-3.1-32b,Where might a television used at night be?,icl_user_think,0,0.0,0.0,0.0,0.0
+1171,olmo-3.1-32b,Where might a television used at night be?,icl_user_think,1,0.0,0.0,0.0,0.0
+1172,olmo-3.1-32b,Where might a television used at night be?,icl_user_think,2,0.0,0.0,0.0,0.0
+1173,olmo-3.1-32b,Where might a television used at night be?,icl_user_think,3,1.0,1.0,1.0,1.0
+1174,olmo-3.1-32b,Where might a television used at night be?,icl_user_think,4,0.0,0.0,0.0,0.0
+1175,olmo-3.1-32b,Where might a television used at night be?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1176,olmo-3.1-32b,Where might a television used at night be?,icl_assistant_visible,1,1.0,1.0,1.0,1.0
+1177,olmo-3.1-32b,Where might a television used at night be?,icl_assistant_visible,2,1.0,1.0,1.0,1.0
+1178,olmo-3.1-32b,Where might a television used at night be?,icl_assistant_visible,3,1.0,1.0,1.0,1.0
+1179,olmo-3.1-32b,Where might a television used at night be?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1180,olmo-3.1-32b,Where might a small dog run in packs?,instruction_only,0,0.0,0.0,0.0,0.0
+1181,olmo-3.1-32b,Where might a small dog run in packs?,instruction_only,1,0.0,0.0,0.0,0.0
+1182,olmo-3.1-32b,Where might a small dog run in packs?,instruction_only,2,0.0,0.0,0.0,0.0
+1183,olmo-3.1-32b,Where might a small dog run in packs?,instruction_only,3,0.0,0.0,0.0,0.0
+1184,olmo-3.1-32b,Where might a small dog run in packs?,instruction_only,4,0.0,0.0,0.0,0.0
+1185,olmo-3.1-32b,Where might a small dog run in packs?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1186,olmo-3.1-32b,Where might a small dog run in packs?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1187,olmo-3.1-32b,Where might a small dog run in packs?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1188,olmo-3.1-32b,Where might a small dog run in packs?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1189,olmo-3.1-32b,Where might a small dog run in packs?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1190,olmo-3.1-32b,Where might a small dog run in packs?,icl_user_think,0,0.0,0.0,0.0,0.0
+1191,olmo-3.1-32b,Where might a small dog run in packs?,icl_user_think,1,0.0,0.0,0.0,0.0
+1192,olmo-3.1-32b,Where might a small dog run in packs?,icl_user_think,2,0.0,0.0,0.0,0.0
+1193,olmo-3.1-32b,Where might a small dog run in packs?,icl_user_think,3,0.0,0.0,0.0,0.0
+1194,olmo-3.1-32b,Where might a small dog run in packs?,icl_user_think,4,0.0,0.0,0.0,0.0
+1195,olmo-3.1-32b,Where might a small dog run in packs?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1196,olmo-3.1-32b,Where might a small dog run in packs?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1197,olmo-3.1-32b,Where might a small dog run in packs?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1198,olmo-3.1-32b,Where might a small dog run in packs?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1199,olmo-3.1-32b,Where might a small dog run in packs?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1200,olmo-3.1-32b,"A cat can't talk, but a cat can what?",instruction_only,0,0.0,0.0,0.0,0.0
+1201,olmo-3.1-32b,"A cat can't talk, but a cat can what?",instruction_only,1,0.0,0.0,0.0,0.0
+1202,olmo-3.1-32b,"A cat can't talk, but a cat can what?",instruction_only,2,0.0,0.0,0.0,0.0
+1203,olmo-3.1-32b,"A cat can't talk, but a cat can what?",instruction_only,3,0.0,0.0,0.0,0.0
+1204,olmo-3.1-32b,"A cat can't talk, but a cat can what?",instruction_only,4,0.0,0.0,0.0,0.0
+1205,olmo-3.1-32b,"A cat can't talk, but a cat can what?",icl_user_plain,0,0.0,0.0,0.0,0.0
+1206,olmo-3.1-32b,"A cat can't talk, but a cat can what?",icl_user_plain,1,0.0,0.0,0.0,0.0
+1207,olmo-3.1-32b,"A cat can't talk, but a cat can what?",icl_user_plain,2,0.0,0.0,0.0,0.0
+1208,olmo-3.1-32b,"A cat can't talk, but a cat can what?",icl_user_plain,3,1.0,1.0,1.0,1.0
+1209,olmo-3.1-32b,"A cat can't talk, but a cat can what?",icl_user_plain,4,0.0,0.0,0.0,0.0
+1210,olmo-3.1-32b,"A cat can't talk, but a cat can what?",icl_user_think,0,1.0,1.0,1.0,1.0
+1211,olmo-3.1-32b,"A cat can't talk, but a cat can what?",icl_user_think,1,0.0,0.0,0.0,0.0
+1212,olmo-3.1-32b,"A cat can't talk, but a cat can what?",icl_user_think,2,1.0,1.0,1.0,1.0
+1213,olmo-3.1-32b,"A cat can't talk, but a cat can what?",icl_user_think,3,0.0,0.0,0.0,0.0
+1214,olmo-3.1-32b,"A cat can't talk, but a cat can what?",icl_user_think,4,0.0,0.0,0.0,0.0
+1215,olmo-3.1-32b,"A cat can't talk, but a cat can what?",icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1216,olmo-3.1-32b,"A cat can't talk, but a cat can what?",icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1217,olmo-3.1-32b,"A cat can't talk, but a cat can what?",icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1218,olmo-3.1-32b,"A cat can't talk, but a cat can what?",icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1219,olmo-3.1-32b,"A cat can't talk, but a cat can what?",icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1220,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",instruction_only,0,0.0,0.0,0.0,0.0
+1221,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",instruction_only,1,0.0,0.0,0.0,0.0
+1222,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",instruction_only,2,0.0,0.0,0.0,0.0
+1223,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",instruction_only,3,0.0,0.0,0.0,0.0
+1224,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",instruction_only,4,0.0,0.0,0.0,0.0
+1225,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_plain,0,0.0,0.0,0.0,0.0
+1226,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_plain,1,0.0,0.0,0.0,0.0
+1227,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_plain,2,0.0,0.0,0.0,0.0
+1228,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_plain,3,0.0,0.0,0.0,0.0
+1229,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_plain,4,0.0,0.0,0.0,0.0
+1230,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_think,0,0.0,0.0,0.0,0.0
+1231,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_think,1,0.0,0.0,0.0,0.0
+1232,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_think,2,0.0,0.0,0.0,0.0
+1233,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_think,3,0.0,0.0,0.0,0.0
+1234,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_user_think,4,0.0,0.0,0.0,0.0
+1235,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1236,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1237,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1238,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1239,olmo-3.1-32b,"A parent and a child share several characteristics. Both individuals are tall, have curly hair, are good cooks, and have freckles. Which of these characteristics is a learned behavior?",icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1240,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,instruction_only,0,0.0,0.0,0.0,0.0
+1241,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,instruction_only,1,0.0,0.0,0.0,0.0
+1242,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,instruction_only,2,0.0,0.0,0.0,0.0
+1243,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,instruction_only,3,0.0,0.0,0.0,0.0
+1244,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,instruction_only,4,0.0,0.0,0.0,0.0
+1245,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1246,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1247,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1248,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1249,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1250,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_think,0,0.0,0.0,0.0,0.0
+1251,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_think,1,0.0,0.0,0.0,0.0
+1252,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_think,2,0.0,0.0,0.0,0.0
+1253,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_think,3,0.0,0.0,0.0,0.0
+1254,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_user_think,4,0.0,0.0,0.0,0.0
+1255,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_assistant_visible,0,1.0,1.0,1.0,1.0
+1256,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_assistant_visible,1,1.0,1.0,1.0,1.0
+1257,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1258,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_assistant_visible,3,1.0,1.0,1.0,1.0
+1259,olmo-3.1-32b,Skyler is selecting the kind of paper he wants to use to make a greeting card. He wants to select paper that does not tear easily. Which of the following features of the paper is most important for Skyler to consider?,icl_assistant_visible,4,1.0,1.0,1.0,1.0
+1260,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,instruction_only,0,0.0,0.0,0.0,0.0
+1261,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,instruction_only,1,0.0,0.0,0.0,0.0
+1262,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,instruction_only,2,0.0,0.0,0.0,0.0
+1263,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,instruction_only,3,0.0,0.0,0.0,0.0
+1264,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,instruction_only,4,0.0,0.0,0.0,0.0
+1265,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1266,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1267,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1268,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1269,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1270,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_think,0,0.0,0.0,0.0,0.0
+1271,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_think,1,0.0,0.0,0.0,0.0
+1272,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_think,2,0.0,0.0,0.0,0.0
+1273,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_think,3,0.0,0.0,0.0,0.0
+1274,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_user_think,4,0.0,0.0,0.0,0.0
+1275,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1276,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1277,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1278,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1279,olmo-3.1-32b,Grover iterator is a quantum gate that amplifies the amplitude of the target state while reducing the amplitude of the non-target states. What are the eigenvalues of the Grover iterator G in terms of θ?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1280,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,instruction_only,0,0.0,0.0,0.0,0.0
+1281,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,instruction_only,1,0.0,0.0,0.0,0.0
+1282,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,instruction_only,2,0.0,0.0,0.0,0.0
+1283,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,instruction_only,3,0.0,0.0,0.0,0.0
+1284,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,instruction_only,4,0.0,0.0,0.0,0.0
+1285,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1286,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1287,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_plain,2,1.0,1.0,1.0,1.0
+1288,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1289,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1290,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_think,0,0.0,0.0,0.0,0.0
+1291,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_think,1,0.0,0.0,0.0,0.0
+1292,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_think,2,0.0,0.0,0.0,0.0
+1293,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_think,3,0.0,0.0,0.0,0.0
+1294,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_user_think,4,1.0,1.0,1.0,1.0
+1295,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1296,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_assistant_visible,1,1.0,1.0,1.0,1.0
+1297,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_assistant_visible,2,1.0,1.0,1.0,1.0
+1298,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_assistant_visible,3,1.0,1.0,1.0,1.0
+1299,olmo-3.1-32b,A cupful of water and a similar cupful of gasoline were placed on a table near a window on a hot sunny day. A few hours later it was observed that both the cups had less liquid in them but that there was less gasoline left than water. What does this experiment show?,icl_assistant_visible,4,1.0,1.0,1.0,1.0
+1300,olmo-3.1-32b,"If I am forgiving, what might people think I have?",instruction_only,0,0.0,0.0,0.0,0.0
+1301,olmo-3.1-32b,"If I am forgiving, what might people think I have?",instruction_only,1,0.0,0.0,0.0,0.0
+1302,olmo-3.1-32b,"If I am forgiving, what might people think I have?",instruction_only,2,0.0,0.0,0.0,0.0
+1303,olmo-3.1-32b,"If I am forgiving, what might people think I have?",instruction_only,3,0.0,0.0,0.0,0.0
+1304,olmo-3.1-32b,"If I am forgiving, what might people think I have?",instruction_only,4,0.0,0.0,0.0,0.0
+1305,olmo-3.1-32b,"If I am forgiving, what might people think I have?",icl_user_plain,0,0.0,0.0,0.0,0.0
+1306,olmo-3.1-32b,"If I am forgiving, what might people think I have?",icl_user_plain,1,0.0,0.0,0.0,0.0
+1307,olmo-3.1-32b,"If I am forgiving, what might people think I have?",icl_user_plain,2,1.0,1.0,1.0,1.0
+1308,olmo-3.1-32b,"If I am forgiving, what might people think I have?",icl_user_plain,3,0.0,0.0,0.0,0.0
+1309,olmo-3.1-32b,"If I am forgiving, what might people think I have?",icl_user_plain,4,0.0,0.0,0.0,0.0
+1310,olmo-3.1-32b,"If I am forgiving, what might people think I have?",icl_user_think,0,0.0,0.0,0.0,0.0
+1311,olmo-3.1-32b,"If I am forgiving, what might people think I have?",icl_user_think,1,0.0,0.0,0.0,0.0
+1312,olmo-3.1-32b,"If I am forgiving, what might people think I have?",icl_user_think,2,0.0,0.0,0.0,0.0
+1313,olmo-3.1-32b,"If I am forgiving, what might people think I have?",icl_user_think,3,0.0,0.0,0.0,0.0
+1314,olmo-3.1-32b,"If I am forgiving, what might people think I have?",icl_user_think,4,1.0,1.0,1.0,1.0
+1315,olmo-3.1-32b,"If I am forgiving, what might people think I have?",icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1316,olmo-3.1-32b,"If I am forgiving, what might people think I have?",icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1317,olmo-3.1-32b,"If I am forgiving, what might people think I have?",icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1318,olmo-3.1-32b,"If I am forgiving, what might people think I have?",icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1319,olmo-3.1-32b,"If I am forgiving, what might people think I have?",icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1320,olmo-3.1-32b,What are students trying to do?,instruction_only,0,0.0,0.0,0.0,0.0
+1321,olmo-3.1-32b,What are students trying to do?,instruction_only,1,0.0,0.0,0.0,0.0
+1322,olmo-3.1-32b,What are students trying to do?,instruction_only,2,0.0,0.0,0.0,0.0
+1323,olmo-3.1-32b,What are students trying to do?,instruction_only,3,0.0,0.0,0.0,0.0
+1324,olmo-3.1-32b,What are students trying to do?,instruction_only,4,0.0,0.0,0.0,0.0
+1325,olmo-3.1-32b,What are students trying to do?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1326,olmo-3.1-32b,What are students trying to do?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1327,olmo-3.1-32b,What are students trying to do?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1328,olmo-3.1-32b,What are students trying to do?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1329,olmo-3.1-32b,What are students trying to do?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1330,olmo-3.1-32b,What are students trying to do?,icl_user_think,0,0.0,0.0,0.0,0.0
+1331,olmo-3.1-32b,What are students trying to do?,icl_user_think,1,1.0,1.0,1.0,1.0
+1332,olmo-3.1-32b,What are students trying to do?,icl_user_think,2,0.0,0.0,0.0,0.0
+1333,olmo-3.1-32b,What are students trying to do?,icl_user_think,3,1.0,1.0,1.0,1.0
+1334,olmo-3.1-32b,What are students trying to do?,icl_user_think,4,1.0,1.0,1.0,1.0
+1335,olmo-3.1-32b,What are students trying to do?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1336,olmo-3.1-32b,What are students trying to do?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1337,olmo-3.1-32b,What are students trying to do?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1338,olmo-3.1-32b,What are students trying to do?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1339,olmo-3.1-32b,What are students trying to do?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1340,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,instruction_only,0,0.0,0.0,0.0,0.0
+1341,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,instruction_only,1,0.0,0.0,0.0,0.0
+1342,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,instruction_only,2,0.0,0.0,0.0,0.0
+1343,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,instruction_only,3,0.0,0.0,0.0,0.0
+1344,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,instruction_only,4,0.0,0.0,0.0,0.0
+1345,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1346,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1347,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1348,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1349,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1350,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_think,0,0.0,0.0,0.0,0.0
+1351,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_think,1,0.0,0.0,0.0,0.0
+1352,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_think,2,0.0,0.0,0.0,0.0
+1353,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_think,3,0.0,0.0,0.0,0.0
+1354,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_user_think,4,0.0,0.0,0.0,0.0
+1355,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1356,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1357,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1358,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1359,olmo-3.1-32b,Where in the U.S. do many ships from the pacific ocean unload their wares?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1360,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",instruction_only,0,0.0,0.0,0.0,0.0
+1361,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",instruction_only,1,0.0,0.0,0.0,0.0
+1362,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",instruction_only,2,0.0,0.0,0.0,0.0
+1363,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",instruction_only,3,0.0,0.0,0.0,0.0
+1364,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",instruction_only,4,0.0,0.0,0.0,0.0
+1365,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_plain,0,0.0,0.0,0.0,0.0
+1366,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_plain,1,0.0,0.0,0.0,0.0
+1367,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_plain,2,0.0,0.0,0.0,0.0
+1368,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_plain,3,0.0,0.0,0.0,0.0
+1369,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_plain,4,0.0,0.0,0.0,0.0
+1370,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_think,0,0.0,0.0,0.0,0.0
+1371,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_think,1,0.0,0.0,0.0,0.0
+1372,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_think,2,0.0,0.0,0.0,0.0
+1373,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_think,3,0.0,0.0,0.0,0.0
+1374,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_user_think,4,0.0,0.0,0.0,0.0
+1375,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1376,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1377,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1378,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1379,olmo-3.1-32b,"Mr. Pratt does a science demonstration. He inflates a balloon, places it in a freezer, and then removes it after 10 minutes. Which best describes the balloon's volume when in the freezer and then after being removed and allowed to warm up?",icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1380,olmo-3.1-32b,What does a police officer in their sixities?,instruction_only,0,0.0,0.0,0.0,0.0
+1381,olmo-3.1-32b,What does a police officer in their sixities?,instruction_only,1,0.0,0.0,0.0,0.0
+1382,olmo-3.1-32b,What does a police officer in their sixities?,instruction_only,2,0.0,0.0,0.0,0.0
+1383,olmo-3.1-32b,What does a police officer in their sixities?,instruction_only,3,0.0,0.0,0.0,0.0
+1384,olmo-3.1-32b,What does a police officer in their sixities?,instruction_only,4,0.0,0.0,0.0,0.0
+1385,olmo-3.1-32b,What does a police officer in their sixities?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1386,olmo-3.1-32b,What does a police officer in their sixities?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1387,olmo-3.1-32b,What does a police officer in their sixities?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1388,olmo-3.1-32b,What does a police officer in their sixities?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1389,olmo-3.1-32b,What does a police officer in their sixities?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1390,olmo-3.1-32b,What does a police officer in their sixities?,icl_user_think,0,0.0,0.0,0.0,0.0
+1391,olmo-3.1-32b,What does a police officer in their sixities?,icl_user_think,1,0.0,0.0,0.0,0.0
+1392,olmo-3.1-32b,What does a police officer in their sixities?,icl_user_think,2,0.0,0.0,0.0,0.0
+1393,olmo-3.1-32b,What does a police officer in their sixities?,icl_user_think,3,0.0,0.0,0.0,0.0
+1394,olmo-3.1-32b,What does a police officer in their sixities?,icl_user_think,4,0.0,0.0,0.0,0.0
+1395,olmo-3.1-32b,What does a police officer in their sixities?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1396,olmo-3.1-32b,What does a police officer in their sixities?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1397,olmo-3.1-32b,What does a police officer in their sixities?,icl_assistant_visible,2,1.0,1.0,1.0,1.0
+1398,olmo-3.1-32b,What does a police officer in their sixities?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1399,olmo-3.1-32b,What does a police officer in their sixities?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1400,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",instruction_only,0,0.0,0.0,0.0,0.0
+1401,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",instruction_only,1,0.0,0.0,0.0,0.0
+1402,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",instruction_only,2,0.0,0.0,0.0,0.0
+1403,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",instruction_only,3,0.0,0.0,0.0,0.0
+1404,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",instruction_only,4,0.0,0.0,0.0,0.0
+1405,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_plain,0,0.0,0.0,0.0,0.0
+1406,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_plain,1,0.0,0.0,0.0,0.0
+1407,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_plain,2,0.0,0.0,0.0,0.0
+1408,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_plain,3,0.0,0.0,0.0,0.0
+1409,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_plain,4,0.0,0.0,0.0,0.0
+1410,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_think,0,0.0,0.0,0.0,0.0
+1411,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_think,1,0.0,0.0,0.0,0.0
+1412,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_think,2,0.0,0.0,0.0,0.0
+1413,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_think,3,0.0,0.0,0.0,0.0
+1414,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_user_think,4,0.0,0.0,0.0,0.0
+1415,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1416,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1417,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1418,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1419,olmo-3.1-32b,"Balloons come in packages of 8. If you need 42 balloons, how many packages should you buy?",icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1420,olmo-3.1-32b,In a company a chief oversees what people?,instruction_only,0,0.0,0.0,0.0,0.0
+1421,olmo-3.1-32b,In a company a chief oversees what people?,instruction_only,1,0.0,0.0,0.0,0.0
+1422,olmo-3.1-32b,In a company a chief oversees what people?,instruction_only,2,0.0,0.0,0.0,0.0
+1423,olmo-3.1-32b,In a company a chief oversees what people?,instruction_only,3,0.0,0.0,0.0,0.0
+1424,olmo-3.1-32b,In a company a chief oversees what people?,instruction_only,4,0.0,0.0,0.0,0.0
+1425,olmo-3.1-32b,In a company a chief oversees what people?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1426,olmo-3.1-32b,In a company a chief oversees what people?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1427,olmo-3.1-32b,In a company a chief oversees what people?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1428,olmo-3.1-32b,In a company a chief oversees what people?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1429,olmo-3.1-32b,In a company a chief oversees what people?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1430,olmo-3.1-32b,In a company a chief oversees what people?,icl_user_think,0,0.0,0.0,0.0,0.0
+1431,olmo-3.1-32b,In a company a chief oversees what people?,icl_user_think,1,0.0,0.0,0.0,0.0
+1432,olmo-3.1-32b,In a company a chief oversees what people?,icl_user_think,2,0.0,0.0,0.0,0.0
+1433,olmo-3.1-32b,In a company a chief oversees what people?,icl_user_think,3,0.0,0.0,0.0,0.0
+1434,olmo-3.1-32b,In a company a chief oversees what people?,icl_user_think,4,0.0,0.0,0.0,0.0
+1435,olmo-3.1-32b,In a company a chief oversees what people?,icl_assistant_visible,0,1.0,1.0,1.0,1.0
+1436,olmo-3.1-32b,In a company a chief oversees what people?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1437,olmo-3.1-32b,In a company a chief oversees what people?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1438,olmo-3.1-32b,In a company a chief oversees what people?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1439,olmo-3.1-32b,In a company a chief oversees what people?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1440,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,instruction_only,0,1.0,1.0,1.0,1.0
+1441,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,instruction_only,1,0.0,0.0,0.0,0.0
+1442,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,instruction_only,2,0.0,0.0,0.0,0.0
+1443,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,instruction_only,3,0.0,0.0,0.0,0.0
+1444,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,instruction_only,4,0.0,0.0,0.0,0.0
+1445,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1446,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1447,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1448,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1449,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1450,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,icl_user_think,0,0.0,0.0,0.0,0.0
+1451,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,icl_user_think,1,0.0,0.0,0.0,0.0
+1452,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,icl_user_think,2,0.0,0.0,0.0,0.0
+1453,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,icl_user_think,3,0.0,0.0,0.0,0.0
+1454,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,icl_user_think,4,0.0,0.0,0.0,0.0
+1455,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1456,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1457,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1458,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1459,olmo-3.1-32b,Where could you find a laundry room that is only used by staff?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1460,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",instruction_only,0,0.0,0.0,0.0,0.0
+1461,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",instruction_only,1,0.0,0.0,0.0,0.0
+1462,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",instruction_only,2,0.0,0.0,0.0,0.0
+1463,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",instruction_only,3,0.0,0.0,0.0,0.0
+1464,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",instruction_only,4,0.0,0.0,0.0,0.0
+1465,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_plain,0,0.0,0.0,0.0,0.0
+1466,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_plain,1,0.0,0.0,0.0,0.0
+1467,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_plain,2,0.0,0.0,0.0,0.0
+1468,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_plain,3,0.0,0.0,0.0,0.0
+1469,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_plain,4,0.0,0.0,0.0,0.0
+1470,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_think,0,0.0,0.0,0.0,0.0
+1471,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_think,1,0.0,0.0,0.0,0.0
+1472,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_think,2,0.0,0.0,0.0,0.0
+1473,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_think,3,0.0,0.0,0.0,0.0
+1474,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_user_think,4,0.0,0.0,0.0,0.0
+1475,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1476,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1477,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1478,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1479,olmo-3.1-32b,"She needs to visit a bookshop after buying the latest fashion, where should she look?",icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1480,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,instruction_only,0,0.0,0.0,0.0,0.0
+1481,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,instruction_only,1,0.0,0.0,0.0,0.0
+1482,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,instruction_only,2,0.0,0.0,0.0,0.0
+1483,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,instruction_only,3,0.0,0.0,0.0,0.0
+1484,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,instruction_only,4,0.0,0.0,0.0,0.0
+1485,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1486,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1487,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1488,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1489,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1490,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_think,0,0.0,0.0,0.0,0.0
+1491,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_think,1,0.0,0.0,0.0,0.0
+1492,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_think,2,0.0,0.0,0.0,0.0
+1493,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_think,3,0.0,0.0,0.0,0.0
+1494,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,icl_user_think,4,0.0,0.0,0.0,0.0
+1495,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1496,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1497,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,icl_assistant_visible,2,1.0,1.0,1.0,1.0
+1498,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1499,olmo-3.1-32b,Why do scientists perform multiple trials of the same experiment?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1500,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,instruction_only,0,0.0,0.0,0.0,0.0
+1501,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,instruction_only,1,0.0,0.0,0.0,0.0
+1502,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,instruction_only,2,0.0,0.0,0.0,0.0
+1503,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,instruction_only,3,0.0,0.0,0.0,0.0
+1504,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,instruction_only,4,0.0,0.0,0.0,0.0
+1505,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1506,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1507,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1508,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1509,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1510,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_think,0,0.0,0.0,0.0,0.0
+1511,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_think,1,0.0,0.0,0.0,0.0
+1512,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_think,2,0.0,0.0,0.0,0.0
+1513,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_think,3,0.0,0.0,0.0,0.0
+1514,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_user_think,4,0.0,0.0,0.0,0.0
+1515,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1516,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1517,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1518,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1519,olmo-3.1-32b, What are the rabbinical commentaries produced after the Mishnah called?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1520,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,instruction_only,0,0.0,0.0,0.0,0.0
+1521,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,instruction_only,1,0.0,0.0,0.0,0.0
+1522,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,instruction_only,2,0.0,0.0,0.0,0.0
+1523,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,instruction_only,3,0.0,0.0,0.0,0.0
+1524,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,instruction_only,4,0.0,0.0,0.0,0.0
+1525,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1526,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1527,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1528,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1529,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1530,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,icl_user_think,0,0.0,0.0,0.0,0.0
+1531,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,icl_user_think,1,0.0,0.0,0.0,0.0
+1532,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,icl_user_think,2,0.0,0.0,0.0,0.0
+1533,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,icl_user_think,3,0.0,0.0,0.0,0.0
+1534,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,icl_user_think,4,0.0,0.0,0.0,0.0
+1535,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,icl_assistant_visible,0,1.0,1.0,1.0,1.0
+1536,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,icl_assistant_visible,1,1.0,1.0,1.0,1.0
+1537,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1538,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,icl_assistant_visible,3,1.0,1.0,1.0,1.0
+1539,olmo-3.1-32b,Where above your kitchen sink could you store canned food?,icl_assistant_visible,4,1.0,1.0,1.0,1.0
+1540,olmo-3.1-32b,What proof is required to purchase beer?,instruction_only,0,0.0,0.0,0.0,0.0
+1541,olmo-3.1-32b,What proof is required to purchase beer?,instruction_only,1,0.0,0.0,0.0,0.0
+1542,olmo-3.1-32b,What proof is required to purchase beer?,instruction_only,2,0.0,0.0,0.0,0.0
+1543,olmo-3.1-32b,What proof is required to purchase beer?,instruction_only,3,0.0,0.0,0.0,0.0
+1544,olmo-3.1-32b,What proof is required to purchase beer?,instruction_only,4,0.0,0.0,0.0,0.0
+1545,olmo-3.1-32b,What proof is required to purchase beer?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1546,olmo-3.1-32b,What proof is required to purchase beer?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1547,olmo-3.1-32b,What proof is required to purchase beer?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1548,olmo-3.1-32b,What proof is required to purchase beer?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1549,olmo-3.1-32b,What proof is required to purchase beer?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1550,olmo-3.1-32b,What proof is required to purchase beer?,icl_user_think,0,0.0,0.0,0.0,0.0
+1551,olmo-3.1-32b,What proof is required to purchase beer?,icl_user_think,1,0.0,0.0,0.0,0.0
+1552,olmo-3.1-32b,What proof is required to purchase beer?,icl_user_think,2,0.0,0.0,0.0,0.0
+1553,olmo-3.1-32b,What proof is required to purchase beer?,icl_user_think,3,0.0,0.0,0.0,0.0
+1554,olmo-3.1-32b,What proof is required to purchase beer?,icl_user_think,4,0.0,0.0,0.0,0.0
+1555,olmo-3.1-32b,What proof is required to purchase beer?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1556,olmo-3.1-32b,What proof is required to purchase beer?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1557,olmo-3.1-32b,What proof is required to purchase beer?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1558,olmo-3.1-32b,What proof is required to purchase beer?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1559,olmo-3.1-32b,What proof is required to purchase beer?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1560,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,instruction_only,0,0.0,0.0,0.0,0.0
+1561,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,instruction_only,1,0.0,0.0,0.0,0.0
+1562,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,instruction_only,2,0.0,0.0,0.0,0.0
+1563,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,instruction_only,3,0.0,0.0,0.0,0.0
+1564,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,instruction_only,4,0.0,0.0,0.0,0.0
+1565,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1566,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1567,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1568,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1569,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1570,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_think,0,0.0,0.0,0.0,0.0
+1571,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_think,1,0.0,0.0,0.0,0.0
+1572,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_think,2,0.0,0.0,0.0,0.0
+1573,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_think,3,0.0,0.0,0.0,0.0
+1574,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,icl_user_think,4,0.0,0.0,0.0,0.0
+1575,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1576,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1577,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1578,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1579,olmo-3.1-32b,What would you see if you are looking at people that are agreeing with each other?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1580,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",instruction_only,0,0.0,0.0,0.0,0.0
+1581,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",instruction_only,1,0.0,0.0,0.0,0.0
+1582,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",instruction_only,2,0.0,0.0,0.0,0.0
+1583,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",instruction_only,3,0.0,0.0,0.0,0.0
+1584,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",instruction_only,4,0.0,0.0,0.0,0.0
+1585,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_plain,0,0.0,0.0,0.0,0.0
+1586,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_plain,1,0.0,0.0,0.0,0.0
+1587,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_plain,2,0.0,0.0,0.0,0.0
+1588,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_plain,3,0.0,0.0,0.0,0.0
+1589,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_plain,4,0.0,0.0,0.0,0.0
+1590,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_think,0,0.0,0.0,0.0,0.0
+1591,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_think,1,0.0,0.0,0.0,0.0
+1592,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_think,2,0.0,0.0,0.0,0.0
+1593,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_think,3,0.0,0.0,0.0,0.0
+1594,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_user_think,4,0.0,0.0,0.0,0.0
+1595,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_assistant_visible,0,1.0,1.0,1.0,1.0
+1596,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1597,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1598,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1599,olmo-3.1-32b,"His day at the office was nearing an end, he went to the start menu on his computer to do what?",icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1600,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,instruction_only,0,0.0,0.0,0.0,0.0
+1601,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,instruction_only,1,0.0,0.0,0.0,0.0
+1602,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,instruction_only,2,0.0,0.0,0.0,0.0
+1603,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,instruction_only,3,0.0,0.0,0.0,0.0
+1604,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,instruction_only,4,0.0,0.0,0.0,0.0
+1605,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1606,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1607,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1608,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1609,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1610,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_think,0,0.0,0.0,0.0,0.0
+1611,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_think,1,0.0,0.0,0.0,0.0
+1612,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_think,2,0.0,0.0,0.0,0.0
+1613,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_think,3,0.0,0.0,0.0,0.0
+1614,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_user_think,4,0.0,0.0,0.0,0.0
+1615,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1616,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1617,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1618,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1619,olmo-3.1-32b,Which statement is true about the particles of a liquid compared to the particles of a gas?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1620,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",instruction_only,0,0.0,0.0,0.0,0.0
+1621,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",instruction_only,1,0.0,0.0,0.0,0.0
+1622,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",instruction_only,2,0.0,0.0,0.0,0.0
+1623,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",instruction_only,3,0.0,0.0,0.0,0.0
+1624,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",instruction_only,4,0.0,0.0,0.0,0.0
+1625,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_plain,0,0.0,0.0,0.0,0.0
+1626,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_plain,1,1.0,1.0,1.0,1.0
+1627,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_plain,2,0.0,0.0,0.0,0.0
+1628,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_plain,3,0.0,0.0,0.0,0.0
+1629,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_plain,4,0.0,0.0,0.0,0.0
+1630,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_think,0,0.0,0.0,0.0,0.0
+1631,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_think,1,0.0,0.0,0.0,0.0
+1632,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_think,2,0.0,0.0,0.0,0.0
+1633,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_think,3,0.0,0.0,0.0,0.0
+1634,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_user_think,4,0.0,0.0,0.0,0.0
+1635,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_assistant_visible,0,1.0,1.0,1.0,1.0
+1636,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1637,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_assistant_visible,2,1.0,1.0,1.0,1.0
+1638,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1639,olmo-3.1-32b,"What would you do if you want to eat dinner, but do not have any raw ingredients?",icl_assistant_visible,4,1.0,1.0,1.0,1.0
+1640,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,instruction_only,0,0.0,0.0,0.0,0.0
+1641,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,instruction_only,1,0.0,0.0,0.0,0.0
+1642,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,instruction_only,2,0.0,0.0,0.0,0.0
+1643,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,instruction_only,3,0.0,0.0,0.0,0.0
+1644,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,instruction_only,4,0.0,0.0,0.0,0.0
+1645,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1646,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1647,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1648,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1649,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1650,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_think,0,0.0,0.0,0.0,0.0
+1651,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_think,1,0.0,0.0,0.0,0.0
+1652,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_think,2,0.0,0.0,0.0,0.0
+1653,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_think,3,0.0,0.0,0.0,0.0
+1654,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_user_think,4,0.0,0.0,0.0,0.0
+1655,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1656,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1657,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1658,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1659,olmo-3.1-32b,Which graph is best to present data collected on yearly water usage in the United States?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1660,olmo-3.1-32b,what might someone feel after hurting someone else?,instruction_only,0,0.0,0.0,0.0,0.0
+1661,olmo-3.1-32b,what might someone feel after hurting someone else?,instruction_only,1,0.0,0.0,0.0,0.0
+1662,olmo-3.1-32b,what might someone feel after hurting someone else?,instruction_only,2,0.0,0.0,0.0,0.0
+1663,olmo-3.1-32b,what might someone feel after hurting someone else?,instruction_only,3,0.0,0.0,0.0,0.0
+1664,olmo-3.1-32b,what might someone feel after hurting someone else?,instruction_only,4,0.0,0.0,0.0,0.0
+1665,olmo-3.1-32b,what might someone feel after hurting someone else?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1666,olmo-3.1-32b,what might someone feel after hurting someone else?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1667,olmo-3.1-32b,what might someone feel after hurting someone else?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1668,olmo-3.1-32b,what might someone feel after hurting someone else?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1669,olmo-3.1-32b,what might someone feel after hurting someone else?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1670,olmo-3.1-32b,what might someone feel after hurting someone else?,icl_user_think,0,0.0,0.0,0.0,0.0
+1671,olmo-3.1-32b,what might someone feel after hurting someone else?,icl_user_think,1,0.0,0.0,0.0,0.0
+1672,olmo-3.1-32b,what might someone feel after hurting someone else?,icl_user_think,2,0.0,0.0,0.0,0.0
+1673,olmo-3.1-32b,what might someone feel after hurting someone else?,icl_user_think,3,0.0,0.0,0.0,0.0
+1674,olmo-3.1-32b,what might someone feel after hurting someone else?,icl_user_think,4,0.0,0.0,0.0,0.0
+1675,olmo-3.1-32b,what might someone feel after hurting someone else?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1676,olmo-3.1-32b,what might someone feel after hurting someone else?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1677,olmo-3.1-32b,what might someone feel after hurting someone else?,icl_assistant_visible,2,1.0,1.0,1.0,1.0
+1678,olmo-3.1-32b,what might someone feel after hurting someone else?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1679,olmo-3.1-32b,what might someone feel after hurting someone else?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1680,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,instruction_only,0,0.0,0.0,0.0,0.0
+1681,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,instruction_only,1,0.0,0.0,0.0,0.0
+1682,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,instruction_only,2,0.0,0.0,0.0,0.0
+1683,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,instruction_only,3,0.0,0.0,0.0,0.0
+1684,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,instruction_only,4,0.0,0.0,0.0,0.0
+1685,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1686,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1687,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1688,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1689,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1690,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_think,0,0.0,0.0,0.0,0.0
+1691,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_think,1,0.0,0.0,0.0,0.0
+1692,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_think,2,0.0,0.0,0.0,0.0
+1693,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_think,3,0.0,0.0,0.0,0.0
+1694,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_user_think,4,0.0,0.0,0.0,0.0
+1695,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_assistant_visible,0,1.0,1.0,1.0,1.0
+1696,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1697,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_assistant_visible,2,1.0,1.0,1.0,1.0
+1698,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1699,olmo-3.1-32b,Sam and June bought loose corn because it was less expensive than what other variety?,icl_assistant_visible,4,0.0,0.0,0.0,0.0
+1700,olmo-3.1-32b,HOw do you carry potatos home?,instruction_only,0,0.0,0.0,0.0,0.0
+1701,olmo-3.1-32b,HOw do you carry potatos home?,instruction_only,1,0.0,0.0,0.0,0.0
+1702,olmo-3.1-32b,HOw do you carry potatos home?,instruction_only,2,0.0,0.0,0.0,0.0
+1703,olmo-3.1-32b,HOw do you carry potatos home?,instruction_only,3,0.0,0.0,0.0,0.0
+1704,olmo-3.1-32b,HOw do you carry potatos home?,instruction_only,4,0.0,0.0,0.0,0.0
+1705,olmo-3.1-32b,HOw do you carry potatos home?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1706,olmo-3.1-32b,HOw do you carry potatos home?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1707,olmo-3.1-32b,HOw do you carry potatos home?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1708,olmo-3.1-32b,HOw do you carry potatos home?,icl_user_plain,3,1.0,1.0,1.0,1.0
+1709,olmo-3.1-32b,HOw do you carry potatos home?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1710,olmo-3.1-32b,HOw do you carry potatos home?,icl_user_think,0,1.0,1.0,1.0,1.0
+1711,olmo-3.1-32b,HOw do you carry potatos home?,icl_user_think,1,0.0,0.0,0.0,0.0
+1712,olmo-3.1-32b,HOw do you carry potatos home?,icl_user_think,2,0.0,0.0,0.0,0.0
+1713,olmo-3.1-32b,HOw do you carry potatos home?,icl_user_think,3,0.0,0.0,0.0,0.0
+1714,olmo-3.1-32b,HOw do you carry potatos home?,icl_user_think,4,0.0,0.0,0.0,0.0
+1715,olmo-3.1-32b,HOw do you carry potatos home?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1716,olmo-3.1-32b,HOw do you carry potatos home?,icl_assistant_visible,1,0.0,0.0,0.0,0.0
+1717,olmo-3.1-32b,HOw do you carry potatos home?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1718,olmo-3.1-32b,HOw do you carry potatos home?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1719,olmo-3.1-32b,HOw do you carry potatos home?,icl_assistant_visible,4,1.0,1.0,1.0,1.0
+1720,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,instruction_only,0,0.0,0.0,0.0,0.0
+1721,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,instruction_only,1,0.0,0.0,0.0,0.0
+1722,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,instruction_only,2,0.0,0.0,0.0,0.0
+1723,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,instruction_only,3,0.0,0.0,0.0,0.0
+1724,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,instruction_only,4,0.0,0.0,0.0,0.0
+1725,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_plain,0,0.0,0.0,0.0,0.0
+1726,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_plain,1,0.0,0.0,0.0,0.0
+1727,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_plain,2,0.0,0.0,0.0,0.0
+1728,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_plain,3,0.0,0.0,0.0,0.0
+1729,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_plain,4,0.0,0.0,0.0,0.0
+1730,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_think,0,0.0,0.0,0.0,0.0
+1731,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_think,1,0.0,0.0,0.0,0.0
+1732,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_think,2,0.0,0.0,0.0,0.0
+1733,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_think,3,0.0,0.0,0.0,0.0
+1734,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,icl_user_think,4,0.0,0.0,0.0,0.0
+1735,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,icl_assistant_visible,0,0.0,0.0,0.0,0.0
+1736,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,icl_assistant_visible,1,1.0,1.0,1.0,1.0
+1737,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,icl_assistant_visible,2,0.0,0.0,0.0,0.0
+1738,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,icl_assistant_visible,3,0.0,0.0,0.0,0.0
+1739,olmo-3.1-32b,If you stretch out your socks they will then have what kind of fit?,icl_assistant_visible,4,1.0,1.0,1.0,1.0
+5840,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",instruction_only,0,0.0,0.0,0.0,0.0
+5841,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",instruction_only,1,0.0,0.0,0.0,0.0
+5842,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",instruction_only,2,0.0,0.0,0.0,0.0
+5843,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",instruction_only,3,0.0,0.0,0.0,0.0
+5844,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",instruction_only,4,0.0,0.0,0.0,0.0
+5845,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_plain,0,0.0,0.0,0.0,0.0
+5846,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_plain,1,0.0,0.0,0.0,0.0
+5847,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_plain,2,0.0,0.0,0.0,0.0
+5848,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_plain,3,0.0,0.0,0.0,0.0
+5849,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_plain,4,0.0,0.0,0.0,0.0
+5850,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_think,0,0.0,0.0,0.0,0.0
+5851,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_think,1,0.0,0.0,0.0,0.0
+5852,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_think,2,0.0,0.0,0.0,0.0
+5853,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_think,3,0.0,0.0,0.0,0.0
+5854,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_user_think,4,0.0,0.0,0.0,0.0
+5855,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_assistant_visible,0,0.0,0.0,0.0,0.0
+5856,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_assistant_visible,1,0.0,0.0,0.0,0.0
+5857,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_assistant_visible,2,0.0,0.0,0.0,0.0
+5858,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_assistant_visible,3,0.0,0.0,0.0,0.0
+5859,olmo-3.1-32b,"In pea plants, the allele for smooth peas is dominant (S). If a heterozygous smooth pea plant (Ss) is crossed with a homozygous smooth pea plant (SS), which are the possible genotypes the offspring could have?",icl_assistant_visible,4,0.0,0.0,0.0,0.0

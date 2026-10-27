@@ -1,0 +1,73 @@
+model,evaluation,label,score,bootstrap_sd
+qwen3-32b,mon_gmean_gpqa,GPQA,0.6276748451401223,0.1082566809996216
+qwen3-32b,mon_gmean_wmdp_sandbagging,WMDP,0.2988505747126436,0.4192051608102032
+qwen3-32b,mon_gmean_memory_advice,Memory advice,0.9818919315880856,0.0163146395953008
+qwen3-32b,mon_gmean_scruples_suggest_wrong,Scruples,0.0,0.0
+qwen3-32b,mon_outcome_gmean_cot_only,Flaky Tools (CharXiv),0.6233826460615319,0.035678473708640336
+qwen3-32b,mon_process_tpr_cot_only,GPQA Physics,0.9036144578313253,0.052456709902318245
+gpt-oss-120b,mon_gmean_gpqa,GPQA,0.5503597658875958,0.0904701767021954
+gpt-oss-120b,mon_gmean_wmdp_sandbagging,WMDP,0.7231525072150071,0.1954440479045761
+gpt-oss-120b,mon_gmean_memory_advice,Memory advice,0.9751042934684228,0.0190303269535001
+gpt-oss-120b,mon_gmean_scruples_suggest_wrong,Scruples,0.0,0.0
+gpt-oss-120b,mon_outcome_gmean_cot_only,Flaky Tools (CharXiv),0.5554832775886457,0.05797996806677434
+gpt-oss-120b,mon_process_tpr_cot_only,GPQA Physics,0.8679245283018868,0.08326191726728228
+glm-5.2,mon_gmean_gpqa,GPQA,0.7531154926734321,0.1004454889800839
+glm-5.2,mon_gmean_wmdp_sandbagging,WMDP,0.460568783068783,0.3409028392509397
+glm-5.2,mon_gmean_memory_advice,Memory advice,0.9819694208729048,0.0177489188146583
+glm-5.2,mon_gmean_scruples_suggest_wrong,Scruples,0.2223574603501074,0.1653958415113702
+glm-5.2,mon_outcome_gmean_cot_only,Flaky Tools (CharXiv),0.6319954227410433,0.05072091936347877
+glm-5.2,mon_process_tpr_cot_only,GPQA Physics,0.9378531073446328,0.03008642690725434
+deepseek-r1-0528,mon_gmean_gpqa,GPQA,0.718987405697158,0.1630169486950526
+deepseek-r1-0528,mon_gmean_wmdp_sandbagging,WMDP,0.8817048808254839,0.139974592378175
+deepseek-r1-0528,mon_gmean_memory_advice,Memory advice,0.9534677153998672,0.0300976397311963
+deepseek-r1-0528,mon_gmean_scruples_suggest_wrong,Scruples,0.0022613065326633,0.0226392896233072
+deepseek-r1-0528,mon_outcome_gmean_cot_only,Flaky Tools (CharXiv),0.5712532090626203,0.04141206056342723
+deepseek-r1-0528,mon_process_tpr_cot_only,GPQA Physics,0.9615384615384616,0.025451907305197363
+kimi-k2-thinking,mon_gmean_gpqa,GPQA,0.3889335418328782,0.1624677117765554
+kimi-k2-thinking,mon_gmean_wmdp_sandbagging,WMDP,0.3762222222222222,0.3766801618351555
+kimi-k2-thinking,mon_gmean_memory_advice,Memory advice,0.9277789792027,0.0334298797819628
+kimi-k2-thinking,mon_gmean_scruples_suggest_wrong,Scruples,0.0028316184095078,0.0246347577550554
+kimi-k2-thinking,mon_outcome_gmean_cot_only,Flaky Tools (CharXiv),0.8155355180248596,0.04859229807633069
+kimi-k2-thinking,mon_process_tpr_cot_only,GPQA Physics,0.9611650485436893,0.03590009736742614
+gemma-4-31b-it,mon_gmean_gpqa,GPQA,0.4976410524149217,0.2168097766899106
+gemma-4-31b-it,mon_gmean_wmdp_sandbagging,WMDP,0.4854644326866549,0.3875970175446573
+gemma-4-31b-it,mon_gmean_memory_advice,Memory advice,0.9538260412390324,0.0242324792603828
+gemma-4-31b-it,mon_gmean_scruples_suggest_wrong,Scruples,0.1776392357642357,0.1697775520868713
+gemma-4-31b-it,mon_outcome_gmean_cot_only,Flaky Tools (CharXiv),0.4387965050924585,0.11925124892896556
+gemma-4-31b-it,mon_process_tpr_cot_only,GPQA Physics,0.9230769230769231,0.036915748219900096
+qwen3.5-27b,mon_gmean_gpqa,GPQA,0.6848095528267741,0.1512153439957474
+qwen3.5-27b,mon_gmean_wmdp_sandbagging,WMDP,0.0679867591927893,0.1344502611663125
+qwen3.5-27b,mon_gmean_memory_advice,Memory advice,0.9524400935965938,0.0268879462581319
+qwen3.5-27b,mon_gmean_scruples_suggest_wrong,Scruples,0.1593752543752543,0.2043511967007565
+qwen3.5-27b,mon_outcome_gmean_cot_only,Flaky Tools (CharXiv),0.8022082869138291,0.029909870484309715
+qwen3.5-27b,mon_process_tpr_cot_only,GPQA Physics,0.9611111111111111,0.024709425802532343
+qwen3.6-27b,mon_gmean_gpqa,GPQA,0.725120992569522,0.1414098997686263
+qwen3.6-27b,mon_gmean_wmdp_sandbagging,WMDP,0.0326330532212885,0.1190487485263127
+qwen3.6-27b,mon_gmean_memory_advice,Memory advice,0.9589291892171284,0.0271958095361265
+qwen3.6-27b,mon_gmean_scruples_suggest_wrong,Scruples,0.1387478849407783,0.20582044805816
+qwen3.6-27b,mon_outcome_gmean_cot_only,Flaky Tools (CharXiv),0.5765860726016244,0.05648085881729491
+qwen3.6-27b,mon_process_tpr_cot_only,GPQA Physics,0.9487179487179487,0.031951643165789946
+deepseek-v3.2,mon_gmean_gpqa,GPQA,0.7308555776089505,0.0673745341925001
+deepseek-v3.2,mon_gmean_wmdp_sandbagging,WMDP,0.9133726917224476,0.0695115618656504
+deepseek-v3.2,mon_gmean_memory_advice,Memory advice,0.9551981236365908,0.0255738348861526
+deepseek-v3.2,mon_gmean_scruples_suggest_wrong,Scruples,0.1280711233211233,0.1508540916238854
+deepseek-v3.2,mon_outcome_gmean_cot_only,Flaky Tools (CharXiv),0.7262413997467291,0.038703782798157116
+deepseek-v3.2,mon_process_tpr_cot_only,GPQA Physics,0.9354838709677419,0.0350637876256973
+deepseek-v4-pro,mon_gmean_gpqa,GPQA,0.1792088545368539,0.0847277794971804
+deepseek-v4-pro,mon_gmean_wmdp_sandbagging,WMDP,0.8789633614019131,0.1048402105024797
+deepseek-v4-pro,mon_gmean_memory_advice,Memory advice,0.932296108745608,0.0335324058052131
+deepseek-v4-pro,mon_gmean_scruples_suggest_wrong,Scruples,0.0,0.0
+deepseek-v4-pro,mon_outcome_gmean_cot_only,Flaky Tools (CharXiv),0.6295510136666492,0.10831953254663886
+deepseek-v4-pro,mon_process_tpr_cot_only,GPQA Physics,0.9,0.04706363959360482
+minimax-m3,mon_gmean_gpqa,GPQA,0.5690636279874999,0.1880242005704888
+minimax-m3,mon_gmean_wmdp_sandbagging,WMDP,0.0416666666666666,0.1358073173690593
+minimax-m3,mon_gmean_memory_advice,Memory advice,0.8719729216429613,0.0476347648275039
+minimax-m3,mon_gmean_scruples_suggest_wrong,Scruples,0.1878716461203771,0.2152577834192112
+minimax-m3,mon_outcome_gmean_cot_only,Flaky Tools (CharXiv),0.8174833878016855,0.037141875334468236
+minimax-m3,mon_process_tpr_cot_only,GPQA Physics,0.9259259259259259,0.03325577579681349
+nemotron-3-super-120b,mon_gmean_gpqa,GPQA,0.4326149425287356,0.3771809342581507
+nemotron-3-super-120b,mon_gmean_wmdp_sandbagging,WMDP,0.9173590437340436,0.1210442331580866
+nemotron-3-super-120b,mon_gmean_memory_advice,Memory advice,0.9344701479050892,0.0312884472117127
+nemotron-3-super-120b,mon_gmean_scruples_suggest_wrong,Scruples,0.0,0.0
+nemotron-3-super-120b,mon_outcome_gmean_cot_only,Flaky Tools (CharXiv),0.699094763772043,0.036764503946003446
+nemotron-3-super-120b,mon_process_tpr_cot_only,GPQA Physics,0.9448818897637795,0.0371275468043857
